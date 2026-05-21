@@ -1,3 +1,4 @@
+import { MobileBottomNav, MobileHeader } from '@/components/layout/MobileNav'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { TickerBar } from '@/components/layout/TickerBar'
 import { createClient } from '@/lib/supabase/server'
@@ -18,13 +19,22 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#080808]">
-      <Sidebar user={mockUser} />
+      {/* Sidebar desktop uniquement */}
+      <div className="hidden md:flex">
+        <Sidebar user={mockUser} />
+      </div>
+
       <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header mobile uniquement */}
+        <MobileHeader />
         <TickerBar />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
           {children}
         </main>
       </div>
+
+      {/* Bottom nav mobile uniquement */}
+      <MobileBottomNav />
     </div>
   )
 }

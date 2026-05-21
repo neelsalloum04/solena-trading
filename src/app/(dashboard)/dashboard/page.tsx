@@ -59,51 +59,51 @@ export default function DashboardPage() {
   }, [])
 
   return (
-    <div className="p-6 space-y-6 max-w-[1400px] mx-auto">
+    <div className="p-4 md:p-6 space-y-4 md:space-y-6 max-w-[1400px] mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-solena-text">Bonjour, Trader 👋</h1>
-          <p className="text-sm text-solena-text-muted mt-0.5">
+          <h1 className="text-xl md:text-2xl font-bold text-solena-text">Bonjour, Trader 👋</h1>
+          <p className="text-xs md:text-sm text-solena-text-muted mt-0.5">
             {time.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
             {' · '}
             <span className="font-mono text-solena-primary">{time.toLocaleTimeString('fr-FR', { hour12: false })}</span>
           </p>
         </div>
-        <div className="flex items-center gap-2 bg-solena-success/5 border border-solena-success/20 px-3 py-1.5 rounded-xl">
-          <span className="w-2 h-2 bg-solena-success rounded-full animate-pulse" />
-          <span className="text-xs font-bold text-solena-success">Marchés ouverts</span>
+        <div className="flex items-center gap-1.5 bg-solena-success/5 border border-solena-success/20 px-2.5 py-1 rounded-xl">
+          <span className="w-1.5 h-1.5 bg-solena-success rounded-full animate-pulse" />
+          <span className="text-[10px] md:text-xs font-bold text-solena-success">Marchés ouverts</span>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
         {STATS.map((stat) => (
-          <Card key={stat.label} className="p-5">
-            <div className="flex items-start justify-between mb-3">
-              <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', stat.positive ? 'bg-solena-success/10' : 'bg-solena-danger/10')}>
-                <stat.icon className={cn('w-4 h-4', stat.positive ? 'text-solena-success' : 'text-solena-danger')} />
+          <Card key={stat.label} className="p-3.5 md:p-5">
+            <div className="flex items-start justify-between mb-2 md:mb-3">
+              <div className={cn('w-8 h-8 md:w-9 md:h-9 rounded-xl flex items-center justify-center', stat.positive ? 'bg-solena-success/10' : 'bg-solena-danger/10')}>
+                <stat.icon className={cn('w-3.5 h-3.5 md:w-4 md:h-4', stat.positive ? 'text-solena-success' : 'text-solena-danger')} />
               </div>
-              <span className={cn('text-xs font-bold px-2 py-1 rounded-lg', stat.positive ? 'bg-solena-success/10 text-solena-success' : 'bg-solena-danger/10 text-solena-danger')}>
+              <span className={cn('text-xs font-bold px-1.5 py-0.5 rounded-lg', stat.positive ? 'bg-solena-success/10 text-solena-success' : 'bg-solena-danger/10 text-solena-danger')}>
                 {stat.positive ? '↑' : '↓'}
               </span>
             </div>
-            <p className="text-2xl font-bold font-mono text-solena-text">{stat.value}</p>
-            <p className="text-xs text-solena-text-muted mt-1">{stat.label}</p>
-            <p className={cn('text-xs font-medium mt-1', stat.positive ? 'text-solena-success' : 'text-solena-danger')}>{stat.sub}</p>
+            <p className="text-lg md:text-2xl font-bold font-mono text-solena-text">{stat.value}</p>
+            <p className="text-[10px] md:text-xs text-solena-text-muted mt-1">{stat.label}</p>
+            <p className={cn('text-[10px] md:text-xs font-medium mt-0.5', stat.positive ? 'text-solena-success' : 'text-solena-danger')}>{stat.sub}</p>
           </Card>
         ))}
       </div>
 
       {/* 3 main actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
         <Link href="/chat">
-          <Card glow className="p-5 cursor-pointer hover:border-solena-primary/30 transition-all duration-200 group">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-solena-primary to-solena-secondary flex items-center justify-center shadow-solena mb-4">
-              <MessageSquare className="w-5 h-5 text-solena-bg" />
+          <Card glow className="p-4 md:p-5 cursor-pointer hover:border-solena-primary/30 transition-all duration-200 group">
+            <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-gradient-to-br from-solena-primary to-solena-secondary flex items-center justify-center shadow-solena mb-3 md:mb-4">
+              <MessageSquare className="w-4 h-4 md:w-5 md:h-5 text-solena-bg" />
             </div>
-            <h2 className="font-bold text-solena-text mb-1">Chat IA</h2>
-            <p className="text-sm text-solena-text-muted leading-relaxed mb-3">Pose une question ou envoie un graphique pour une analyse complète avec entrée, SL et TP.</p>
+            <h2 className="font-bold text-solena-text mb-1 text-sm md:text-base">Chat IA</h2>
+            <p className="text-xs md:text-sm text-solena-text-muted leading-relaxed mb-2 md:mb-3">Pose une question ou envoie un graphique pour une analyse complète avec entrée, SL et TP.</p>
             <div className="flex items-center gap-1 text-xs text-solena-primary font-semibold group-hover:gap-2 transition-all">
               Ouvrir le chat <ArrowRight className="w-3.5 h-3.5" />
             </div>
@@ -111,15 +111,15 @@ export default function DashboardPage() {
         </Link>
 
         <Link href="/signals">
-          <Card glow className="p-5 cursor-pointer hover:border-solena-success/30 transition-all duration-200 group">
-            <div className="w-11 h-11 rounded-xl bg-solena-success/10 border border-solena-success/20 flex items-center justify-center mb-4">
-              <Radio className="w-5 h-5 text-solena-success" />
+          <Card glow className="p-4 md:p-5 cursor-pointer hover:border-solena-success/30 transition-all duration-200 group">
+            <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-solena-success/10 border border-solena-success/20 flex items-center justify-center mb-3 md:mb-4">
+              <Radio className="w-4 h-4 md:w-5 md:h-5 text-solena-success" />
             </div>
             <div className="flex items-center gap-2 mb-1">
-              <h2 className="font-bold text-solena-text">Signaux live</h2>
+              <h2 className="font-bold text-solena-text text-sm md:text-base">Signaux live</h2>
               <span className="w-1.5 h-1.5 bg-solena-success rounded-full animate-pulse" />
             </div>
-            <p className="text-sm text-solena-text-muted leading-relaxed mb-3">Opportunités de trading en temps réel sur tous les marchés : crypto, forex, indices.</p>
+            <p className="text-xs md:text-sm text-solena-text-muted leading-relaxed mb-2 md:mb-3">Opportunités de trading en temps réel sur tous les marchés : crypto, forex, indices.</p>
             <div className="flex items-center gap-1 text-xs text-solena-success font-semibold group-hover:gap-2 transition-all">
               Voir les signaux <ArrowRight className="w-3.5 h-3.5" />
             </div>
@@ -127,12 +127,12 @@ export default function DashboardPage() {
         </Link>
 
         <Link href="/bot">
-          <Card glow className="p-5 cursor-pointer hover:border-solena-secondary/30 transition-all duration-200 group">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-solena-secondary/20 to-purple-600/20 border border-solena-secondary/20 flex items-center justify-center mb-4">
-              <Bot className="w-5 h-5 text-solena-secondary" />
+          <Card glow className="p-4 md:p-5 cursor-pointer hover:border-solena-secondary/30 transition-all duration-200 group">
+            <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-gradient-to-br from-solena-secondary/20 to-purple-600/20 border border-solena-secondary/20 flex items-center justify-center mb-3 md:mb-4">
+              <Bot className="w-4 h-4 md:w-5 md:h-5 text-solena-secondary" />
             </div>
-            <h2 className="font-bold text-solena-text mb-1">Robot de trading</h2>
-            <p className="text-sm text-solena-text-muted leading-relaxed mb-3">Trading automatique 24h/24. Connecte Binance, Alpaca, Bybit et lance le bot en un clic.</p>
+            <h2 className="font-bold text-solena-text mb-1 text-sm md:text-base">Robot de trading</h2>
+            <p className="text-xs md:text-sm text-solena-text-muted leading-relaxed mb-2 md:mb-3">Trading automatique 24h/24. Connecte Binance, Alpaca, Bybit et lance le bot en un clic.</p>
             <div className="flex items-center gap-1 text-xs text-solena-secondary font-semibold group-hover:gap-2 transition-all">
               Configurer le bot <ArrowRight className="w-3.5 h-3.5" />
             </div>

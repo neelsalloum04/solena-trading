@@ -53,16 +53,16 @@ function ActiveSignalCard({ signal, isNew }: { signal: LiveSignal; isNew: boolea
     )}>
       <div className={cn('absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl', isBuy ? 'bg-solena-success' : 'bg-solena-danger')} />
 
-      <div className="pl-6 pr-5 py-5">
+      <div className="pl-4 md:pl-6 pr-4 md:pr-5 py-4 md:py-5">
         {/* Header */}
-        <div className="flex items-start justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <div className={cn('w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0', isBuy ? 'bg-solena-success/10' : 'bg-solena-danger/10')}>
-              {isBuy ? <ArrowUpRight className="w-6 h-6 text-solena-success" /> : <ArrowDownRight className="w-6 h-6 text-solena-danger" />}
+        <div className="flex items-start justify-between mb-4 md:mb-5">
+          <div className="flex items-center gap-2.5 md:gap-3">
+            <div className={cn('w-9 h-9 md:w-11 md:h-11 rounded-xl flex items-center justify-center flex-shrink-0', isBuy ? 'bg-solena-success/10' : 'bg-solena-danger/10')}>
+              {isBuy ? <ArrowUpRight className="w-5 h-5 md:w-6 md:h-6 text-solena-success" /> : <ArrowDownRight className="w-5 h-5 md:w-6 md:h-6 text-solena-danger" />}
             </div>
             <div>
-              <div className="flex items-center gap-2.5 mb-1">
-                <span className="font-bold text-solena-text font-mono text-lg tracking-tight">{signal.pair}</span>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-bold text-solena-text font-mono text-base md:text-lg tracking-tight">{signal.pair}</span>
                 <span className={cn(
                   'inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase tracking-wide',
                   isBuy ? 'bg-solena-success/10 text-solena-success border-solena-success/20'
@@ -90,12 +90,12 @@ function ActiveSignalCard({ signal, isNew }: { signal: LiveSignal; isNew: boolea
           </div>
 
           {/* Confidence */}
-          <div className={cn('flex flex-col items-center px-4 py-2.5 rounded-xl border text-center flex-shrink-0', confColor(signal.confidence))}>
+          <div className={cn('flex flex-col items-center px-3 py-2 md:px-4 md:py-2.5 rounded-xl border text-center flex-shrink-0', confColor(signal.confidence))}>
             <div className="flex items-center gap-1 mb-0.5">
-              <Zap className="w-3 h-3" />
-              <span className="text-lg font-bold font-mono">{signal.confidence}%</span>
+              <Zap className="w-2.5 h-2.5 md:w-3 md:h-3" />
+              <span className="text-base md:text-lg font-bold font-mono">{signal.confidence}%</span>
             </div>
-            <span className="text-[10px] uppercase tracking-wide opacity-70">confiance</span>
+            <span className="text-[9px] md:text-[10px] uppercase tracking-wide opacity-70">conf.</span>
           </div>
         </div>
 
@@ -265,12 +265,12 @@ export default function SignalsPage() {
   const waitSignals   = filtered.filter(s => s.type === 'WAIT')
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-5">
+    <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-4 md:space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl font-bold text-solena-text">Signaux en direct</h1>
+          <div className="flex items-center gap-2 md:gap-3 mb-1">
+            <h1 className="text-xl md:text-2xl font-bold text-solena-text">Signaux en direct</h1>
             <div className="flex items-center gap-1.5 bg-solena-success/5 border border-solena-success/20 px-2.5 py-1 rounded-lg">
               <span className="w-2 h-2 bg-solena-success rounded-full animate-pulse" />
               <span className="text-xs font-bold text-solena-success">LIVE</span>
@@ -286,10 +286,10 @@ export default function SignalsPage() {
         <button
           onClick={load}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-solena-border text-solena-text-muted hover:text-solena-text hover:border-solena-border-light bg-solena-card transition-all text-sm disabled:opacity-50"
+          className="flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 rounded-xl border border-solena-border text-solena-text-muted hover:text-solena-text hover:border-solena-border-light bg-solena-card transition-all text-xs md:text-sm disabled:opacity-50"
         >
-          <RefreshCw className={cn('w-3.5 h-3.5', loading && 'animate-spin')} />
-          Actualiser
+          <RefreshCw className={cn('w-3 h-3 md:w-3.5 md:h-3.5', loading && 'animate-spin')} />
+          <span className="hidden sm:inline">Actualiser</span>
         </button>
       </div>
 
