@@ -1,0 +1,140 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    border-color: #1a1a2e;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-solena-bg text-solena-text font-sans antialiased;
+    background-image:
+      radial-gradient(ellipse at top, rgba(0, 229, 180, 0.03) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(99, 102, 241, 0.03) 0%, transparent 50%);
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0d0d1a;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #252540;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #333360;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-solena-card border border-solena-border rounded-2xl shadow-card backdrop-blur-sm;
+    background: linear-gradient(135deg, rgba(17, 17, 32, 0.9) 0%, rgba(13, 13, 26, 0.9) 100%);
+  }
+
+  .glass-card-hover {
+    @apply glass-card transition-all duration-300 hover:border-solena-border-light hover:shadow-card-hover;
+  }
+
+  .btn-primary {
+    @apply bg-solena-primary text-solena-bg font-semibold px-6 py-3 rounded-xl hover:bg-solena-primary-dark transition-all duration-200 shadow-solena hover:shadow-solena-lg active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent border border-solena-border text-solena-text font-medium px-6 py-3 rounded-xl hover:bg-solena-card hover:border-solena-border-light transition-all duration-200;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-solena-text-muted hover:text-solena-text hover:bg-solena-card font-medium px-4 py-2 rounded-lg transition-all duration-200;
+  }
+
+  .input-field {
+    @apply bg-solena-bg-secondary border border-solena-border text-solena-text placeholder-solena-text-muted rounded-xl px-4 py-3 w-full focus:outline-none focus:border-solena-primary/50 focus:ring-2 focus:ring-solena-primary/10 transition-all duration-200;
+  }
+
+  .badge-buy {
+    @apply bg-solena-success/10 text-solena-success border border-solena-success/20 px-2 py-0.5 rounded-md text-xs font-bold uppercase tracking-wide;
+  }
+
+  .badge-sell {
+    @apply bg-solena-danger/10 text-solena-danger border border-solena-danger/20 px-2 py-0.5 rounded-md text-xs font-bold uppercase tracking-wide;
+  }
+
+  .stat-card {
+    @apply glass-card p-6 flex flex-col gap-2;
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #00e5b4 0%, #6366f1 100%);
+  }
+
+  .glow-border {
+    border: 1px solid transparent;
+    background: linear-gradient(#111120, #111120) padding-box,
+                linear-gradient(135deg, #00e5b4, #6366f1) border-box;
+  }
+
+  .ticker-bar {
+    @apply bg-solena-card border-b border-solena-border overflow-hidden;
+  }
+
+  .live-dot {
+    @apply w-2 h-2 rounded-full bg-solena-success animate-ping-slow;
+  }
+
+  .section-header {
+    @apply flex items-center justify-between mb-6;
+  }
+
+  .section-title {
+    @apply text-xl font-bold text-solena-text;
+  }
+
+  .metric-value {
+    @apply text-2xl font-bold font-mono;
+  }
+
+  .metric-label {
+    @apply text-xs text-solena-text-muted uppercase tracking-wide;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, #00e5b4 0%, #6366f1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-grid {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
