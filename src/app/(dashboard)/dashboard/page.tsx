@@ -17,6 +17,10 @@ import {
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from 'recharts'
+import { EconomicCalendar } from '@/components/dashboard/EconomicCalendar'
+import { LiveMarkets } from '@/components/dashboard/LiveMarkets'
+import { MarketNews } from '@/components/dashboard/MarketNews'
+import { MarketNotifications } from '@/components/dashboard/MarketNotifications'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -270,6 +274,7 @@ export default function DashboardPage() {
             <Globe className="w-3 h-3 text-[#D4AF37]" />
             <span className="text-[10px] font-bold text-[#D4AF37]">20 marchés</span>
           </div>
+          <MarketNotifications />
         </div>
       </div>
 
@@ -434,6 +439,15 @@ export default function DashboardPage() {
             </div>
           )
         })()}
+      </div>
+
+      {/* ── Marchés en Direct ── */}
+      <LiveMarkets />
+
+      {/* ── Actualités + Calendrier économique ── */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <MarketNews />
+        <EconomicCalendar />
       </div>
 
     </div>
