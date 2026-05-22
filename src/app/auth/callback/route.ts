@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       return response
     }
     console.error('[auth/callback] exchangeCodeForSession error:', error.message)
-    return NextResponse.redirect(`${appUrl}/login?error=auth_failed`)
+    return NextResponse.redirect(`${appUrl}/login?error=${encodeURIComponent(error.message)}`)
   }
 
   if (token_hash && type) {
