@@ -8,7 +8,6 @@ import {
   RefreshCw, Shield, SquareX, TrendingDown, TrendingUp,
   Unplug, Zap, Bot, Play, FlaskConical,
 } from 'lucide-react'
-import Image from 'next/image'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -497,7 +496,8 @@ export default function BotPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-[#F0B90B]/10 border border-[#F0B90B]/20 flex items-center justify-center p-1.5">
-              <Image src="/binance-logo.svg" alt="Binance" width={20} height={20} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/binance-logo.svg" alt="Binance" width={20} height={20} />
             </div>
             <div>
               <p className="font-bold text-white text-sm">Binance</p>
