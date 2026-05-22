@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 
 function LoginForm() {
@@ -16,20 +16,45 @@ function LoginForm() {
   const searchParams = useSearchParams()
   const supabase = useMemo(() => createClient(), [])
 
-  const urlError = searchParams.get('error')
-  if (urlError === 'auth_failed') toast.error('Authentification échouée. Réessayez.')
+  // Show URL error once on mount — never during render
+  useEffect(() => {
+    const urlError = searchParams.get('error')
+    if (urlError === 'auth_failed') {
+      toast.error('Authentification échouée. Réessayez.')
+    }
+  }, [searchParams])
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error('Veuillez saisir une adresse email valide.')
+      return
+    }
+    if (!password) {
+      toast.error('Veuillez saisir votre mot de passe.')
+      return
+    }
     setLoading(true)
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) { toast.error(error.message); return }
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      })
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error('Email ou mot de passe incorrect.')
+        } else if (error.message.includes('Email not confirmed')) {
+          toast.error('Veuillez confirmer votre email avant de vous connecter.')
+        } else {
+          toast.error(error.message)
+        }
+        return
+      }
       toast.success('Bienvenue !')
       router.push('/dashboard')
       router.refresh()
     } catch {
-      toast.error('Une erreur est survenue.')
+      toast.error('Une erreur est survenue. Réessayez.')
     } finally {
       setLoading(false)
     }
@@ -45,7 +70,7 @@ function LoginForm() {
           queryParams: { prompt: 'select_account' },
         },
       })
-      if (error) toast.error(error.message)
+      if (error) { toast.error(error.message); setGoogleLoading(false) }
     } catch {
       toast.error('Connexion Google échouée.')
       setGoogleLoading(false)
@@ -63,7 +88,7 @@ function LoginForm() {
       <button
         type="button"
         onClick={handleGoogleLogin}
-        disabled={googleLoading}
+        disabled={googleLoading || loading}
         className="w-full flex items-center justify-center gap-3 bg-[#0e0e0e] border border-[#222] text-[#F2EDD7] text-sm font-medium py-2.5 rounded-lg hover:border-[#333] hover:bg-[#141414] transition-colors mb-5 disabled:opacity-50"
       >
         {googleLoading ? (
@@ -132,7 +157,7 @@ function LoginForm() {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || googleLoading}
           className="btn-gold w-full py-2.5 text-sm flex items-center justify-center gap-2 disabled:opacity-60"
         >
           {loading && <span className="w-4 h-4 border-2 border-[#080808]/40 border-t-[#080808] rounded-full animate-spin" />}

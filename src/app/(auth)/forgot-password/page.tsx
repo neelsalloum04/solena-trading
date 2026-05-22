@@ -1,5 +1,4 @@
 'use client'
-import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import { ArrowLeft, Mail } from 'lucide-react'
 import Link from 'next/link'
@@ -14,9 +13,10 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (!email.trim()) { toast.error('Veuillez saisir votre adresse email.'); return }
     setLoading(true)
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
       })
       if (error) {
@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
       }
       setSent(true)
     } catch {
-      toast.error('Something went wrong. Please try again.')
+      toast.error('Une erreur est survenue. Réessayez.')
     } finally {
       setLoading(false)
     }
@@ -33,63 +33,75 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <div className="w-full max-w-md text-center">
-        <div className="w-16 h-16 rounded-full bg-solena-primary/10 flex items-center justify-center mx-auto mb-6">
-          <Mail className="w-8 h-8 text-solena-primary" />
+      <div className="w-full max-w-sm text-center">
+        <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-6">
+          <Mail className="w-8 h-8 text-[#D4AF37]" />
         </div>
-        <h1 className="text-2xl font-bold text-solena-text mb-2">Check your email</h1>
-        <p className="text-solena-text-muted text-sm mb-6">
-          We sent a password reset link to <span className="text-solena-text font-medium">{email}</span>.
-          Check your inbox (and spam folder).
+        <h1 className="text-2xl font-bold text-[#F2EDD7] mb-2">Vérifiez vos emails</h1>
+        <p className="text-[#666] text-sm mb-6 leading-relaxed">
+          Un lien de réinitialisation a été envoyé à{' '}
+          <span className="text-[#F2EDD7] font-medium">{email}</span>.
+          Vérifiez votre boîte de réception (et les spams).
         </p>
-        <Link href="/login" className="text-sm text-solena-primary font-medium hover:underline">
-          Back to sign in
+        <Link
+          href="/login"
+          className="flex items-center justify-center gap-2 text-sm text-[#D4AF37] font-medium hover:underline"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Retour à la connexion
         </Link>
       </div>
     )
   }
 
   return (
-    <div className="w-full max-w-md">
+    <div className="w-full max-w-sm">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-solena-text mb-1">Reset your password</h1>
-        <p className="text-solena-text-muted text-sm">
-          Enter your email and we&apos;ll send you a reset link.
+        <h1 className="text-2xl font-bold text-[#F2EDD7] mb-1">Mot de passe oublié</h1>
+        <p className="text-[#666] text-sm">
+          Saisissez votre email et nous vous enverrons un lien de réinitialisation.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <div>
-          <label htmlFor="email" className="block text-xs font-medium text-solena-text-secondary mb-2">
-            Email
+          <label htmlFor="email" className="block text-xs font-medium text-[#888] mb-1.5">
+            Adresse email
           </label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-solena-text-muted pointer-events-none" aria-hidden />
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#444] pointer-events-none" aria-hidden />
             <input
               id="email"
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder="vous@exemple.com"
               required
               autoComplete="email"
               suppressHydrationWarning
-              className="input-field pl-10"
+              className="input pl-9"
             />
           </div>
         </div>
 
-        <Button type="submit" loading={loading} size="lg" className="w-full">
-          Send Reset Link
-        </Button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-gold w-full py-2.5 text-sm flex items-center justify-center gap-2 disabled:opacity-60"
+        >
+          {loading && (
+            <span className="w-4 h-4 border-2 border-[#080808]/40 border-t-[#080808] rounded-full animate-spin" />
+          )}
+          Envoyer le lien de réinitialisation
+        </button>
       </form>
 
       <Link
         href="/login"
-        className="flex items-center gap-2 text-sm text-solena-text-muted hover:text-solena-text transition-colors mt-6"
+        className="flex items-center gap-2 text-sm text-[#555] hover:text-[#888] transition-colors mt-6"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to sign in
+        Retour à la connexion
       </Link>
     </div>
   )

@@ -2,7 +2,6 @@
 import { createClient } from '@/lib/supabase/client'
 import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 
@@ -13,26 +12,38 @@ export default function RegisterPage() {
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
-  const router = useRouter()
+  const [emailSent, setEmailSent] = useState(false)
   const supabase = useMemo(() => createClient(), [])
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (password.length < 8) { toast.error('Mot de passe : 8 caractères minimum'); return }
+    if (!name.trim()) { toast.error('Veuillez saisir votre nom complet.'); return }
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error('Veuillez saisir une adresse email valide.')
+      return
+    }
+    if (password.length < 8) { toast.error('Mot de passe : 8 caractères minimum.'); return }
     setLoading(true)
     try {
-      const { error } = await supabase.auth.signUp({
-        email, password,
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
         options: {
-          data: { full_name: name },
+          data: { full_name: name.trim() },
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       })
       if (error) { toast.error(error.message); return }
-      toast.success('Compte créé ! Redirection…')
-      router.push('/dashboard')
+      // If email confirmation is required, show success message
+      if (data.user && !data.session) {
+        setEmailSent(true)
+      } else {
+        // Auto-confirmed (email confirmation disabled in Supabase)
+        toast.success('Compte créé avec succès !')
+        window.location.href = '/dashboard'
+      }
     } catch {
-      toast.error('Une erreur est survenue.')
+      toast.error('Une erreur est survenue. Réessayez.')
     } finally {
       setLoading(false)
     }
@@ -48,25 +59,47 @@ export default function RegisterPage() {
           queryParams: { prompt: 'select_account' },
         },
       })
-      if (error) toast.error(error.message)
+      if (error) { toast.error(error.message); setGoogleLoading(false) }
     } catch {
       toast.error('Inscription Google échouée.')
       setGoogleLoading(false)
     }
   }
 
+  if (emailSent) {
+    return (
+      <div className="w-full max-w-sm text-center">
+        <div className="w-16 h-16 rounded-full bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-6">
+          <Mail className="w-8 h-8 text-[#D4AF37]" />
+        </div>
+        <h1 className="text-2xl font-bold text-[#F2EDD7] mb-2">Vérifiez vos emails</h1>
+        <p className="text-[#666] text-sm mb-6 leading-relaxed">
+          Un email de confirmation a été envoyé à{' '}
+          <span className="text-[#F2EDD7] font-medium">{email}</span>.
+          Cliquez sur le lien pour activer votre compte.
+        </p>
+        <p className="text-xs text-[#444] mb-4">
+          Vous ne trouvez pas l&apos;email ? Vérifiez vos spams.
+        </p>
+        <Link href="/login" className="text-sm text-[#D4AF37] font-medium hover:underline">
+          Retour à la connexion
+        </Link>
+      </div>
+    )
+  }
+
   return (
     <div className="w-full max-w-sm">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-[#F2EDD7] mb-1">Créez votre compte</h1>
-        <p className="text-[#666] text-sm">14 jours d'essai gratuit — sans carte bancaire</p>
+        <p className="text-[#666] text-sm">14 jours d&apos;essai gratuit — sans carte bancaire</p>
       </div>
 
       {/* Google */}
       <button
         type="button"
         onClick={handleGoogleSignUp}
-        disabled={googleLoading}
+        disabled={googleLoading || loading}
         className="w-full flex items-center justify-center gap-3 bg-[#0e0e0e] border border-[#222] text-[#F2EDD7] text-sm font-medium py-2.5 rounded-lg hover:border-[#333] hover:bg-[#141414] transition-colors mb-5 disabled:opacity-50"
       >
         {googleLoading ? (
@@ -87,7 +120,7 @@ export default function RegisterPage() {
           <div className="w-full border-t border-[#1a1a1a]" />
         </div>
         <div className="relative flex justify-center">
-          <span className="bg-[#080808] px-3 text-xs text-[#555]">ou s'inscrire avec email</span>
+          <span className="bg-[#080808] px-3 text-xs text-[#555]">ou s&apos;inscrire avec email</span>
         </div>
       </div>
 
@@ -142,11 +175,16 @@ export default function RegisterPage() {
               {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
+          {password.length > 0 && password.length < 8 && (
+            <p className="text-xs text-red-400 mt-1">
+              {8 - password.length} caractère{8 - password.length > 1 ? 's' : ''} manquant{8 - password.length > 1 ? 's' : ''}
+            </p>
+          )}
         </div>
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || googleLoading}
           className="btn-gold w-full py-2.5 text-sm flex items-center justify-center gap-2 disabled:opacity-60"
         >
           {loading && <span className="w-4 h-4 border-2 border-[#080808]/40 border-t-[#080808] rounded-full animate-spin" />}
