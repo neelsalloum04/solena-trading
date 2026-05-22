@@ -1,4 +1,4 @@
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
@@ -11,8 +11,7 @@ export async function GET(request: NextRequest) {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://solena-trading.vercel.app'
 
-  // Debug: log all params received
-  console.log('[auth/callback] params:', { code: !!code, token_hash: !!token_hash, type, allParams: searchParams.toString() })
+  console.log('[auth/callback] params:', { code: !!code, token_hash: !!token_hash, type })
 
   if (code) {
     const response = NextResponse.redirect(`${appUrl}${next}`)
@@ -25,9 +24,9 @@ export async function GET(request: NextRequest) {
           getAll() {
             return request.cookies.getAll()
           },
-          setAll(cookiesToSet) {
+          setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
             cookiesToSet.forEach(({ name, value, options }) => {
-              response.cookies.set(name, value, options)
+              response.cookies.set(name, value, options ?? {})
             })
           },
         },
@@ -53,9 +52,9 @@ export async function GET(request: NextRequest) {
           getAll() {
             return request.cookies.getAll()
           },
-          setAll(cookiesToSet) {
+          setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
             cookiesToSet.forEach(({ name, value, options }) => {
-              response.cookies.set(name, value, options)
+              response.cookies.set(name, value, options ?? {})
             })
           },
         },
