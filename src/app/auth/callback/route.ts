@@ -11,6 +11,9 @@ export async function GET(request: NextRequest) {
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://solena-trading.vercel.app'
 
+  // Debug: log all params received
+  console.log('[auth/callback] params:', { code: !!code, token_hash: !!token_hash, type, allParams: searchParams.toString() })
+
   if (code) {
     const response = NextResponse.redirect(`${appUrl}${next}`)
 
