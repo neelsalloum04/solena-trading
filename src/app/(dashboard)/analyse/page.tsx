@@ -292,33 +292,110 @@ export default function AnalysePage() {
           <div className="flex flex-col gap-4">
 
             {!imgSrc ? (
-              <div
-                onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
-                onDragLeave={() => setDragging(false)}
-                onDrop={onDrop}
-                onClick={() => inputRef.current?.click()}
-                className={cn(
-                  'flex flex-col items-center justify-center rounded-xl border-2 border-dashed cursor-pointer transition-all duration-150 min-h-[320px] select-none',
-                  dragging ? 'border-[#D4AF37] bg-[#D4AF37]/5 scale-[1.01]' : 'border-[#222] bg-[#0e0e0e] hover:border-[#D4AF37]/40 hover:bg-[#141414]'
-                )}
-              >
-                <div className="flex flex-col items-center gap-4 pointer-events-none px-6 text-center">
-                  <div className={cn('w-14 h-14 rounded-2xl border flex items-center justify-center', dragging ? 'bg-[#D4AF37]/15 border-[#D4AF37]/40' : 'bg-[#141414] border-[#222]')}>
-                    <ImagePlus className={cn('w-6 h-6', dragging ? 'text-[#D4AF37]' : 'text-[#444]')} />
+              <div className="space-y-4">
+                {/* Zone d'upload */}
+                <div
+                  onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
+                  onDragLeave={() => setDragging(false)}
+                  onDrop={onDrop}
+                  onClick={() => inputRef.current?.click()}
+                  className={cn(
+                    'flex flex-col items-center justify-center rounded-xl border-2 border-dashed cursor-pointer transition-all duration-150 min-h-[260px] select-none',
+                    dragging ? 'border-[#D4AF37] bg-[#D4AF37]/5 scale-[1.01]' : 'border-[#222] bg-[#0e0e0e] hover:border-[#D4AF37]/40 hover:bg-[#141414]'
+                  )}
+                >
+                  <div className="flex flex-col items-center gap-4 pointer-events-none px-6 text-center">
+                    <div className={cn('w-14 h-14 rounded-2xl border flex items-center justify-center', dragging ? 'bg-[#D4AF37]/15 border-[#D4AF37]/40' : 'bg-[#141414] border-[#222]')}>
+                      <ImagePlus className={cn('w-6 h-6', dragging ? 'text-[#D4AF37]' : 'text-[#444]')} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-[#F2EDD7] mb-1">{dragging ? 'Relâche pour analyser' : 'Téléchargez une capture d\'écran de votre graphique'}</p>
+                      <p className="text-xs text-[#555] mb-2">Glissez votre image ici ou cliquez pour sélectionner un fichier</p>
+                      <p className="text-[11px] text-[#333]">PNG · JPG · WEBP · max 12 Mo</p>
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                      <p className="text-[10px] text-[#444] uppercase tracking-widest">Plateformes compatibles</p>
+                      <div className="flex items-center gap-2 flex-wrap justify-center">
+                        {['TradingView', 'MT4', 'MT5', 'Binance', 'Bybit', 'cTrader'].map(s => (
+                          <span key={s} className="text-[10px] text-[#555] border border-[#1c1c1c] bg-[#0a0a0a] px-2.5 py-1 rounded-lg">{s}</span>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-[#333] mt-1">L'image doit afficher clairement le prix, les bougies et les niveaux importants</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-[#888] mb-1">{dragging ? 'Relâche pour analyser' : 'Glisse ton graphique ici'}</p>
-                    <p className="text-xs text-[#444]">ou clique pour choisir un fichier</p>
-                    <p className="text-[11px] text-[#333] mt-1">PNG · JPG · WEBP · max 12 Mo</p>
+                  <input ref={inputRef} type="file" accept="image/*" className="hidden"
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) loadFile(f); e.target.value = '' }} />
+                </div>
+
+                {/* Ce que l'IA analyse */}
+                <div className="bg-[#0e0e0e] border border-[#1c1c1c] rounded-xl p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-7 h-7 rounded-lg bg-[#818cf8]/10 border border-[#818cf8]/20 flex items-center justify-center">
+                      <BarChart2 className="w-3.5 h-3.5 text-[#818cf8]" />
+                    </div>
+                    <p className="text-sm font-bold text-[#F2EDD7]">Ce que l'IA va analyser</p>
                   </div>
-                  <div className="flex items-center gap-2 flex-wrap justify-center">
-                    {['TradingView', 'MT4 / MT5', 'cTrader', 'Binance', 'Bybit'].map(s => (
-                      <span key={s} className="text-[10px] text-[#2a2a2a] border border-[#1c1c1c] px-2 py-0.5 rounded">{s}</span>
+                  <p className="text-xs text-[#555] mb-4 leading-relaxed">Notre intelligence artificielle examine automatiquement votre graphique pour vous fournir une analyse complète et précise :</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {[
+                      'La tendance actuelle du marché',
+                      'Les zones de support et de résistance',
+                      'Les cassures potentielles',
+                      'La force du mouvement en cours',
+                      'Les signaux d\'achat ou de vente',
+                      'Les opportunités à court terme',
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center gap-2.5 py-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#818cf8] flex-shrink-0" />
+                        <span className="text-xs text-[#888]">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-[#444] mt-4 leading-relaxed border-t border-[#1c1c1c] pt-4">
+                    L'analyse est réalisée directement à partir du graphique envoyé afin de fournir une évaluation rapide et pertinente de la situation du marché.
+                  </p>
+                </div>
+
+                {/* Résultat de l'analyse */}
+                <div className="bg-[#0e0e0e] border border-[#1c1c1c] rounded-xl p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-7 h-7 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/20 flex items-center justify-center">
+                      <Zap className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    </div>
+                    <p className="text-sm font-bold text-[#F2EDD7]">Résultat de l'analyse</p>
+                  </div>
+                  <p className="text-xs text-[#555] mb-4 leading-relaxed">Une fois l'analyse terminée, l'IA vous fournit un plan de trading complet :</p>
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3 bg-[#111] rounded-lg p-3">
+                      <div className="flex gap-1 mt-0.5">
+                        <span className="w-2 h-2 rounded-full bg-[#22c55e]" />
+                        <span className="w-2 h-2 rounded-full bg-[#ef4444]" />
+                        <span className="w-2 h-2 rounded-full bg-[#D4AF37]" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-[#F2EDD7] mb-1">Recommandation claire</p>
+                        <div className="flex gap-2 flex-wrap">
+                          <span className="text-[10px] font-bold text-[#22c55e] bg-[#22c55e]/10 border border-[#22c55e]/20 px-2 py-0.5 rounded">Acheter (Buy)</span>
+                          <span className="text-[10px] font-bold text-[#ef4444] bg-[#ef4444]/10 border border-[#ef4444]/20 px-2 py-0.5 rounded">Vendre (Sell)</span>
+                          <span className="text-[10px] font-bold text-[#D4AF37] bg-[#D4AF37]/10 border border-[#D4AF37]/20 px-2 py-0.5 rounded">Attendre (Wait)</span>
+                        </div>
+                      </div>
+                    </div>
+                    {[
+                      { label: 'Niveau d\'entrée', desc: 'Le prix idéal pour ouvrir votre position', color: '#F2EDD7' },
+                      { label: 'Stop Loss (SL)', desc: 'Le niveau où couper la perte si le marché va contre vous', color: '#ef4444' },
+                      { label: 'Take Profit 1 · 2 · 3', desc: 'Trois objectifs de sortie progressifs pour maximiser vos gains', color: '#22c55e' },
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-start gap-3 bg-[#111] rounded-lg p-3">
+                        <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: item.color }} />
+                        <div>
+                          <p className="text-xs font-semibold mb-0.5" style={{ color: item.color }}>{item.label}</p>
+                          <p className="text-[11px] text-[#555]">{item.desc}</p>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
-                <input ref={inputRef} type="file" accept="image/*" className="hidden"
-                  onChange={(e) => { const f = e.target.files?.[0]; if (f) loadFile(f); e.target.value = '' }} />
               </div>
             ) : (
               <div className="relative rounded-xl overflow-hidden border border-[#222] bg-[#0a0a0a] group">
