@@ -12,7 +12,6 @@ import {
   MessageSquare,
   Radio,
   Shield,
-  Star,
   TrendingUp,
   Zap,
 } from 'lucide-react'
@@ -52,11 +51,6 @@ const FEATURES = [
   },
 ]
 
-const TESTIMONIALS = [
-  { name: 'Marcus Chen',    role: 'Trader Indépendant',  text: 'Les signaux IA sont précis et le bot a généré +34% de ROI en 3 mois. Je ne reviens plus en arrière.',      stars: 5 },
-  { name: 'Sarah Williams', role: 'Trader Forex',         text: 'Mon taux de réussite est passé de 52% à 71% grâce à l\'analyse de graphiques. Outil indispensable.',       stars: 5 },
-  { name: 'Alex Dubois',    role: 'Investisseur Crypto',  text: 'Le bot tourne 24h/24, je ne surveille plus mes trades. +12 000$ de profit en 6 mois. Exceptionnel.',       stars: 5 },
-]
 
 const WHY = [
   { icon: Shield,     title: 'Sécurité Bancaire',   desc: 'Chiffrement de niveau bancaire pour vos données et connexions broker.' },
@@ -99,7 +93,7 @@ export default function LandingPage() {
         </Link>
 
         <div className="hidden md:flex items-center gap-7">
-          {[['Fonctionnalités', '#features'], ['Tarifs', '#pricing'], ['Témoignages', '#testimonials']].map(([l, h]) => (
+          {[['Fonctionnalités', '#features'], ['Tarifs', '#pricing']].map(([l, h]) => (
             <a key={h} href={h} className="text-sm text-[#888] hover:text-[#D4AF37] transition-colors">{l}</a>
           ))}
         </div>
@@ -140,14 +134,14 @@ export default function LandingPage() {
 
           {/* Headline */}
           <h1 className="text-5xl md:text-6xl font-black mb-5 leading-[1.05] tracking-tight">
-            Tradez Comme un<br />
-            <span className="text-[#D4AF37]">Hedge Fund</span>
+            Trader comme un<br />
+            <span className="text-[#D4AF37]">Pro</span>
             <span className="text-[#9EAAB8]"> grâce à l'IA</span>
           </h1>
 
           <p className="text-[#888] text-lg max-w-xl mx-auto mb-9 leading-relaxed">
-            Signaux institutionnels, bots automatisés et analyse en temps réel.
-            Forex, Crypto, Indices, Actions. 73% de win rate. 24h/24.
+            Analyse de graphiques, signaux en temps réel et bot automatisé.
+            Forex, Crypto, Indices, Actions — tout en un seul endroit.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -300,37 +294,6 @@ export default function LandingPage() {
                 >
                   Commencer Gratuitement <ChevronRight className="w-4 h-4" />
                 </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Testimonials ── */}
-      <section id="testimonials" className="py-20 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-14">
-            <span className="badge-gold mb-3 inline-block">Témoignages</span>
-            <h2 className="text-3xl font-bold text-[#F2EDD7] mt-3">Approuvé par 18 000+ Traders</h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-5">
-            {TESTIMONIALS.map((t) => (
-              <div key={t.name} className="card p-6 hover:border-[#D4AF37]/20 transition-colors">
-                <div className="flex gap-0.5 mb-4">
-                  {Array.from({ length: t.stars }).map((_, i) => (
-                    <Star key={i} className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
-                  ))}
-                </div>
-                <p className="text-sm text-[#888] leading-relaxed mb-5 italic">"{t.text}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#D4AF37]/15 border border-[#D4AF37]/20 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-[#D4AF37]">{t.name[0]}</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-[#F2EDD7]">{t.name}</p>
-                    <p className="text-xs text-[#555]">{t.role}</p>
-                  </div>
-                </div>
               </div>
             ))}
           </div>
