@@ -139,10 +139,16 @@ export async function generateLiveSignals(): Promise<SignalResult> {
       try {
         let h1: Candle[], h4: Candle[]
         if (m.binanceSymbol) {
-          ;[h1, h4] = await Promise.all([
-            fetchBinanceKlines(m.binanceSymbol, '1h', 200),
-            fetchBinanceKlines(m.binanceSymbol, '4h', 100),
-          ])
+          try {
+            ;[h1, h4] = await Promise.all([
+              fetchBinanceKlines(m.binanceSymbol, '1h', 200),
+              fetchBinanceKlines(m.binanceSymbol, '4h', 100),
+            ])
+          } catch {
+            // Binance geo-blocked on Vercel → fallback to Yahoo Finance
+            h1 = await fetchYahooKlines(m.yahooSymbol)
+            h4 = aggregate4h(h1)
+          }
         } else {
           h1 = await fetchYahooKlines(m.yahooSymbol)
           h4 = aggregate4h(h1)
