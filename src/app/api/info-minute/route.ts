@@ -83,16 +83,23 @@ function getMockEvents(): InfoItem[] {
   ]
 }
 
-// ── Finnhub fetch ──────────────────────────────────────────────────────────────
+const FLAG_MAP: Record<string, string> = {
+  US: '🇺🇸', EU: '🇪🇺', GB: '🇬🇧', DE: '🇩🇪', FR: '🇫🇷',
+  JP: '🇯🇵', CA: '🇨🇦', AU: '🇦🇺', CH: '🇨🇭', CN: '🇨🇳',
+  IT: '🇮🇹', ES: '🇪🇸', KR: '🇰🇷', IN: '🇮🇳', BR: '🇧🇷',
+  MX: '🇲🇽', NZ: '🇳🇿', SE: '🇸🇪', NO: '🇳🇴',
+}
+
+// ── Finnhub: news ──────────────────────────────────────────────────────────────
 
 async function fetchFinnhubNews(): Promise<InfoItem[]> {
   const res = await fetch(
     `https://finnhub.io/api/v1/news?category=general&token=${FINNHUB_TOKEN}`,
     { next: { revalidate: 120 } }
   )
-  if (!res.ok) throw new Error(`Finnhub ${res.status}`)
+  if (!res.ok) throw new Error(`Finnhub news ${res.status}`)
   const raw = await res.json()
-  if (!Array.isArray(raw) || raw.length === 0) throw new Error('empty')
+  if (!Array.isArray(raw) || raw.length === 0) throw new Error('empty news')
 
   return raw.slice(0, 20).map((item: Record<string, unknown>, idx: number) => {
     const title = String(item.headline ?? '')
@@ -111,6 +118,51 @@ async function fetchFinnhubNews(): Promise<InfoItem[]> {
   })
 }
 
+// ── Finnhub: economic calendar ─────────────────────────────────────────────────
+
+async function fetchFinnhubCalendar(): Promise<InfoItem[]> {
+  const now = new Date()
+  const from = now.toISOString().split('T')[0]
+  const to = new Date(now.getTime() + 7 * 24 * 3600 * 1000).toISOString().split('T')[0]
+
+  const res = await fetch(
+    `https://finnhub.io/api/v1/calendar/economic?from=${from}&to=${to}&token=${FINNHUB_TOKEN}`,
+    { next: { revalidate: 1800 } }
+  )
+  if (!res.ok) throw new Error(`Finnhub calendar ${res.status}`)
+  const raw = await res.json()
+  const calData = raw.economicCalendar
+  if (!Array.isArray(calData) || calData.length === 0) throw new Error('empty calendar')
+
+  return calData
+    .filter((item: Record<string, unknown>) => item.event && item.time)
+    .slice(0, 25)
+    .map((item: Record<string, unknown>, idx: number) => {
+      const eventName = String(item.event ?? 'Événement économique')
+      const country = String(item.country ?? '')
+      const scheduledAt = item.time ? new Date(String(item.time)).toISOString() : new Date().toISOString()
+      const impactRaw = String(item.impact ?? '').toLowerCase()
+      const impact: ImpactLevel = impactRaw === 'high' ? 'high' : impactRaw === 'medium' ? 'medium' : 'low'
+
+      return {
+        id: `cal-${idx}`,
+        type: 'event' as const,
+        title: eventName,
+        summary: `Publication ${country ? `(${country})` : ''} — ${eventName}`,
+        publishedAt: scheduledAt,
+        scheduledAt,
+        source: 'Finnhub Calendar',
+        category: 'economie' as NewsCategory,
+        impact,
+        country: country || undefined,
+        countryFlag: FLAG_MAP[country] ?? '🌍',
+        forecast: item.estimate != null ? String(item.estimate) : '—',
+        previous: item.prev != null ? String(item.prev) : '—',
+        actual: item.actual != null && String(item.actual) !== '' ? String(item.actual) : '',
+      }
+    })
+}
+
 // ── handler ───────────────────────────────────────────────────────────────────
 
 export async function GET() {
@@ -118,16 +170,12 @@ export async function GET() {
     'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=60',
   }
 
-  let news: InfoItem[]
-  try {
-    news = await fetchFinnhubNews()
-  } catch {
-    news = getMockNews()
-  }
+  // Fetch news and calendar in parallel, fall back independently
+  const [news, events] = await Promise.all([
+    fetchFinnhubNews().catch(() => getMockNews()),
+    fetchFinnhubCalendar().catch(() => getMockEvents()),
+  ])
 
-  const events = getMockEvents()
-
-  // Merge and sort by publishedAt desc
   const all: InfoItem[] = [...news, ...events].sort(
     (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
   )
