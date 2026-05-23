@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 import { FREE_TRIAL_ROUTES, PLAN_META, getRequiredPlan, hasAccess, normalizePlan, type PlanId } from '@/lib/plans'
 import { cn } from '@/lib/utils'
 import {
-  BarChart2,
+
   Bot,
   ChevronLeft,
   HelpCircle,
@@ -29,7 +29,7 @@ const NAV = [
   { label: 'Chat IA',      href: '/chat',         icon: MessageSquare   },
   { label: 'Signaux Live', href: '/signals',      icon: Radio           },
   { label: 'Trading Bot',  href: '/bot',          icon: Bot             },
-  { label: 'Analytics',    href: '/analytics',    icon: BarChart2       },
+
 ]
 
 const BOTTOM_NAV = [

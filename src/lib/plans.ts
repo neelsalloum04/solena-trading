@@ -35,7 +35,7 @@ export const ROUTE_REQUIREMENTS: Record<string, PlanId> = {
   '/info-trading': 'free',
   '/chat':        'free',
   '/signals':     'pro',
-  '/analytics':   'pro',
+
   '/bot':         'premium',
   '/admin':       'admin',
 }

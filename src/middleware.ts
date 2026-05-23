@@ -11,7 +11,7 @@ function isSupabaseConfigured() {
 // Routes requiring authentication (any plan)
 const PROTECTED = [
   '/dashboard', '/chat', '/signals', '/bot', '/portfolio',
-  '/settings', '/analytics', '/admin', '/analyse', '/support',
+  '/settings', '/admin', '/analyse', '/support',
 ]
 
 const AUTH_PAGES = ['/login', '/register']
