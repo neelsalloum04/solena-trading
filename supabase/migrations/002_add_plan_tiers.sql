@@ -1,33 +1,24 @@
--- Migration 002: Add free + premium + admin plan tiers
--- Run this in the Supabase SQL Editor
+-- ══════════════════════════════════════════════════════════════════
+-- PrimeX — Migration 002 : Plan tiers (free / starter / pro / premium / elite / admin)
+-- À exécuter sur une base existante (ALTER uniquement, aucun CREATE TABLE)
+-- ══════════════════════════════════════════════════════════════════
 
--- ─── 1. Update profiles plan constraint ──────────────────────────────────────
-
-ALTER TABLE public.profiles
-  DROP CONSTRAINT IF EXISTS profiles_plan_check;
-
-ALTER TABLE public.profiles
-  ADD CONSTRAINT profiles_plan_check
+-- 1. Contrainte plan sur profiles
+ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_plan_check;
+ALTER TABLE public.profiles ADD CONSTRAINT profiles_plan_check
   CHECK (plan IN ('free', 'starter', 'pro', 'premium', 'elite', 'admin'));
+ALTER TABLE public.profiles ALTER COLUMN plan SET DEFAULT 'free';
 
--- Change default from 'starter' to 'free' (new users start on free plan)
-ALTER TABLE public.profiles
-  ALTER COLUMN plan SET DEFAULT 'free';
-
--- ─── 2. Update subscriptions plan constraint ─────────────────────────────────
-
-ALTER TABLE public.subscriptions
-  DROP CONSTRAINT IF EXISTS subscriptions_plan_check;
-
-ALTER TABLE public.subscriptions
-  ADD CONSTRAINT subscriptions_plan_check
+-- 2. Contrainte plan sur subscriptions
+ALTER TABLE public.subscriptions DROP CONSTRAINT IF EXISTS subscriptions_plan_check;
+ALTER TABLE public.subscriptions ADD CONSTRAINT subscriptions_plan_check
   CHECK (plan IN ('free', 'starter', 'pro', 'premium', 'elite', 'admin'));
+ALTER TABLE public.subscriptions ALTER COLUMN plan SET DEFAULT 'free';
 
-ALTER TABLE public.subscriptions
-  ALTER COLUMN plan SET DEFAULT 'free';
+-- 3. Colonne updated_at sur profiles (si absente)
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
 
--- ─── 3. Update handle_new_user to assign free plan ───────────────────────────
-
+-- 4. Fonction handle_new_user → plan 'free' par défaut
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
@@ -43,33 +34,38 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- ─── 4. Add updated_at to profiles if missing ────────────────────────────────
+-- 5. Policy service_role sur profiles (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename  = 'profiles'
+      AND policyname = 'Service role can manage profiles'
+  ) THEN
+    EXECUTE '
+      CREATE POLICY "Service role can manage profiles"
+        ON public.profiles FOR ALL TO service_role
+        USING (true) WITH CHECK (true)
+    ';
+  END IF;
+END;
+$$;
 
-ALTER TABLE public.profiles
-  ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
-
--- ─── 5. Add admin policy for profiles ────────────────────────────────────────
-
--- Allow service role to update any profile (for webhooks)
-CREATE POLICY IF NOT EXISTS "Service role can manage profiles"
-  ON public.profiles
-  FOR ALL
-  TO service_role
-  USING (true)
-  WITH CHECK (true);
-
--- ─── 6. Existing users: keep their current plan, update only if 'starter' with no active sub ──
-
--- Note: Do NOT run this automatically — review before executing
--- UPDATE public.profiles SET plan = 'free'
--- WHERE plan = 'starter'
---   AND id NOT IN (
---     SELECT user_id FROM public.subscriptions WHERE status = 'active'
---   );
-
--- ─── Summary ─────────────────────────────────────────────────────────────────
--- Plan hierarchy: free < starter < pro < premium (= elite) < admin
--- New users → free
--- After Stripe checkout → starter / pro / premium
--- After cancellation → free (was: starter)
--- 'elite' is kept as valid for backward compatibility, normalized to 'premium' in app
+-- 6. Policy service_role sur subscriptions (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename  = 'subscriptions'
+      AND policyname = 'Service role can manage subscriptions'
+  ) THEN
+    EXECUTE '
+      CREATE POLICY "Service role can manage subscriptions"
+        ON public.subscriptions FOR ALL TO service_role
+        USING (true) WITH CHECK (true)
+    ';
+  END IF;
+END;
+$$;

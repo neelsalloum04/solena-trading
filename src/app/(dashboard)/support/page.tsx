@@ -35,7 +35,7 @@ const FAQ: { q: string; a: string; category: string }[] = [
   {
     category: 'Analyse IA',
     q: 'Combien d\'analyses puis-je effectuer ?',
-    a: 'Starter : 3 analyses/jour. Pro : illimité. Premium : illimité avec priorité de traitement. Les quotas se réinitialisent chaque jour à minuit (UTC).',
+    a: 'Starter : 3 analyses/jour. Pro : 50 analyses/jour. Prime : illimité. Les quotas se réinitialisent chaque jour à minuit (UTC).',
   },
   {
     category: 'Analyse IA',
@@ -57,7 +57,7 @@ const FAQ: { q: string; a: string; category: string }[] = [
   {
     category: 'Bot de trading',
     q: 'Le bot utilise-t-il de vrais fonds ?',
-    a: 'Le mode Paper Trading simule des transactions avec des prix réels mais sans fonds réels — idéal pour tester. Le mode Live exécute de vraies ordres sur votre compte Binance. Ce mode n\'est disponible qu\'avec une clé API Binance et le forfait Premium.',
+    a: 'Le mode Paper Trading simule des transactions avec des prix réels mais sans fonds réels — idéal pour tester. Le mode Live exécute de vraies ordres sur votre compte Binance. Ce mode n\'est disponible qu\'avec une clé API Binance et le forfait Prime.',
   },
   {
     category: 'Bot de trading',

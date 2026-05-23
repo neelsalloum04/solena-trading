@@ -429,7 +429,7 @@ function ChatContent() {
 
 export default function ChatPage() {
   return (
-    <PlanGate requiredPlan="pro">
+    <PlanGate requiredPlan="starter">
       <ChatContent />
     </PlanGate>
   )

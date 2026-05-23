@@ -35,9 +35,11 @@ function FullPageUpgrade({ requiredPlan }: { requiredPlan: PlanId }) {
           <div className="w-16 h-16 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Lock className="w-7 h-7 text-[#D4AF37]" />
           </div>
-          <h1 className="text-2xl font-black text-white mb-3">Fonctionnalité Premium</h1>
+          <h1 className="text-2xl font-black text-white mb-3">
+            {target ? `Fonctionnalité ${target.label}` : 'Accès restreint'}
+          </h1>
           <p className="text-[#666] max-w-md mx-auto text-sm leading-relaxed">
-            Cette fonctionnalité est disponible dans les offres payantes. Passez à une offre supérieure pour débloquer l&apos;ensemble des outils de trading avancés.
+            Cette fonctionnalité est réservée aux abonnés. Choisissez le forfait adapté pour débloquer l&apos;ensemble des outils de trading.
           </p>
           {target && (
             <div className="inline-flex items-center gap-2 mt-4 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-xl px-4 py-2">

@@ -202,7 +202,7 @@ function PortfolioContent() {
 
 export default function PortfolioPage() {
   return (
-    <PlanGate requiredPlan="pro">
+    <PlanGate requiredPlan="starter">
       <PortfolioContent />
     </PlanGate>
   )
