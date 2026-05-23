@@ -78,6 +78,7 @@ function ImpactBadge({ impact }: { impact: ImpactLevel }) {
 function NewsCard({ item }: { item: InfoItem }) {
   const [expanded, setExpanded] = useState(false)
   const catCfg = CATEGORY_CONFIG[item.category]
+  const hasUrl = !!item.url && item.url !== '#'
 
   return (
     <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-4 hover:border-[#252525] transition-colors">
@@ -95,16 +96,28 @@ function NewsCard({ item }: { item: InfoItem }) {
             </span>
             <span className="text-[10px] text-[#333]">{item.source}</span>
           </div>
-          {/* title */}
-          <p className="text-sm font-semibold text-white leading-snug mb-1">{item.title}</p>
+          {/* title — clickable if URL exists */}
+          {hasUrl ? (
+            <a
+              href={item.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-semibold text-white leading-snug mb-1 hover:text-[#D4AF37] transition-colors flex items-start gap-1.5 group"
+            >
+              <span>{item.title}</span>
+              <ExternalLink className="w-3 h-3 flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity text-[#D4AF37]" />
+            </a>
+          ) : (
+            <p className="text-sm font-semibold text-white leading-snug mb-1">{item.title}</p>
+          )}
           {/* summary */}
           {item.summary && (
-            <p className={cn('text-xs text-[#666] leading-relaxed transition-all', expanded ? '' : 'line-clamp-2')}>
+            <p className={cn('text-xs text-[#666] leading-relaxed transition-all mt-1', expanded ? '' : 'line-clamp-2')}>
               {item.summary}
             </p>
           )}
         </div>
-        {item.url && item.url !== '#' && (
+        {hasUrl && (
           <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-[#333] hover:text-[#D4AF37] transition-colors flex-shrink-0 mt-0.5">
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
