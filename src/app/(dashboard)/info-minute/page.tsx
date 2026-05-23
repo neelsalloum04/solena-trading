@@ -217,7 +217,11 @@ export default function InfoMinutePage() {
   const [newCount, setNewCount] = useState(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const notif = useNotifications()
+  const notifRef = useRef(notif)
   const prevIdsRef = useRef<Set<string>>(new Set())
+
+  // Keep ref in sync with latest notif state so fetchItems can read it without deps
+  useEffect(() => { notifRef.current = notif })
 
   const fetchItems = useCallback(async (silent = false) => {
     if (!silent) setRefreshing(true)
@@ -232,13 +236,18 @@ export default function InfoMinutePage() {
       if (prevIdsRef.current.size > 0 && fresh.length > 0) {
         setNewCount(fresh.length)
         // Browser notification for high-impact new items
-        if (notif.permission === 'granted' && notif.appNotif) {
-          fresh.filter(i => !notif.highOnly || i.impact === 'high').forEach(i => {
-            if (notif.categories.has(i.category)) {
-              new Notification(`PrimeX — ${CATEGORY_CONFIG[i.category].label}`, {
-                body: i.title,
-                icon: '/primex-logo-dark.webp',
-              })
+        const n = notifRef.current
+        if (n.permission === 'granted' && n.appNotif) {
+          fresh.filter(i => !n.highOnly || i.impact === 'high').forEach(i => {
+            if (n.categories.has(i.category)) {
+              try {
+                new Notification(`PrimeX — ${CATEGORY_CONFIG[i.category].label}`, {
+                  body: i.title,
+                  icon: '/primex-logo-dark.webp',
+                })
+              } catch {
+                // Notification API not supported (iOS Safari, etc.)
+              }
             }
           })
         }
@@ -252,7 +261,8 @@ export default function InfoMinutePage() {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [notif.permission, notif.appNotif, notif.highOnly, notif.categories])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Initial load
   useEffect(() => { fetchItems() }, [])
