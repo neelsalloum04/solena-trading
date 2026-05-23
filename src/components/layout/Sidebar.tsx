@@ -12,11 +12,10 @@ import {
   Lock,
   LogOut,
   MessageSquare,
+  Newspaper,
   Radio,
-  ScanSearch,
   Settings,
   ShieldCheck,
-  Wallet,
   Zap,
 } from 'lucide-react'
 import Image from 'next/image'
@@ -25,13 +24,12 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 
 const NAV = [
-  { label: 'Dashboard',    href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Analyse IA',   href: '/analyse',   icon: ScanSearch      },
-  { label: 'Chat IA',      href: '/chat',       icon: MessageSquare   },
-  { label: 'Signaux Live', href: '/signals',    icon: Radio           },
-  { label: 'Trading Bot',  href: '/bot',        icon: Bot             },
-  { label: 'Portfolio',    href: '/portfolio',  icon: Wallet          },
-  { label: 'Analytics',   href: '/analytics',  icon: BarChart2       },
+  { label: 'Dashboard',    href: '/dashboard',    icon: LayoutDashboard },
+  { label: 'Info Minute',  href: '/info-minute',  icon: Newspaper       },
+  { label: 'Chat IA',      href: '/chat',         icon: MessageSquare   },
+  { label: 'Signaux Live', href: '/signals',      icon: Radio           },
+  { label: 'Trading Bot',  href: '/bot',          icon: Bot             },
+  { label: 'Analytics',    href: '/analytics',    icon: BarChart2       },
 ]
 
 const BOTTOM_NAV = [

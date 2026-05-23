@@ -1,16 +1,16 @@
 'use client'
 import { cn } from '@/lib/utils'
-import { Bot, LayoutDashboard, MessageSquare, Radio, ScanSearch } from 'lucide-react'
+import { Bot, LayoutDashboard, MessageSquare, Newspaper, Radio } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const NAV = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Analyse',   href: '/analyse',   icon: ScanSearch },
-  { label: 'Chat',      href: '/chat',       icon: MessageSquare },
-  { label: 'Signaux',   href: '/signals',    icon: Radio },
-  { label: 'Bot',       href: '/bot',        icon: Bot },
+  { label: 'Dashboard', href: '/dashboard',   icon: LayoutDashboard },
+  { label: 'Infos',     href: '/info-minute', icon: Newspaper },
+  { label: 'Chat',      href: '/chat',        icon: MessageSquare },
+  { label: 'Signaux',   href: '/signals',     icon: Radio },
+  { label: 'Bot',       href: '/bot',         icon: Bot },
 ]
 
 export function MobileHeader() {

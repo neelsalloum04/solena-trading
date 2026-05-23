@@ -29,20 +29,19 @@ export function normalizePlan(dbPlan: string | null | undefined): PlanId {
 // ─── Route access ─────────────────────────────────────────────────────────────
 
 export const ROUTE_REQUIREMENTS: Record<string, PlanId> = {
-  '/dashboard': 'free',
-  '/settings':  'free',
-  '/support':   'free',
-  '/analyse':   'free',
-  '/chat':      'free',
-  '/portfolio': 'starter',
-  '/signals':   'pro',
-  '/analytics': 'pro',
-  '/bot':       'premium',
-  '/admin':     'admin',
+  '/dashboard':   'free',
+  '/settings':    'free',
+  '/support':     'free',
+  '/info-minute': 'free',
+  '/chat':        'free',
+  '/signals':     'pro',
+  '/analytics':   'pro',
+  '/bot':         'premium',
+  '/admin':       'admin',
 }
 
 // Routes with free trial access (3 uses, then upgrade wall)
-export const FREE_TRIAL_ROUTES = new Set(['/analyse', '/chat'])
+export const FREE_TRIAL_ROUTES = new Set(['/chat'])
 
 export function getRequiredPlan(pathname: string): PlanId {
   for (const [route, plan] of Object.entries(ROUTE_REQUIREMENTS)) {

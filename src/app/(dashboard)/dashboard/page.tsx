@@ -4,17 +4,16 @@ import {
   ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
+  BarChart2,
   Bot,
-  MessageSquare,
-  Radio,
-  ScanSearch,
-  TrendingUp,
-  TrendingDown,
   Flame,
   Globe,
+  MessageSquare,
+  Newspaper,
+  Radio,
+  TrendingDown,
+  TrendingUp,
   Zap,
-  BarChart2,
-  Wallet,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
@@ -260,14 +259,13 @@ export default function DashboardPage() {
       {/* ── Outils PrimeX ── */}
       <div>
         <p className="text-[10px] font-bold text-[#444] uppercase tracking-widest mb-3">Outils PrimeX</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {[
-            { href: '/analyse', icon: <ScanSearch className="w-5 h-5" />, label: 'Analyse IA', desc: 'Analyse graphique', color: 'text-[#D4AF37]', bg: 'bg-[#D4AF37]/10', border: 'border-[#D4AF37]/20' },
-            { href: '/signals', icon: <Radio className="w-5 h-5" />, label: 'Signaux', desc: 'Alertes en direct', color: 'text-[#22c55e]', bg: 'bg-[#22c55e]/10', border: 'border-[#22c55e]/20' },
-            { href: '/chat', icon: <MessageSquare className="w-5 h-5" />, label: 'Assistant IA', desc: 'Chat trading', color: 'text-[#818cf8]', bg: 'bg-[#818cf8]/10', border: 'border-[#818cf8]/20' },
-            { href: '/bot', icon: <Bot className="w-5 h-5" />, label: 'Bot Auto', desc: 'Trading automatisé', color: 'text-[#f97316]', bg: 'bg-[#f97316]/10', border: 'border-[#f97316]/20' },
-            { href: '/analytics', icon: <BarChart2 className="w-5 h-5" />, label: 'Analytics', desc: 'Stats & perf', color: 'text-[#38bdf8]', bg: 'bg-[#38bdf8]/10', border: 'border-[#38bdf8]/20' },
-            { href: '/portfolio', icon: <Wallet className="w-5 h-5" />, label: 'Portfolio', desc: 'Mes positions', color: 'text-[#a78bfa]', bg: 'bg-[#a78bfa]/10', border: 'border-[#a78bfa]/20' },
+            { href: '/info-minute', icon: <Newspaper className="w-5 h-5" />, label: 'Info Minute', desc: 'Actualités marchés', color: 'text-[#D4AF37]', bg: 'bg-[#D4AF37]/10', border: 'border-[#D4AF37]/20' },
+            { href: '/signals',     icon: <Radio className="w-5 h-5" />,     label: 'Signaux',      desc: 'Alertes en direct',   color: 'text-[#22c55e]', bg: 'bg-[#22c55e]/10', border: 'border-[#22c55e]/20' },
+            { href: '/chat',        icon: <MessageSquare className="w-5 h-5" />, label: 'Assistant IA', desc: 'Chat trading',    color: 'text-[#818cf8]', bg: 'bg-[#818cf8]/10', border: 'border-[#818cf8]/20' },
+            { href: '/bot',         icon: <Bot className="w-5 h-5" />,       label: 'Bot Auto',     desc: 'Trading automatisé', color: 'text-[#f97316]', bg: 'bg-[#f97316]/10', border: 'border-[#f97316]/20' },
+            { href: '/analytics',   icon: <BarChart2 className="w-5 h-5" />, label: 'Analytics',    desc: 'Stats & perf',       color: 'text-[#38bdf8]', bg: 'bg-[#38bdf8]/10', border: 'border-[#38bdf8]/20' },
           ].map((tool) => (
             <Link key={tool.href} href={tool.href}>
               <div className={`group flex flex-col items-center gap-2 p-4 rounded-2xl border ${tool.border} ${tool.bg} hover:brightness-125 transition-all duration-200 cursor-pointer`}>
