@@ -58,7 +58,6 @@ const WHY = [
 ]
 
 export default function LandingPage() {
-  const [yearly, setYearly] = useState(false)
 
   return (
     <div className="min-h-screen bg-[#080808] text-[#F2EDD7] overflow-x-hidden">
@@ -89,12 +88,6 @@ export default function LandingPage() {
           <span className="font-black text-lg text-[#D4AF37] tracking-tight">PrimeX</span>
           <span className="text-[10px] font-semibold bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20 px-1.5 py-0.5 rounded">IA</span>
         </Link>
-
-        <div className="hidden md:flex items-center gap-7">
-          {[['Fonctionnalités', '#features'], ['Tarifs', '#pricing']].map(([l, h]) => (
-            <a key={h} href={h} className="text-sm text-[#888] hover:text-[#D4AF37] transition-colors">{l}</a>
-          ))}
-        </div>
 
         <div className="flex items-center gap-2">
           <Link href="/login" className="btn-outline text-sm px-4 py-2">Connexion</Link>
@@ -215,23 +208,6 @@ export default function LandingPage() {
             <h2 className="text-3xl font-bold text-[#F2EDD7] mt-3 mb-2">Tarification Transparente</h2>
             <p className="text-[#666] text-sm mb-7">3 essais gratuits offerts. Sans carte bancaire.</p>
 
-            <div className="inline-flex bg-[#0e0e0e] border border-[#222] rounded-lg p-1">
-              <button
-                onClick={() => setYearly(false)}
-                className={cn('px-5 py-2 rounded-md text-sm font-medium transition-all',
-                  !yearly ? 'bg-[#D4AF37] text-[#080808] font-bold' : 'text-[#666] hover:text-[#F2EDD7]'
-                )}
-              >Mensuel</button>
-              <button
-                onClick={() => setYearly(true)}
-                className={cn('px-5 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2',
-                  yearly ? 'bg-[#D4AF37] text-[#080808] font-bold' : 'text-[#666] hover:text-[#F2EDD7]'
-                )}
-              >
-                Annuel
-                <span className="text-[10px] bg-[#22c55e] text-white px-1.5 py-0.5 rounded font-bold">-20%</span>
-              </button>
-            </div>
           </div>
 
           <div className="grid md:grid-cols-3 gap-5">
@@ -252,10 +228,9 @@ export default function LandingPage() {
                 <div className="mb-5">
                   <p className="font-semibold text-[#F2EDD7] mb-1">{plan.name}</p>
                   <div className="flex items-end gap-1">
-                    <span className="text-4xl font-black text-[#D4AF37]">${yearly ? plan.yearlyPrice : plan.price}</span>
+                    <span className="text-4xl font-black text-[#D4AF37]">{plan.price.toFixed(2).replace('.', ',')}€</span>
                     <span className="text-[#555] mb-1 text-sm">/mois</span>
                   </div>
-                  {yearly && <p className="text-xs text-[#22c55e] mt-1">Économisez ${(plan.price - plan.yearlyPrice) * 12}/an</p>}
                 </div>
 
                 <ul className="space-y-2.5 mb-6">

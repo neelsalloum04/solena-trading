@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     const priceMap: Record<string, string> = {
       starter: process.env.STRIPE_PRICE_STARTER || '',
       pro: process.env.STRIPE_PRICE_PRO || '',
-      elite: process.env.STRIPE_PRICE_ELITE || '',
+      premium: process.env.STRIPE_PRICE_ELITE || '',
     }
 
     const priceId = priceMap[plan]

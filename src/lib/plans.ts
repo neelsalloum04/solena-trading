@@ -1,5 +1,9 @@
 // ─── Plan system — single source of truth ─────────────────────────────────────
 
+// DEV MODE: set to true to bypass all subscription gates (any logged-in user = full access)
+// Set back to false before going live with paid plans.
+export const DEV_UNLOCK_ALL = true
+
 export type PlanId = 'free' | 'starter' | 'pro' | 'premium' | 'admin'
 
 export const PLAN_ORDER: PlanId[] = ['free', 'starter', 'pro', 'premium', 'admin']
@@ -9,6 +13,7 @@ export function planLevel(plan: PlanId): number {
 }
 
 export function hasAccess(userPlan: PlanId, requiredPlan: PlanId): boolean {
+  if (DEV_UNLOCK_ALL && requiredPlan !== 'admin') return true
   if (userPlan === 'admin') return true
   return planLevel(userPlan) >= planLevel(requiredPlan)
 }

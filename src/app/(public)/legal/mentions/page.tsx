@@ -16,7 +16,7 @@ export default function MentionsPage() {
         <Row label="Siège social"         value="30 N Gould St, Ste R, Sheridan, Wyoming 82801, États-Unis" />
         <Row label="Directeur"            value="NEEL SALLOUM" />
         <Row label="Email"                value="contact@ecomstartprofits.com" />
-        <Row label="Site web"             value="https://solena-trading.vercel.app" />
+        <Row label="Site web"             value="https://primex-trading.vercel.app" />
       </Section>
 
       <Section title="Hébergement">

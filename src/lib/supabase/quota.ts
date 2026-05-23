@@ -1,4 +1,4 @@
-import { normalizePlan } from '@/lib/plans'
+import { DEV_UNLOCK_ALL, normalizePlan } from '@/lib/plans'
 import { createAdminClient } from './server'
 
 export interface FreeQuota {
@@ -43,7 +43,7 @@ export async function checkAndIncrementQuota(
   if (!profile) return { used: 0, limit, remaining: 0, allowed: false, isPaidPlan: false }
 
   const plan = normalizePlan(profile.plan)
-  if (plan !== 'free') return { used: 0, limit, remaining: limit, allowed: true, isPaidPlan: true }
+  if (DEV_UNLOCK_ALL || plan !== 'free') return { used: 0, limit, remaining: limit, allowed: true, isPaidPlan: true }
 
   const used = (profile as Record<string, unknown>)[column] as number ?? 0
   if (used >= limit) return { used, limit, remaining: 0, allowed: false, isPaidPlan: false }
@@ -75,7 +75,7 @@ export async function getQuota(
   if (!profile) return { used: 0, limit, remaining: 0, allowed: false, isPaidPlan: false }
 
   const plan = normalizePlan(profile.plan)
-  if (plan !== 'free') return { used: 0, limit, remaining: limit, allowed: true, isPaidPlan: true }
+  if (DEV_UNLOCK_ALL || plan !== 'free') return { used: 0, limit, remaining: limit, allowed: true, isPaidPlan: true }
 
   const used = (profile as Record<string, unknown>)[column] as number ?? 0
   return {
