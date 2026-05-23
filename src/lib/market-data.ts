@@ -180,6 +180,32 @@ async function binanceQuote(symbol: string): Promise<{ price: number; prevClose:
   } catch { return null }
 }
 
+const COINGECKO_IDS: Record<string, string> = {
+  BTC: 'bitcoin', ETH: 'ethereum', SOL: 'solana', BNB: 'binancecoin',
+  XRP: 'ripple', ADA: 'cardano', DOT: 'polkadot', LINK: 'chainlink',
+  AVAX: 'avalanche-2', MATIC: 'matic-network', LTC: 'litecoin', UNI: 'uniswap',
+  DOGE: 'dogecoin', ATOM: 'cosmos', TRX: 'tron', NEAR: 'near',
+  ARB: 'arbitrum', OP: 'optimism', INJ: 'injective-protocol', SUI: 'sui',
+}
+
+async function coinGeckoQuote(ticker: string): Promise<{ price: number; prevClose: number } | null> {
+  const id = COINGECKO_IDS[ticker.toUpperCase()]
+  if (!id) return null
+  try {
+    const res = await fetchWithTimeout(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${id}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=false`
+    )
+    if (!res.ok) return null
+    const data = await res.json()
+    const coin = data[id]
+    if (!coin?.usd) return null
+    const price = coin.usd
+    const change24h = coin.usd_24h_change ?? 0
+    const prevClose = price / (1 + change24h / 100)
+    return { price, prevClose }
+  } catch { return null }
+}
+
 async function yahooQuote(symbol: string): Promise<{ price: number; prevClose: number } | null> {
   try {
     const res = await fetchWithTimeout(
@@ -206,8 +232,9 @@ export async function fetchLivePrice(market: string): Promise<LivePrice | null> 
   let source = ''
 
   if (asset.type === 'crypto') {
-    // Binance first (most accurate for crypto), Twelve Data second, Yahoo fallback
-    if (asset.binanceSymbol) { raw = await binanceQuote(asset.binanceSymbol); source = 'Binance' }
+    // CoinGecko first (works on Vercel/server), Binance second, Twelve Data third, Yahoo fallback
+    raw = await coinGeckoQuote(asset.base); source = 'CoinGecko'
+    if (!raw && asset.binanceSymbol) { raw = await binanceQuote(asset.binanceSymbol); source = 'Binance' }
     if (!raw && asset.twelveDataSymbol) { raw = await twelveDataQuote(asset.twelveDataSymbol); source = 'Twelve Data' }
     if (!raw) { raw = await yahooQuote(asset.yahooSymbol); source = 'Yahoo Finance' }
   } else if (asset.type === 'index') {
