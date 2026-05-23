@@ -26,7 +26,7 @@ export interface InfoItem {
 
 // ── helpers ────────────────────────────────────────────────────────────────────
 
-const FINNHUB_TOKEN = 'd0qs9g9r01qhsqt6e3bgd0qs9g9r01qhsqt6e3c0'
+const FINNHUB_TOKEN = process.env.FINNHUB_TOKEN ?? 'd0qs9g9r01qhsqt6e3bgd0qs9g9r01qhsqt6e3c0'
 
 function classifyImpact(text: string): ImpactLevel {
   const t = text.toLowerCase()
@@ -90,40 +90,40 @@ const FLAG_MAP: Record<string, string> = {
   MX: '🇲🇽', NZ: '🇳🇿', SE: '🇸🇪', NO: '🇳🇴',
 }
 
-// ── Finnhub: news ──────────────────────────────────────────────────────────────
+// ── NewsAPI: news ──────────────────────────────────────────────────────────────
 
-async function fetchFinnhubNews(): Promise<InfoItem[]> {
+async function fetchNewsAPI(): Promise<InfoItem[]> {
+  const key = process.env.NEWSAPI_KEY
+  if (!key) throw new Error('NEWSAPI_KEY not configured')
+
+  const q = encodeURIComponent('forex OR crypto OR bitcoin OR stocks OR trading OR inflation OR fed OR ecb OR oil OR gold')
   const res = await fetch(
-    `https://finnhub.io/api/v1/news?category=general&token=${FINNHUB_TOKEN}`,
+    `https://newsapi.org/v2/everything?q=${q}&sortBy=publishedAt&pageSize=20&language=en&apiKey=${key}`,
     { next: { revalidate: 120 } }
   )
-  if (!res.ok) throw new Error(`Finnhub news ${res.status}`)
-  const raw = await res.json()
-  if (!Array.isArray(raw) || raw.length === 0) throw new Error('empty news')
+  if (!res.ok) throw new Error(`NewsAPI ${res.status}`)
+  const data = await res.json()
+  if (data.status !== 'ok' || !Array.isArray(data.articles)) throw new Error('NewsAPI bad response')
 
-  // Only keep articles from the last 48 hours
-  const cutoff = Date.now() - 48 * 60 * 60 * 1000
-  const recent = raw.filter((item: Record<string, unknown>) => {
-    const ts = Number(item.datetime) * 1000
-    return ts > cutoff
-  })
-  if (recent.length < 3) throw new Error('not enough recent news from Finnhub')
-
-  return recent.slice(0, 20).map((item: Record<string, unknown>, idx: number) => {
-    const title = String(item.headline ?? '')
-    const text = title + ' ' + String(item.category ?? '')
-    return {
-      id: `fh-${item.id ?? idx}`,
-      type: 'news' as const,
-      title: title || 'Sans titre',
-      summary: String(item.summary ?? ''),
-      publishedAt: item.datetime ? new Date(Number(item.datetime) * 1000).toISOString() : new Date().toISOString(),
-      source: String(item.source ?? 'Finnhub'),
-      category: classifyCategory(text),
-      impact: classifyImpact(title),
-      url: String(item.url ?? '#'),
-    }
-  })
+  return data.articles
+    .filter((a: Record<string, unknown>) => a.title && a.title !== '[Removed]')
+    .slice(0, 20)
+    .map((a: Record<string, unknown>, idx: number) => {
+      const title = String(a.title ?? '')
+      const desc = String(a.description ?? '')
+      const src = (a.source as Record<string, unknown>)?.name
+      return {
+        id: `na-${idx}-${String(a.publishedAt ?? '').slice(0, 10)}`,
+        type: 'news' as const,
+        title,
+        summary: desc,
+        publishedAt: String(a.publishedAt ?? new Date().toISOString()),
+        source: String(src ?? 'NewsAPI'),
+        category: classifyCategory(title + ' ' + desc),
+        impact: classifyImpact(title),
+        url: String(a.url ?? '#'),
+      }
+    })
 }
 
 // ── Finnhub: economic calendar ─────────────────────────────────────────────────
@@ -180,7 +180,7 @@ export async function GET() {
 
   // Fetch news and calendar in parallel, fall back independently
   const [news, events] = await Promise.all([
-    fetchFinnhubNews().catch(() => getMockNews()),
+    fetchNewsAPI().catch(() => getMockNews()),
     fetchFinnhubCalendar().catch(() => getMockEvents()),
   ])
 
