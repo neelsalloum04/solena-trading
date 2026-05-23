@@ -20,6 +20,10 @@ export const metadata: Metadata = {
   title: 'PrimeX IA — Trading Institutionnel Propulsé par l\'IA',
   description: 'Plateforme de trading IA avec signaux en temps réel, bots automatisés et analyse de marché de niveau institutionnel.',
   keywords: 'trading IA, signaux trading, trading automatisé, forex, crypto, analyse de marché',
+  icons: {
+    icon: '/primex-logo-dark.webp',
+    apple: '/primex-logo-dark.webp',
+  },
   openGraph: {
     title: 'PrimeX IA — Trading Institutionnel Propulsé par l\'IA',
     description: 'Tradez comme un hedge fund. Signaux IA, bots automatisés, analyse experte.',
