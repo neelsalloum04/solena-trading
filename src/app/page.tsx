@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils'
 import {
   Activity,
   ArrowRight,
-  BarChart3,
   Bot,
   CheckCircle,
   ChevronRight,
@@ -154,20 +153,6 @@ export default function LandingPage() {
           <p className="text-[#555] text-sm mt-4">Sans carte bancaire · 3 essais gratuits offerts · Annulation à tout moment</p>
         </div>
 
-        {/* Stats */}
-        <div className="relative max-w-2xl mx-auto mt-16 grid grid-cols-3 gap-4">
-          {[
-            { value: '6',      label: 'Marchés couverts',   icon: Globe     },
-            { value: '24h/24', label: 'Bot disponible',     icon: Activity  },
-            { value: '7+',     label: 'Exchanges connectés', icon: BarChart3 },
-          ].map((s) => (
-            <div key={s.label} className="card-gold p-5 text-center">
-              <s.icon className="w-5 h-5 text-[#D4AF37] mx-auto mb-3" />
-              <p className="text-2xl font-bold text-[#D4AF37]">{s.value}</p>
-              <p className="text-xs text-[#555] mt-1">{s.label}</p>
-            </div>
-          ))}
-        </div>
       </section>
 
       {/* ── Features ── */}
