@@ -261,7 +261,7 @@ export default function DashboardPage() {
         <p className="text-[10px] font-bold text-[#444] uppercase tracking-widest mb-3">Outils PrimeX</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {[
-            { href: '/info-minute', icon: <Newspaper className="w-5 h-5" />, label: 'Info Minute', desc: 'Actualités marchés', color: 'text-[#D4AF37]', bg: 'bg-[#D4AF37]/10', border: 'border-[#D4AF37]/20' },
+            { href: '/info-trading', icon: <Newspaper className="w-5 h-5" />, label: 'Info Trading', desc: 'Actualités marchés', color: 'text-[#D4AF37]', bg: 'bg-[#D4AF37]/10', border: 'border-[#D4AF37]/20' },
             { href: '/signals',     icon: <Radio className="w-5 h-5" />,     label: 'Signaux',      desc: 'Alertes en direct',   color: 'text-[#22c55e]', bg: 'bg-[#22c55e]/10', border: 'border-[#22c55e]/20' },
             { href: '/chat',        icon: <MessageSquare className="w-5 h-5" />, label: 'Assistant IA', desc: 'Chat trading',    color: 'text-[#818cf8]', bg: 'bg-[#818cf8]/10', border: 'border-[#818cf8]/20' },
             { href: '/bot',         icon: <Bot className="w-5 h-5" />,       label: 'Bot Auto',     desc: 'Trading automatisé', color: 'text-[#f97316]', bg: 'bg-[#f97316]/10', border: 'border-[#f97316]/20' },

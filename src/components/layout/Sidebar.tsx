@@ -25,7 +25,7 @@ import { useMemo, useState } from 'react'
 
 const NAV = [
   { label: 'Dashboard',    href: '/dashboard',    icon: LayoutDashboard },
-  { label: 'Info Minute',  href: '/info-minute',  icon: Newspaper       },
+  { label: 'Info Trading', href: '/info-trading',  icon: Newspaper       },
   { label: 'Chat IA',      href: '/chat',         icon: MessageSquare   },
   { label: 'Signaux Live', href: '/signals',      icon: Radio           },
   { label: 'Trading Bot',  href: '/bot',          icon: Bot             },

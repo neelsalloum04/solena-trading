@@ -32,7 +32,7 @@ export const ROUTE_REQUIREMENTS: Record<string, PlanId> = {
   '/dashboard':   'free',
   '/settings':    'free',
   '/support':     'free',
-  '/info-minute': 'free',
+  '/info-trading': 'free',
   '/chat':        'free',
   '/signals':     'pro',
   '/analytics':   'pro',

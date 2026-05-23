@@ -1,6 +1,6 @@
 'use client'
 import { cn } from '@/lib/utils'
-import type { ImpactLevel, InfoItem, NewsCategory } from '@/app/api/info-minute/route'
+import type { ImpactLevel, InfoItem, NewsCategory } from '@/app/api/info-trading/route'
 import {
   AlertTriangle,
   Bell,
@@ -207,7 +207,7 @@ function useNotifications() {
 
 // ── main page ─────────────────────────────────────────────────────────────────
 
-export default function InfoMinutePage() {
+export default function InfoTradingPage() {
   const [items, setItems] = useState<InfoItem[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -226,7 +226,7 @@ export default function InfoMinutePage() {
   const fetchItems = useCallback(async (silent = false) => {
     if (!silent) setRefreshing(true)
     try {
-      const res = await fetch('/api/info-minute', { cache: 'no-store' })
+      const res = await fetch('/api/info-trading', { cache: 'no-store' })
       if (!res.ok) throw new Error('fetch error')
       const data: InfoItem[] = await res.json()
 
@@ -291,7 +291,7 @@ export default function InfoMinutePage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Newspaper className="w-5 h-5 text-[#D4AF37]" />
-            <h1 className="text-2xl font-black text-white">Info Minute</h1>
+            <h1 className="text-2xl font-black text-white">Info Trading</h1>
             <span className="flex items-center gap-1 bg-[#22c55e]/10 border border-[#22c55e]/20 px-2 py-0.5 rounded-full">
               <span className="w-1.5 h-1.5 bg-[#22c55e] rounded-full animate-pulse" />
               <span className="text-[10px] font-bold text-[#22c55e]">LIVE</span>
