@@ -35,28 +35,27 @@ const FEATURES = [
     icon: MessageSquare,
     title: 'Chat IA',
     desc: 'Posez vos questions à votre analyste IA. Uploadez vos graphiques TradingView pour une analyse complète : zones d\'entrée, stop loss, take profit, tendance et niveaux S/R.',
-    items: ['Analyse GPT-4o Vision', 'Upload de graphiques', 'Tous les marchés', 'Insights institutionnels'],
+    items: ['Analyse IA Vision avancée', 'Upload de graphiques', 'Tous les marchés', 'Données de marché en temps réel'],
   },
   {
     icon: Radio,
     title: 'Signaux Live',
-    desc: 'Signaux buy/sell générés en temps réel avec setup complet : entrée, SL, TP1/2/3, ratio R/R et score de confiance. Alertes email & SMS.',
-    items: ['Flux temps réel', 'Multi-marchés', 'Alertes email & SMS', 'Suivi des performances'],
+    desc: 'Signaux buy/sell générés en temps réel avec setup complet : entrée, SL, TP1/2/3, ratio R/R et score de confiance. À titre informatif uniquement.',
+    items: ['Flux temps réel', 'Multi-marchés', 'Alertes email', 'Suivi des performances'],
   },
   {
     icon: Bot,
     title: 'Bot Automatique',
-    desc: 'Connectez votre exchange et laissez l\'IA trader 24h/24. Compatible Binance, Bybit, MT4/5, Alpaca, Interactive Brokers, Kraken.',
-    items: ['7+ intégrations', 'Trading 24h/24', 'Gestion du risque', 'Dashboard temps réel'],
+    desc: 'Connectez votre exchange et automatisez votre stratégie. Compatible Binance, Bybit, MT4/5, Alpaca, Interactive Brokers, Kraken.',
+    items: ['7+ intégrations broker', 'Disponible 24h/24', 'Gestion du risque paramétrable', 'Dashboard temps réel'],
   },
 ]
 
-
 const WHY = [
-  { icon: Shield,     title: 'Sécurité Bancaire',   desc: 'Chiffrement de niveau bancaire pour vos données et connexions broker.' },
-  { icon: Zap,        title: 'Signaux en 2 sec',     desc: 'Soyez toujours premier. Signaux générés et envoyés en moins de 2 secondes.' },
-  { icon: TrendingUp, title: '73% Win Rate vérifié', desc: 'Taux calculé sur 18 mois de données réelles de marché, pas de démo.' },
-  { icon: Globe,      title: 'Multi-Marchés',        desc: 'Forex, Crypto, Indices, Actions — une seule plateforme pour tout trader.' },
+  { icon: Shield,     title: 'Données Chiffrées',      desc: 'Toutes les communications sont chiffrées via TLS. Vos clés API broker ne sont jamais exposées.' },
+  { icon: Zap,        title: 'Analyse en Temps Réel',  desc: 'Prix live, actualités financières et indicateurs techniques calculés injectés dans chaque analyse.' },
+  { icon: TrendingUp, title: 'Multi-Actifs',            desc: 'Forex, Crypto, Indices, Actions, Commodités — une seule plateforme pour tous vos marchés.' },
+  { icon: Globe,      title: '7+ Exchanges Supportés', desc: 'Binance, Bybit, Kraken, Alpaca, MT4/5, Interactive Brokers — connectez votre broker existant.' },
 ]
 
 export default function LandingPage() {
@@ -129,7 +128,7 @@ export default function LandingPage() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-[#D4AF37]/8 border border-[#D4AF37]/20 text-[#D4AF37] text-xs font-semibold px-4 py-1.5 rounded-full mb-7">
             <Zap className="w-3 h-3" />
-            Propulsé par GPT-4o Vision · 18 000+ Traders Actifs
+            Propulsé par l'Intelligence Artificielle · Forex · Crypto · Indices
           </div>
 
           {/* Headline */}
@@ -152,15 +151,15 @@ export default function LandingPage() {
               Voir la Démo <Activity className="w-4 h-4" />
             </Link>
           </div>
-          <p className="text-[#555] text-sm mt-4">Sans carte bancaire · 14 jours gratuits · Annulation à tout moment</p>
+          <p className="text-[#555] text-sm mt-4">Sans carte bancaire · 3 essais gratuits offerts · Annulation à tout moment</p>
         </div>
 
         {/* Stats */}
         <div className="relative max-w-2xl mx-auto mt-16 grid grid-cols-3 gap-4">
           {[
-            { value: '$2.4B+',  label: 'Volume Tradé',    icon: BarChart3 },
-            { value: '73.2%',   label: 'Taux de Réussite', icon: Activity  },
-            { value: '18 000+', label: 'Traders Actifs',   icon: Globe     },
+            { value: '6',      label: 'Marchés couverts',   icon: Globe     },
+            { value: '24h/24', label: 'Bot disponible',     icon: Activity  },
+            { value: '7+',     label: 'Exchanges connectés', icon: BarChart3 },
           ].map((s) => (
             <div key={s.label} className="card-gold p-5 text-center">
               <s.icon className="w-5 h-5 text-[#D4AF37] mx-auto mb-3" />
@@ -176,7 +175,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <span className="badge-gold mb-3 inline-block">Fonctionnalités</span>
-            <h2 className="text-3xl font-bold text-[#F2EDD7] mt-3 mb-3">Tout ce qu'il faut pour Gagner</h2>
+            <h2 className="text-3xl font-bold text-[#F2EDD7] mt-3 mb-3">Tout ce qu'il faut pour Analyser</h2>
             <p className="text-[#888] text-sm max-w-md mx-auto">Trois outils puissants conçus pour les traders professionnels</p>
           </div>
 
@@ -229,7 +228,7 @@ export default function LandingPage() {
           <div className="text-center mb-10">
             <span className="badge-gold mb-3 inline-block">Tarifs</span>
             <h2 className="text-3xl font-bold text-[#F2EDD7] mt-3 mb-2">Tarification Transparente</h2>
-            <p className="text-[#666] text-sm mb-7">14 jours d'essai gratuit. Sans carte bancaire.</p>
+            <p className="text-[#666] text-sm mb-7">3 essais gratuits offerts. Sans carte bancaire.</p>
 
             <div className="inline-flex bg-[#0e0e0e] border border-[#222] rounded-lg p-1">
               <button
@@ -309,7 +308,7 @@ export default function LandingPage() {
             </div>
             <h2 className="text-3xl font-bold text-[#F2EDD7] mb-3">Prêt à Trader Plus Intelligemment ?</h2>
             <p className="text-[#666] text-sm mb-7 max-w-md mx-auto leading-relaxed">
-              Rejoignez 18 000+ traders. 14 jours d'essai gratuit, sans carte bancaire, annulation à tout moment.
+              3 essais gratuits offerts dès l'inscription. Sans carte bancaire. Annulation à tout moment.
             </p>
             <Link href="/register" className="btn-gold inline-flex items-center gap-2 px-8 py-3 text-sm">
               Démarrer l'Essai Gratuit <ArrowRight className="w-4 h-4" />
@@ -329,9 +328,9 @@ export default function LandingPage() {
             © 2026 PrimeX IA. Le trading comporte des risques. Les performances passées ne préjugent pas des résultats futurs.
           </p>
           <div className="flex items-center gap-5">
-            {['Confidentialité', 'CGU', 'Risques'].map((l) => (
-              <a key={l} href="#" className="text-xs text-[#555] hover:text-[#D4AF37] transition-colors">{l}</a>
-            ))}
+            <Link href="/legal/privacy" className="text-xs text-[#555] hover:text-[#D4AF37] transition-colors">Confidentialité</Link>
+            <Link href="/legal/cgu"     className="text-xs text-[#555] hover:text-[#D4AF37] transition-colors">CGU</Link>
+            <Link href="/legal/mentions" className="text-xs text-[#555] hover:text-[#D4AF37] transition-colors">Mentions légales</Link>
           </div>
         </div>
       </footer>
