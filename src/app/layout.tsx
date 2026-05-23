@@ -1,3 +1,4 @@
+import { CookieBanner } from '@/components/CookieBanner'
 import type { Metadata } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body suppressHydrationWarning>
         {children}
+        <CookieBanner />
         <Toaster
           position="top-right"
           toastOptions={{
