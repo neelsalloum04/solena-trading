@@ -1,5 +1,5 @@
 'use client'
-import { PlanGate } from '@/components/upgrade/PlanGate'
+import { FreeTrialBanner, FreeTrialUpgradeWall, type FreeQuota } from '@/components/FreeTrialBanner'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import {
@@ -91,12 +91,13 @@ function ChatContent() {
   const [missingKey, setMissingKey] = useState(false)
   const [quota, setQuota] = useState<Quota | null>(null)
   const [quotaExceeded, setQuotaExceeded] = useState(false)
+  const [freeQuota, setFreeQuota] = useState<FreeQuota | null>(null)
   const [hydrated, setHydrated] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount + fetch free quota from DB
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
@@ -111,6 +112,16 @@ function ChatContent() {
       }
     } catch {}
     setHydrated(true)
+
+    fetch('/api/quota?type=chat')
+      .then(r => r.json())
+      .then((q: FreeQuota) => {
+        if (!q.isPaidPlan) {
+          setFreeQuota(q)
+          if (!q.allowed) setQuotaExceeded(true)
+        }
+      })
+      .catch(() => {})
   }, [])
 
   // Save messages to localStorage
@@ -176,12 +187,23 @@ function ChatContent() {
 
       // Update quota display
       if (data.quota) {
-        const q = data.quota as Quota
-        setQuota(q)
-        try { localStorage.setItem(QUOTA_KEY, JSON.stringify(q)) } catch {}
+        if ((data.quota as FreeQuota).isPaidPlan === false) {
+          setFreeQuota(data.quota as FreeQuota)
+        } else {
+          const q = data.quota as Quota
+          setQuota(q)
+          try { localStorage.setItem(QUOTA_KEY, JSON.stringify(q)) } catch {}
+        }
       }
 
       if (res.status === 503) { setMissingKey(true); setLoading(false); return }
+
+      if (res.status === 403 && data.error === 'free_quota_exceeded') {
+        setFreeQuota({ ...data.quota, remaining: 0, allowed: false })
+        setQuotaExceeded(true)
+        setLoading(false)
+        return
+      }
 
       if (res.status === 429) {
         setQuotaExceeded(true)
@@ -237,8 +259,23 @@ function ChatContent() {
 
   const showQuickPrompts = messages.length === 1
 
+  if (freeQuota && !freeQuota.allowed) {
+    return (
+      <div className="flex flex-col h-full">
+        <FreeTrialUpgradeWall type="chat" />
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col h-full">
+      {/* Free trial banner */}
+      {freeQuota && freeQuota.allowed && (
+        <div className="px-4 pt-3 flex-shrink-0">
+          <FreeTrialBanner quota={freeQuota} type="chat" />
+        </div>
+      )}
+
       {/* Missing key banner */}
       {missingKey && (
         <div className="mx-4 mt-4 bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 animate-slide-up">
@@ -428,9 +465,5 @@ function ChatContent() {
 }
 
 export default function ChatPage() {
-  return (
-    <PlanGate requiredPlan="starter">
-      <ChatContent />
-    </PlanGate>
-  )
+  return <ChatContent />
 }

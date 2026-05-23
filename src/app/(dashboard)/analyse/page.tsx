@@ -1,5 +1,5 @@
 'use client'
-import { PlanGate } from '@/components/upgrade/PlanGate'
+import { FreeTrialBanner, FreeTrialUpgradeWall, type FreeQuota } from '@/components/FreeTrialBanner'
 import { FinancialDisclaimer } from '@/components/FinancialDisclaimer'
 import { cn } from '@/lib/utils'
 import { RiskBanner } from '@/components/ui/risk-banner'
@@ -23,7 +23,7 @@ import {
   X,
   Zap,
 } from 'lucide-react'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -206,7 +206,15 @@ function AnalyseContent() {
   const [economicCtx, setEconomicCtx]   = useState<EconomicContext | null>(null)
   const [hasIndicators, setHasIndicators] = useState(false)
   const [error, setError]               = useState<string | null>(null)
+  const [freeQuota, setFreeQuota]       = useState<FreeQuota | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    fetch('/api/quota?type=analyse')
+      .then(r => r.json())
+      .then((q: FreeQuota) => { if (!q.isPaidPlan) setFreeQuota(q) })
+      .catch(() => {})
+  }, [])
 
   const loadFile = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) { setError('Format non supporté.'); return }
@@ -239,12 +247,17 @@ function AnalyseContent() {
         body: JSON.stringify({ imageBase64: imgSrc, mediaType }),
       })
       const data = await res.json()
+      if (res.status === 403 && data.error === 'free_quota_exceeded') {
+        setFreeQuota({ ...data.quota, remaining: 0, allowed: false })
+        return
+      }
       if (!res.ok || data.error) { setError(data.error || 'Erreur serveur.'); return }
       if (!data.analysis)        { setError('Réponse vide. Réessaie.'); return }
       setAnalysis(data.analysis)
       setLiveData(data.liveData ?? null)
       setEconomicCtx(data.economicContext ?? null)
       setHasIndicators(data.hasIndicators ?? false)
+      if (data.quota && !data.quota.isPaidPlan) setFreeQuota(data.quota)
     } catch {
       setError('Connexion impossible.')
     } finally {
@@ -256,9 +269,20 @@ function AnalyseContent() {
   const tndColor = analysis ? tendanceColor(analysis.tendance) : '#888'
   const conf    = typeof analysis?.confiance === 'number' ? analysis.confiance : null
 
+  if (freeQuota && !freeQuota.allowed) {
+    return (
+      <div className="min-h-full bg-[#080808] flex flex-col">
+        <FreeTrialUpgradeWall type="analyse" />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-full bg-[#080808] p-5 md:p-6">
       <div className="max-w-[1280px] mx-auto space-y-5">
+
+        {/* Free trial banner */}
+        {freeQuota && <FreeTrialBanner quota={freeQuota} type="analyse" />}
 
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -269,7 +293,9 @@ function AnalyseContent() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-base font-bold text-[#F2EDD7]">Analyse Graphique IA</h1>
-                <span className="text-[9px] font-black bg-[#D4AF37] text-[#080808] px-1.5 py-0.5 rounded tracking-widest">PREMIUM</span>
+                <span className="text-[9px] font-black bg-[#D4AF37] text-[#080808] px-1.5 py-0.5 rounded tracking-widest">
+                  {freeQuota ? 'ESSAI GRATUIT' : 'PRO'}
+                </span>
               </div>
               <p className="text-xs text-[#555]">
                 Prix live · Actualités ·{' '}
@@ -603,9 +629,5 @@ function AnalyseContent() {
 }
 
 export default function AnalysePage() {
-  return (
-    <PlanGate requiredPlan="starter">
-      <AnalyseContent />
-    </PlanGate>
-  )
+  return <AnalyseContent />
 }

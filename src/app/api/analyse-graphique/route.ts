@@ -2,6 +2,8 @@ import { requireAnthropic } from '@/lib/anthropic/client'
 import { fetchLivePrice } from '@/lib/market-data'
 import { fetchEconomicContext } from '@/lib/economic-data'
 import { buildIndicatorBlock } from '@/lib/indicators'
+import { getUserFromRequest } from '@/lib/supabase/auth-api'
+import { checkAndIncrementQuota } from '@/lib/supabase/quota'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
@@ -129,6 +131,15 @@ function extractJSON(text: string): string {
 
 export async function POST(req: NextRequest) {
   try {
+    // ── Free trial quota check ─────────────────────────────────────
+    const { user } = await getUserFromRequest(req)
+    if (user) {
+      const quota = await checkAndIncrementQuota(user.id, 'analyse')
+      if (!quota.allowed && !quota.isPaidPlan) {
+        return NextResponse.json({ error: 'free_quota_exceeded', quota }, { status: 403 })
+      }
+    }
+
     const ai = requireAnthropic()
     const body = await req.json()
     const { imageBase64, mediaType = 'image/png' } = body

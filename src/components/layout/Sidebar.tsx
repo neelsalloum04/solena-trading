@@ -1,7 +1,7 @@
 'use client'
 import { useUserPlan } from '@/contexts/UserPlanContext'
 import { createClient } from '@/lib/supabase/client'
-import { PLAN_META, getRequiredPlan, hasAccess, normalizePlan, type PlanId } from '@/lib/plans'
+import { FREE_TRIAL_ROUTES, PLAN_META, getRequiredPlan, hasAccess, normalizePlan, type PlanId } from '@/lib/plans'
 import { cn } from '@/lib/utils'
 import {
   BarChart2,
@@ -118,6 +118,7 @@ export function Sidebar({ user }: SidebarProps) {
           const required = getRequiredPlan(item.href)
           const locked = !hasAccess(plan, required)
           const active = pathname === item.href || pathname.startsWith(item.href + '/')
+          const isFreeTrial = plan === 'free' && FREE_TRIAL_ROUTES.has(item.href)
           return (
             <Link
               key={item.href}
@@ -138,7 +139,12 @@ export function Sidebar({ user }: SidebarProps) {
                 <>
                   <span className="font-medium flex-1">{item.label}</span>
                   {locked && <Lock className="w-3 h-3 text-[#333] flex-shrink-0" />}
-                  {!locked && item.href === '/signals' && (
+                  {isFreeTrial && !active && (
+                    <span className="text-[9px] font-bold text-[#D4AF37] bg-[#D4AF37]/10 px-1.5 py-0.5 rounded flex-shrink-0">
+                      ESSAI
+                    </span>
+                  )}
+                  {!locked && !isFreeTrial && item.href === '/signals' && (
                     <span className="flex items-center gap-1 flex-shrink-0">
                       <span className="w-1.5 h-1.5 bg-[#22c55e] rounded-full animate-pulse" />
                       <span className="text-[9px] text-[#22c55e] font-bold">LIVE</span>
