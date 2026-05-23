@@ -1,4 +1,5 @@
 'use client'
+import { PlanGate } from '@/components/upgrade/PlanGate'
 import { cn } from '@/lib/utils'
 import { RiskBanner } from '@/components/ui/risk-banner'
 import type { LiveSignal, MarketType } from '@/lib/signal-engine'
@@ -212,7 +213,7 @@ function Skeleton() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function SignalsPage() {
+function SignalsContent() {
   const [signals, setSignals] = useState<LiveSignal[]>([])
   const [activeMarket, setActiveMarket] = useState<MarketType | 'all'>('all')
   const [loading, setLoading] = useState(true)
@@ -369,5 +370,13 @@ export default function SignalsPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function SignalsPage() {
+  return (
+    <PlanGate requiredPlan="pro">
+      <SignalsContent />
+    </PlanGate>
   )
 }

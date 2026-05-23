@@ -1,4 +1,5 @@
 'use client'
+import { PlanGate } from '@/components/upgrade/PlanGate'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import {
@@ -81,7 +82,7 @@ function QuotaBar({ quota }: { quota: Quota | null }) {
   )
 }
 
-export default function ChatPage() {
+function ChatContent() {
   const [messages, setMessages] = useState<Message[]>([WELCOME])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -423,5 +424,13 @@ export default function ChatPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function ChatPage() {
+  return (
+    <PlanGate requiredPlan="pro">
+      <ChatContent />
+    </PlanGate>
   )
 }

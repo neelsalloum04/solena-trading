@@ -1,4 +1,6 @@
 'use client'
+import { PlanGate } from '@/components/upgrade/PlanGate'
+import { FinancialDisclaimer } from '@/components/FinancialDisclaimer'
 import { cn } from '@/lib/utils'
 import { RiskBanner } from '@/components/ui/risk-banner'
 import type { LivePrice } from '@/lib/market-data'
@@ -192,7 +194,7 @@ function NewsCard({ news }: { news: MarketNewsItem[] }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function AnalysePage() {
+function AnalyseContent() {
   const [imgSrc, setImgSrc]             = useState<string | null>(null)
   const [fileName, setFileName]         = useState<string>('')
   const [fileSize, setFileSize]         = useState<number>(0)
@@ -594,7 +596,16 @@ export default function AnalysePage() {
           </div>
         )}
 
+        <FinancialDisclaimer compact />
       </div>
     </div>
+  )
+}
+
+export default function AnalysePage() {
+  return (
+    <PlanGate requiredPlan="starter">
+      <AnalyseContent />
+    </PlanGate>
   )
 }

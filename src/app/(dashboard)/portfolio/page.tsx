@@ -1,4 +1,5 @@
 'use client'
+import { PlanGate } from '@/components/upgrade/PlanGate'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -58,7 +59,7 @@ const trades = [
   { id: 6, pair: 'SPX500', type: 'BUY', entry: 5782, exit: 5876, qty: 1, pnl: 94, pnlPct: 1.63, duration: '2d', date: 'Dec 12', status: 'closed' },
 ]
 
-export default function PortfolioPage() {
+function PortfolioContent() {
   const totalPnl = monthlyPnl.reduce((a, m) => a + m.pnl, 0)
   const winMonths = monthlyPnl.filter(m => m.pnl > 0).length
 
@@ -196,5 +197,13 @@ export default function PortfolioPage() {
         </div>
       </Card>
     </div>
+  )
+}
+
+export default function PortfolioPage() {
+  return (
+    <PlanGate requiredPlan="pro">
+      <PortfolioContent />
+    </PlanGate>
   )
 }

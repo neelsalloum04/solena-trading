@@ -1,4 +1,5 @@
 'use client'
+import { PlanGate } from '@/components/upgrade/PlanGate'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import {
@@ -60,7 +61,7 @@ const drawdownData = [
   { date: 'Week 8', drawdown: -2.8 },
 ]
 
-export default function AnalyticsPage() {
+function AnalyticsContent() {
   return (
     <div className="p-6 space-y-6 max-w-[1600px] mx-auto">
       <div>
@@ -167,5 +168,13 @@ export default function AnalyticsPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function AnalyticsPage() {
+  return (
+    <PlanGate requiredPlan="pro">
+      <AnalyticsContent />
+    </PlanGate>
   )
 }

@@ -8,10 +8,31 @@ function isSupabaseConfigured() {
   return !!(supabaseUrl && supabaseAnonKey && !supabaseUrl.includes('your-project'))
 }
 
-const PROTECTED = ['/dashboard', '/chat', '/signals', '/bot', '/portfolio', '/settings', '/analytics', '/admin', '/analyse']
+// Routes requiring authentication (any plan)
+const PROTECTED = [
+  '/dashboard', '/chat', '/signals', '/bot', '/portfolio',
+  '/settings', '/analytics', '/admin', '/analyse', '/support',
+]
+
 const AUTH_PAGES = ['/login', '/register']
-// These routes must NEVER be blocked — they handle auth flows
-const ALWAYS_PUBLIC = ['/auth/', '/forgot-password', '/reset-password', '/api/']
+
+// These routes must NEVER be blocked
+const ALWAYS_PUBLIC = ['/auth/', '/forgot-password', '/reset-password', '/api/', '/legal/']
+
+// Simple in-memory rate limiting (reset on cold start)
+const rateLimitStore = new Map<string, { count: number; resetAt: number }>()
+
+function checkRateLimit(ip: string, limit = 200, windowMs = 60_000): boolean {
+  const now = Date.now()
+  const entry = rateLimitStore.get(ip)
+  if (!entry || now > entry.resetAt) {
+    rateLimitStore.set(ip, { count: 1, resetAt: now + windowMs })
+    return true
+  }
+  if (entry.count >= limit) return false
+  entry.count++
+  return true
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -21,7 +42,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // If Supabase isn't configured, open everything
+  // Basic rate limiting
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  if (!checkRateLimit(ip)) {
+    return new NextResponse('Too Many Requests', {
+      status: 429,
+      headers: { 'Retry-After': '60', 'Content-Type': 'text/plain' },
+    })
+  }
+
+  // If Supabase isn't configured, open everything (dev mode)
   if (!isSupabaseConfigured()) {
     return NextResponse.next()
   }
@@ -43,20 +73,24 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const isProtected = PROTECTED.some(p => pathname.startsWith(p))
+  const isProtected = PROTECTED.some(p => pathname === p || pathname.startsWith(p + '/'))
   const isAuthPage = AUTH_PAGES.includes(pathname)
 
   if (isProtected && !user) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    return NextResponse.redirect(url)
   }
 
   if (isAuthPage && user) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
   }
 
   return supabaseResponse
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)'],
 }

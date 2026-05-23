@@ -1,4 +1,5 @@
 'use client'
+import { PlanGate } from '@/components/upgrade/PlanGate'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -40,7 +41,7 @@ const recentUsers = [
   { name: 'Carlos Rodriguez', email: 'carlos@example.com', plan: 'elite', joined: '2d ago', status: 'active' },
 ]
 
-export default function AdminPage() {
+function AdminContent() {
   return (
     <div className="p-6 space-y-6 max-w-[1600px] mx-auto">
       {/* Header */}
@@ -214,5 +215,13 @@ export default function AdminPage() {
         </div>
       </Card>
     </div>
+  )
+}
+
+export default function AdminPage() {
+  return (
+    <PlanGate requiredPlan="admin">
+      <AdminContent />
+    </PlanGate>
   )
 }

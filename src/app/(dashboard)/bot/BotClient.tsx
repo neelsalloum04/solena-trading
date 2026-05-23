@@ -1,4 +1,6 @@
 'use client'
+import { PlanGate } from '@/components/upgrade/PlanGate'
+import { FinancialDisclaimer } from '@/components/FinancialDisclaimer'
 import { cn } from '@/lib/utils'
 import { TRADEABLE_PAIRS, resolvePairConfig } from '@/lib/broker/binance-shared'
 import type { LiveSignal } from '@/lib/signal-engine'
@@ -128,7 +130,7 @@ function StatBox({ label, value, color = 'text-white' }: { label: string; value:
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function BotClient() {
+function BotContent() {
   const [mode, setMode]             = useState<Mode>('paper')
   const [creds, setCreds]           = useState<Credentials>({ apiKey: '', apiSecret: '' })
   const [showSecret, setShowSecret] = useState(false)
@@ -905,9 +907,18 @@ export default function BotClient() {
       <div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-[#0f0f0f] border border-[#1a1a1a]">
         <AlertTriangle className="w-3.5 h-3.5 text-[#555] flex-shrink-0 mt-0.5" />
         <p className="text-[10px] text-[#444] leading-relaxed">
-          Le trading comporte un risque de perte en capital. Aucun robot ne garantit des profits. Les performances passées ne préjugent pas des résultats futurs. N'investissez que ce que vous êtes prêt à perdre.
+          Le trading comporte un risque de perte en capital. Aucun robot ne garantit des profits. Les performances passées ne préjugent pas des résultats futurs. N&apos;investissez que ce que vous êtes prêt à perdre.
         </p>
       </div>
+      <FinancialDisclaimer compact />
     </div>
+  )
+}
+
+export default function BotClient() {
+  return (
+    <PlanGate requiredPlan="premium">
+      <BotContent />
+    </PlanGate>
   )
 }
