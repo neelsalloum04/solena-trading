@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/client'
 import { FREE_TRIAL_ROUTES, PLAN_META, getRequiredPlan, hasAccess, normalizePlan, type PlanId } from '@/lib/plans'
 import { cn } from '@/lib/utils'
 import {
-
   BarChart2,
   Bot,
   ChevronLeft,
@@ -16,6 +15,7 @@ import {
   Radio,
   Settings,
   ShieldCheck,
+  Wallet,
   Zap,
 } from 'lucide-react'
 import Image from 'next/image'
@@ -25,6 +25,7 @@ import { useMemo, useState } from 'react'
 
 const NAV = [
   { label: 'Dashboard',    href: '/dashboard',    icon: LayoutDashboard },
+  { label: 'Portfolio',    href: '/portfolio',    icon: Wallet          },
   { label: 'Analyse IA',   href: '/analyse',      icon: BarChart2       },
   { label: 'Chat IA',      href: '/chat',         icon: MessageSquare   },
   { label: 'Signaux Live', href: '/signals',      icon: Radio           },

@@ -1,13 +1,13 @@
 'use client'
 import { cn } from '@/lib/utils'
-import { BarChart2, Bot, LayoutDashboard, MessageSquare, Radio } from 'lucide-react'
+import { BarChart2, Bot, LayoutDashboard, MessageSquare, Radio, Wallet } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const NAV = [
   { label: 'Dashboard', href: '/dashboard',   icon: LayoutDashboard },
-  { label: 'Analyse',   href: '/analyse',     icon: BarChart2 },
+  { label: 'Portfolio', href: '/portfolio',   icon: Wallet },
   { label: 'Chat',      href: '/chat',        icon: MessageSquare },
   { label: 'Signaux',   href: '/signals',     icon: Radio },
   { label: 'Bot',       href: '/bot',         icon: Bot },

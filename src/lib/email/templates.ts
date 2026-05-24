@@ -126,6 +126,57 @@ export function subscriptionEmail(name: string, plan: string, amount: string) {
   return { subject: `✓ Abonnement PrimeX ${planLabel} activé`, html }
 }
 
+// ── Price alert triggered ─────────────────────────────────────────────────────
+
+export function priceAlertEmail(
+  name: string,
+  coinSymbol: string,
+  targetPrice: string,
+  direction: 'above' | 'below',
+  currentPrice: string
+) {
+  const icon = direction === 'above' ? '📈' : '📉'
+  const dirLabel = direction === 'above' ? 'au-dessus de' : 'en-dessous de'
+  const accentColor = direction === 'above' ? '#22c55e' : '#ef4444'
+
+  const html = BASE + logo() + card(`
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="display:inline-block;background:rgba(212,175,55,0.1);border:1px solid rgba(212,175,55,0.2);border-radius:12px;padding:12px 24px">
+        <span style="color:#D4AF37;font-weight:800;font-size:22px">${icon} ${coinSymbol}</span>
+      </div>
+    </div>
+
+    <h1 style="color:#F2EDD7;font-size:18px;font-weight:800;margin:0 0 8px;text-align:center">
+      Alerte de prix déclenchée !
+    </h1>
+    <p style="color:#888;font-size:14px;line-height:1.7;margin:0 0 24px;text-align:center">
+      Bonjour ${name},<br/>
+      <strong style="color:#F2EDD7">${coinSymbol}</strong> est maintenant ${dirLabel} <strong style="color:#D4AF37">${targetPrice}</strong>.
+    </p>
+
+    <div style="background:#0f0f0f;border:1px solid #1a1a1a;border-radius:12px;padding:16px;margin-bottom:24px">
+      ${[
+        ['Actif', coinSymbol],
+        ['Condition', `Prix ${dirLabel} ${targetPrice}`],
+        ['Prix actuel', `<span style="color:${accentColor};font-weight:700">${currentPrice}</span>`],
+      ].map(([k, v]) => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1a1a1a">
+          <span style="color:#555;font-size:13px">${k}</span>
+          <span style="color:#F2EDD7;font-size:13px;font-weight:600">${v}</span>
+        </div>
+      `).join('')}
+    </div>
+
+    ${btn('Voir les marchés →', 'https://primex-trading.vercel.app/dashboard')}
+
+    <p style="color:#444;font-size:12px;text-align:center;margin:20px 0 0">
+      Gérer tes alertes : <a href="https://primex-trading.vercel.app/portfolio" style="color:#D4AF37;text-decoration:none">Portfolio → Alertes de prix</a>
+    </p>
+  `) + FOOT
+
+  return { subject: `${icon} Alerte ${coinSymbol} déclenchée — PrimeX IA`, html }
+}
+
 // ── Subscription cancelled ────────────────────────────────────────────────────
 
 export function cancellationEmail(name: string, plan: string, endsAt: string) {

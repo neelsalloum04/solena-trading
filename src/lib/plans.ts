@@ -30,6 +30,7 @@ export function normalizePlan(dbPlan: string | null | undefined): PlanId {
 
 export const ROUTE_REQUIREMENTS: Record<string, PlanId> = {
   '/dashboard':   'free',
+  '/portfolio':   'free',
   '/settings':    'free',
   '/support':     'free',
   '/analyse':     'starter',
