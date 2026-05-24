@@ -131,9 +131,8 @@ function SetupScreen({ onConnect }: { onConnect: (mode: 'paper' | 'live', key?: 
             </button>
           </div>
 
-          {/* API keys — live only */}
-          {mode === 'live' && (
-            <div className="space-y-3 pt-1">
+          {/* API keys — toujours dans le DOM, visible uniquement en mode live */}
+          <div className={mode === 'live' ? 'space-y-3 pt-1' : 'hidden'}>
               <div className="flex items-center gap-2 text-xs text-[#555]">
                 <Lock className="w-3.5 h-3.5" />
                 <span>Clés Bybit — stockées localement, jamais envoyées à nos serveurs</span>
@@ -165,7 +164,8 @@ function SetupScreen({ onConnect }: { onConnect: (mode: 'paper' | 'live', key?: 
                     className="flex-1 bg-transparent text-sm text-[#F2EDD7] placeholder:text-[#333] focus:outline-none"
                   />
                   <button onClick={() => setShowSecret(v => !v)} className="text-[#444] hover:text-[#888] transition-colors">
-                    {showSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    <Eye className={cn('w-4 h-4', showSecret ? 'hidden' : 'block')} />
+                    <EyeOff className={cn('w-4 h-4', showSecret ? 'block' : 'hidden')} />
                   </button>
                 </div>
               </div>
@@ -176,8 +176,7 @@ function SetupScreen({ onConnect }: { onConnect: (mode: 'paper' | 'live', key?: 
                 <p>2. Créez une clé avec les permissions : <strong className="text-[#888]">Ordre (Lecture + Écriture)</strong></p>
                 <p>3. Limitez l'accès à votre adresse IP pour plus de sécurité</p>
               </div>
-            </div>
-          )}
+          </div>
 
           {error && (
             <p className="text-xs text-[#ef4444] flex items-center gap-2">
