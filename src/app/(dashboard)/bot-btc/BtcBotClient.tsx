@@ -1,616 +1,627 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import type { BtcSignal, BtcClosedTrade, BtcPosition, MarketData, NewsData } from '@/lib/bot-btc/types'
 import {
   Activity, AlertTriangle, ArrowDownRight, ArrowUpRight,
-  Bitcoin, BookOpen, Brain, CheckCircle2,
-  Eye, EyeOff, Key, Lock, RefreshCw, Zap,
+  Bitcoin, BookOpen, CheckCircle2, ChevronRight,
+  Key, Lock, LogOut, RefreshCw, Settings, Shield,
+  TrendingDown, TrendingUp, Zap,
 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-// ─── Storage ──────────────────────────────────────────────────────────────────
-
-const SK = {
-  mode:      'btcbot_mode_v3',
-  apiKey:    'btcbot_apikey_v3',
-  apiSecret: 'btcbot_apisecret_v3',
-  positions: 'btcbot_positions_v3',
-  closed:    'btcbot_closed_v3',
-  connected: 'btcbot_connected_v3',
-}
-
-function load<T>(key: string, fallback: T): T {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback } catch { return fallback }
-}
-function save(key: string, val: unknown) {
-  try { localStorage.setItem(key, JSON.stringify(val)) } catch {}
-}
-
-function fmtPrice(n: number) {
-  return n.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
-}
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Tab = 'signal' | 'positions' | 'historique'
+interface BotStatus {
+  session:     { is_active: boolean; mode: 'paper' | 'live'; last_tick_at: string | null; consecutive_losses: number; suspended_until: string | null } | null
+  credentials: { is_valid: boolean; api_key_preview: string; validated_at: string } | null
+  paper:       { balance: number; initial_balance: number } | null
+  risk:        { max_risk_pct: number; min_confidence: number; leverage: number; max_positions: number } | null
+  positions:   Position[]
+  logs:        Log[]
+}
 
-// ─── Main component — client-only (loaded via BtcBotWrapper with ssr:false) ──
-// localStorage is available from the very first render; no mounted pattern needed.
+interface Stats {
+  total:   { trades: number; pnl: number; winRate: number; profitFactor: number }
+  daily:   { trades: number; pnl: number }
+  weekly:  { trades: number; pnl: number }
+  monthly: { trades: number; pnl: number }
+}
+
+interface Position {
+  id: string; side: 'LONG' | 'SHORT'; mode: string
+  entry_price: number; usdt_size: number; stop_loss: number
+  tp1: number; tp2: number; tp3: number
+  tp1_hit: boolean; tp2_hit: boolean; score: number
+  opened_at: string
+}
+
+interface Trade {
+  id: string; side: 'LONG' | 'SHORT'; mode: string
+  entry_price: number; close_price: number; usdt_size: number
+  pnl: number; pnl_pct: number; close_reason: string; closed_at: string
+}
+
+interface Log {
+  id: string; level: string; message: string; created_at: string
+}
+
+type View = 'dashboard' | 'connect' | 'history' | 'settings'
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const fmt = (n: number) => n.toLocaleString('fr-FR', { maximumFractionDigits: 0 })
+const fmtUsd = (n: number) => `${n >= 0 ? '+' : ''}${n.toFixed(2)} $`
+const fmtPct = (n: number) => `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export function BtcBotClient() {
-  const [connected, setConnected]   = useState(() => load<boolean>(SK.connected, false))
-  const [mode, setMode]             = useState<'paper' | 'live'>(() => load<'paper' | 'live'>(SK.mode, 'paper'))
-  const [apiKey, setApiKey]         = useState(() => load<string>(SK.apiKey, ''))
-  const [apiSecret, setApiSecret]   = useState(() => load<string>(SK.apiSecret, ''))
+  const [view, setView]         = useState<View>('dashboard')
+  const [status, setStatus]     = useState<BotStatus | null>(null)
+  const [stats, setStats]       = useState<Stats | null>(null)
+  const [trades, setTrades]     = useState<Trade[]>([])
+  const [market, setMarket]     = useState<{ price: number; change24h: number } | null>(null)
+  const [loading, setLoading]   = useState(true)
+  const [actionLoading, setActionLoading] = useState(false)
+  const [error, setError]       = useState('')
+
+  // Connect form
+  const [apiKey, setApiKey]     = useState('')
+  const [apiSecret, setApiSecret] = useState('')
   const [showSecret, setShowSecret] = useState(false)
-  const [setupErr, setSetupErr]     = useState('')
+  const [connectMode, setConnectMode] = useState<'paper' | 'live'>('paper')
+  const [connectErr, setConnectErr] = useState('')
+  const [connectOk, setConnectOk]  = useState(false)
 
-  const [tab, setTab]               = useState<Tab>('signal')
-  const [market, setMarket]         = useState<MarketData | null>(null)
-  const [signal, setSignal]         = useState<BtcSignal | null>(null)
-  const [news, setNews]             = useState<NewsData | null>(null)
-  const [positions, setPositions]   = useState<BtcPosition[]>(() => load<BtcPosition[]>(SK.positions, []))
-  const [closed, setClosed]         = useState<BtcClosedTrade[]>(() => load<BtcClosedTrade[]>(SK.closed, []))
-  const [tradeSize, setTradeSize]   = useState(100)
-  const [autoRefresh, setAutoRefresh] = useState(false)
-  const [loadingMarket, setLoadingMarket] = useState(false)
-  const [loadingSignal, setLoadingSignal] = useState(false)
-  const [marketErr, setMarketErr]   = useState('')
-  const [signalErr, setSignalErr]   = useState('')
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  // Settings form
+  const [settings, setSettings] = useState({
+    max_risk_pct: 1, min_confidence: 75, leverage: 5,
+    max_positions: 1, max_daily_loss_pct: 5, max_consecutive_losses: 3,
+  })
 
-  // ── API calls ──────────────────────────────────────────────────────────────
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // ── Fetch data ────────────────────────────────────────────────────────────
+
+  const fetchStatus = useCallback(async () => {
+    try {
+      const r = await fetch('/api/trading/status')
+      if (r.ok) setStatus(await r.json())
+    } catch {}
+  }, [])
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const r = await fetch('/api/trading/stats')
+      if (r.ok) setStats(await r.json())
+    } catch {}
+  }, [])
 
   const fetchMarket = useCallback(async () => {
-    setLoadingMarket(true); setMarketErr('')
     try {
       const r = await fetch('/api/bot-btc/market')
-      const json = await r.json()
-      if (!r.ok) throw new Error(json?.error ?? `HTTP ${r.status}`)
-      setMarket(json)
-    } catch (e) {
-      setMarketErr(`Erreur marché : ${e instanceof Error ? e.message : String(e)}`)
-    }
-    finally { setLoadingMarket(false) }
+      if (r.ok) {
+        const d = await r.json()
+        setMarket({ price: d.price, change24h: d.change24h })
+      }
+    } catch {}
   }, [])
 
-  const fetchNews = useCallback(async () => {
-    try { const r = await fetch('/api/bot-btc/news'); if (r.ok) setNews(await r.json()) } catch {}
-  }, [])
-
-  const generateSignal = useCallback(async () => {
-    if (!market) return
-    setLoadingSignal(true); setSignalErr('')
+  const fetchHistory = useCallback(async () => {
     try {
-      const r = await fetch('/api/bot-btc/signal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ market, news: news?.sentiment ?? null }),
+      const r = await fetch('/api/trading/history?limit=50')
+      if (r.ok) {
+        const d = await r.json()
+        setTrades(d.trades ?? [])
+      }
+    } catch {}
+  }, [])
+
+  useEffect(() => {
+    Promise.all([fetchStatus(), fetchStats(), fetchMarket()]).finally(() => setLoading(false))
+    pollRef.current = setInterval(() => {
+      fetchStatus(); fetchStats(); fetchMarket()
+    }, 30_000)
+    return () => { if (pollRef.current) clearInterval(pollRef.current) }
+  }, [fetchStatus, fetchStats, fetchMarket])
+
+  useEffect(() => {
+    if (view === 'history') fetchHistory()
+    if (view === 'settings' && status?.risk) {
+      setSettings({
+        max_risk_pct:          status.risk.max_risk_pct,
+        min_confidence:        status.risk.min_confidence,
+        leverage:              status.risk.leverage,
+        max_positions:         status.risk.max_positions,
+        max_daily_loss_pct:    5,
+        max_consecutive_losses: 3,
       })
-      if (!r.ok) throw new Error()
-      setSignal(await r.json())
-    } catch { setSignalErr('Erreur lors de la génération du signal.') }
-    finally   { setLoadingSignal(false) }
-  }, [market, news])
+    }
+  }, [view, fetchHistory, status?.risk])
 
-  useEffect(() => {
-    if (connected) { fetchMarket(); fetchNews() }
-  }, [connected, fetchMarket, fetchNews])
+  // ── Actions ───────────────────────────────────────────────────────────────
 
-  useEffect(() => {
-    if (autoRefresh) intervalRef.current = setInterval(fetchMarket, 30_000)
-    else if (intervalRef.current) clearInterval(intervalRef.current)
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
-  }, [autoRefresh, fetchMarket])
-
-  // ── Session ────────────────────────────────────────────────────────────────
-
-  function handleConnect() {
-    if (mode === 'live' && (!apiKey.trim() || !apiSecret.trim())) {
-      setSetupErr('Veuillez entrer vos deux clés API Bybit.')
+  async function handleConnect() {
+    if (connectMode === 'live' && (!apiKey.trim() || !apiSecret.trim())) {
+      setConnectErr('Clés API requises pour le mode Live')
       return
     }
-    setSetupErr('')
-    save(SK.connected, true); save(SK.mode, mode)
-    save(SK.apiKey, apiKey.trim()); save(SK.apiSecret, apiSecret.trim())
-    setConnected(true)
+    setActionLoading(true); setConnectErr('')
+    try {
+      const r = await fetch('/api/trading/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          apiKey: apiKey.trim() || 'paper',
+          apiSecret: apiSecret.trim() || 'paper',
+          mode: connectMode,
+        }),
+      })
+      const d = await r.json()
+      if (!r.ok) { setConnectErr(d.error ?? 'Erreur de connexion'); return }
+      setConnectOk(true)
+      await fetchStatus()
+      setTimeout(() => { setConnectOk(false); setView('dashboard') }, 1500)
+    } catch { setConnectErr('Erreur réseau') }
+    finally { setActionLoading(false) }
   }
 
-  function handleDisconnect() {
-    save(SK.connected, false)
-    localStorage.removeItem(SK.apiKey); localStorage.removeItem(SK.apiSecret)
-    setConnected(false); setSignal(null); setMarket(null)
+  async function handleActivate(mode: 'paper' | 'live') {
+    setActionLoading(true); setError('')
+    try {
+      const r = await fetch('/api/trading/activate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode }),
+      })
+      const d = await r.json()
+      if (!r.ok) { setError(d.error ?? 'Erreur'); return }
+      await fetchStatus()
+    } catch { setError('Erreur réseau') }
+    finally { setActionLoading(false) }
   }
 
-  // ── Positions ──────────────────────────────────────────────────────────────
-
-  function openPosition() {
-    if (!signal || signal.signal === 'WAIT' || !market) return
-    const pos: BtcPosition = {
-      id: crypto.randomUUID(),
-      side: signal.signal as 'LONG' | 'SHORT',
-      entryPrice: signal.entryPrice,
-      quantity: tradeSize / signal.entryPrice,
-      usdtSize: tradeSize,
-      stopLoss: signal.stopLoss,
-      tp1: signal.tp1, tp2: signal.tp2, tp3: signal.tp3,
-      openedAt: new Date().toISOString(), mode, fromSignal: true,
-    }
-    const next = [...positions, pos]
-    setPositions(next); save(SK.positions, next)
+  async function handleDeactivate() {
+    setActionLoading(true)
+    try {
+      await fetch('/api/trading/deactivate', { method: 'POST' })
+      await fetchStatus()
+    } finally { setActionLoading(false) }
   }
 
-  function closePos(id: string, price: number, reason: BtcClosedTrade['closeReason']) {
-    const pos = positions.find(p => p.id === id)
-    if (!pos) return
-    const pnl = pos.side === 'LONG'
-      ? (price - pos.entryPrice) * pos.quantity
-      : (pos.entryPrice - price) * pos.quantity
-    const trade: BtcClosedTrade = {
-      id: pos.id, side: pos.side, entryPrice: pos.entryPrice, closePrice: price,
-      quantity: pos.quantity, usdtSize: pos.usdtSize,
-      pnl, pnlPct: (pnl / pos.usdtSize) * 100,
-      closedAt: new Date().toISOString(), closeReason: reason, mode: pos.mode,
-    }
-    const np = positions.filter(p => p.id !== id)
-    const nc = [trade, ...closed]
-    setPositions(np); setClosed(nc)
-    save(SK.positions, np); save(SK.closed, nc)
+  async function handleSaveSettings() {
+    setActionLoading(true)
+    try {
+      const r = await fetch('/api/trading/settings', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings),
+      })
+      if (r.ok) { await fetchStatus(); setView('dashboard') }
+    } finally { setActionLoading(false) }
   }
 
-  function pnlOf(pos: BtcPosition) {
-    if (!market) return null
-    const raw = pos.side === 'LONG'
-      ? (market.price - pos.entryPrice) * pos.quantity
-      : (pos.entryPrice - market.price) * pos.quantity
-    return { raw, pct: (raw / pos.usdtSize) * 100 }
+  // ── Manual tick (for users without Vercel Pro cron) ───────────────────────
+
+  async function manualTick() {
+    setActionLoading(true)
+    try {
+      await fetch('/api/trading/tick', {
+        method: 'POST',
+        headers: { 'x-cron-secret': '' },
+      })
+      await fetchStatus()
+    } finally { setActionLoading(false) }
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // RENDU — ce composant est 100% client (ssr:false via BtcBotWrapper)
-  // ─────────────────────────────────────────────────────────────────────────
+  // ─── Loading ─────────────────────────────────────────────────────────────
 
-  const totalPnl  = closed.reduce((s, t) => s + t.pnl, 0)
-  const winRate   = closed.length > 0 ? (closed.filter(t => t.pnl > 0).length / closed.length) * 100 : 0
-  const sigColor  = signal?.signal === 'LONG' ? '#22c55e' : signal?.signal === 'SHORT' ? '#ef4444' : '#F7931A'
-  const canTrade  = signal?.signal === 'LONG' || signal?.signal === 'SHORT'
-  const btnLabel  = loadingSignal ? 'Analyse en cours…' : loadingMarket ? 'Chargement…' : signal ? 'Nouveau signal' : 'Analyser le Bitcoin'
-  const isLoading = loadingSignal || loadingMarket
-
-  // ── SETUP SCREEN ──────────────────────────────────────────────────────────
-
-  if (!connected) return (
-    <div className="min-h-screen bg-[#080808] flex items-center justify-center px-4">
-      <div className="w-full max-w-md space-y-6">
-
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-[#F7931A] flex items-center justify-center shadow-[0_0_40px_#F7931A30]">
-            <Bitcoin className="w-9 h-9 text-white" strokeWidth={2.5} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-[#F2EDD7]">Robot BTC Scalping</h1>
-            <p className="text-sm text-[#555] mt-1">Intelligence artificielle · Bitcoin uniquement</p>
-          </div>
-        </div>
-
-        <div className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-2xl p-5 space-y-3">
-          <p className="text-xs font-bold text-[#F7931A] uppercase tracking-wider">Comment ça marche</p>
-          <div className="space-y-3 text-sm text-[#666]">
-            {[
-              { icon: RefreshCw, text: "Le robot analyse le Bitcoin en temps réel (prix, indicateurs, actualités) toutes les 30 secondes." },
-              { icon: Brain,     text: "L'IA Claude génère un signal LONG, SHORT ou WAIT avec un prix d'entrée, un Stop Loss et 3 niveaux de profit." },
-              { icon: Zap,       text: "En Paper Trading tout est simulé. En Live, le robot exécute les ordres sur votre compte Bybit." },
-            ].map(({ icon: Icon, text }, i) => (
-              <div key={i} className="flex gap-3">
-                <Icon className="w-4 h-4 text-[#F7931A] flex-shrink-0 mt-0.5" />
-                <span>{text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-2xl p-5 space-y-4">
-          <p className="text-xs font-bold text-[#888] uppercase tracking-wider">Choisir le mode</p>
-
-          <div className="grid grid-cols-2 gap-2">
-            <button onClick={() => setMode('paper')} className={cn(
-              'flex flex-col items-center gap-2 py-4 rounded-xl border-2 transition-all',
-              mode === 'paper' ? 'border-[#38bdf8] bg-[#38bdf8]/8 text-[#38bdf8]' : 'border-[#1a1a1a] text-[#555]'
-            )}>
-              <Activity className="w-5 h-5" />
-              <div className="text-center">
-                <p className="text-sm font-bold">Paper Trading</p>
-                <p className="text-[10px] opacity-70 mt-0.5">Simulation sans risque</p>
-              </div>
-            </button>
-            <button onClick={() => setMode('live')} className={cn(
-              'flex flex-col items-center gap-2 py-4 rounded-xl border-2 transition-all',
-              mode === 'live' ? 'border-[#F7931A] bg-[#F7931A]/8 text-[#F7931A]' : 'border-[#1a1a1a] text-[#555]'
-            )}>
-              <Zap className="w-5 h-5" />
-              <div className="text-center">
-                <p className="text-sm font-bold">Live Trading</p>
-                <p className="text-[10px] opacity-70 mt-0.5">Ordres réels Bybit</p>
-              </div>
-            </button>
-          </div>
-
-          {/* API keys — CSS show/hide, aucun swap JSX */}
-          <div className={mode !== 'live' ? 'hidden' : 'space-y-3'}>
-            <div className="flex items-center gap-2 text-xs text-[#555]">
-              <Lock className="w-3.5 h-3.5 flex-shrink-0" />
-              <span>Clés Bybit — stockées localement uniquement</span>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs text-[#666]">Clé publique (API Key)</label>
-              <div className="flex items-center bg-[#111] border border-[#2a2a2a] rounded-xl px-4 py-3 gap-2">
-                <Key className="w-4 h-4 text-[#444] flex-shrink-0" />
-                <input type="text" value={apiKey} onChange={e => setApiKey(e.target.value)}
-                  placeholder="Votre API Key Bybit"
-                  className="flex-1 bg-transparent text-sm text-[#F2EDD7] placeholder:text-[#333] focus:outline-none" />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs text-[#666]">Clé secrète (API Secret)</label>
-              <div className="flex items-center bg-[#111] border border-[#2a2a2a] rounded-xl px-4 py-3 gap-2">
-                <Lock className="w-4 h-4 text-[#444] flex-shrink-0" />
-                <input type={showSecret ? 'text' : 'password'} value={apiSecret} onChange={e => setApiSecret(e.target.value)}
-                  placeholder="Votre API Secret Bybit"
-                  className="flex-1 bg-transparent text-sm text-[#F2EDD7] placeholder:text-[#333] focus:outline-none" />
-                <button onClick={() => setShowSecret(v => !v)} className="text-[#444] hover:text-[#888] transition-colors flex-shrink-0">
-                  <Eye className={showSecret ? 'hidden w-4 h-4' : 'w-4 h-4'} />
-                  <EyeOff className={showSecret ? 'w-4 h-4' : 'hidden w-4 h-4'} />
-                </button>
-              </div>
-            </div>
-            <div className="bg-[#F7931A]/5 border border-[#F7931A]/15 rounded-xl p-3 text-[11px] text-[#666] space-y-1">
-              <p className="font-semibold text-[#F7931A]/80">Comment créer vos clés Bybit</p>
-              <p>1. bybit.com → Mon Compte → Gestion API</p>
-              <p>2. Permissions : Ordre (Lecture + Écriture)</p>
-            </div>
-          </div>
-
-          {setupErr && (
-            <p className="text-xs text-[#ef4444] flex items-center gap-1.5">
-              <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />{setupErr}
-            </p>
-          )}
-
-          <button onClick={handleConnect} className={cn(
-            'w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all',
-            mode === 'paper' ? 'bg-[#38bdf8] text-[#080808] hover:bg-[#5ac8f5]' : 'bg-[#F7931A] text-white hover:bg-[#e8841a]'
-          )}>
-            {mode === 'paper' ? <Activity className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
-            {mode === 'paper' ? 'Démarrer en Paper Trading' : 'Connecter mon compte Bybit'}
-          </button>
-        </div>
-
-        <p className="text-center text-[10px] text-[#333]">Résultats passés non garantis · Trading sur futures à risque élevé</p>
-      </div>
+  if (loading) return (
+    <div className="min-h-screen bg-[#080808] flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-[#F7931A] border-t-transparent rounded-full animate-spin" />
     </div>
   )
 
-  // ── BOT UI ────────────────────────────────────────────────────────────────
+  const sess   = status?.session
+  const creds  = status?.credentials
+  const paper  = status?.paper
+  const isActive  = sess?.is_active ?? false
+  const mode      = sess?.mode ?? 'paper'
+  const isPaper   = mode === 'paper'
+  const hasCredentials = creds?.is_valid
+
+  // ── VIEWS ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#080808] text-[#F2EDD7]">
+    <div className="min-h-screen bg-[#080808] text-[#F2EDD7] pb-20 md:pb-0">
 
-      {/* Top bar */}
+      {/* Top Bar */}
       <div className="sticky top-0 z-30 bg-[#080808]/95 backdrop-blur border-b border-[#141414]">
-        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
+        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#F7931A] flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-[#F7931A] flex items-center justify-center">
               <Bitcoin className="w-4 h-4 text-white" strokeWidth={2.5} />
             </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-lg font-black">
-                {market ? fmtPrice(market.price) : '—'}
-                <span className="text-xs text-[#555] font-normal ml-1">$</span>
-              </span>
+            <div>
+              <p className="text-sm font-black">BTC Scalper AI</p>
               {market && (
-                <span className={cn('text-xs font-bold', market.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
-                  {market.change24h >= 0 ? '+' : ''}{market.change24h.toFixed(2)}%
-                </span>
+                <p className="text-[10px] text-[#555]">
+                  {fmt(market.price)} $ <span className={market.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]'}>
+                    {fmtPct(market.change24h)}
+                  </span>
+                </p>
               )}
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => setAutoRefresh(v => !v)} className={cn(
-              'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold border transition-all',
-              autoRefresh ? 'text-[#22c55e] border-[#22c55e]/30 bg-[#22c55e]/8' : 'text-[#444] border-[#1a1a1a]'
-            )}>
-              <span className={cn('w-1.5 h-1.5 rounded-full', autoRefresh ? 'bg-[#22c55e] animate-pulse' : 'bg-[#333]')} />
-              AUTO
-            </button>
-            <span className={cn(
-              'px-2.5 py-1.5 rounded-lg text-[10px] font-bold border',
-              mode === 'paper' ? 'text-[#38bdf8] border-[#38bdf8]/20 bg-[#38bdf8]/8' : 'text-[#F7931A] border-[#F7931A]/20 bg-[#F7931A]/8'
-            )}>{mode === 'paper' ? 'PAPER' : 'LIVE'}</span>
-            <button onClick={handleDisconnect} className="text-[10px] text-[#333] hover:text-[#555] transition-colors">Changer</button>
+            {/* Robot status pill */}
+            <div className={cn('flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold border',
+              isActive
+                ? 'text-[#22c55e] border-[#22c55e]/25 bg-[#22c55e]/8'
+                : 'text-[#444] border-[#222]')}>
+              <span className={cn('w-1.5 h-1.5 rounded-full', isActive ? 'bg-[#22c55e] animate-pulse' : 'bg-[#333]')} />
+              {isActive ? 'ACTIF' : 'INACTIF'}
+            </div>
+            <span className={cn('px-2 py-1 rounded-lg text-[10px] font-bold border',
+              isPaper ? 'text-[#38bdf8] border-[#38bdf8]/20 bg-[#38bdf8]/8' : 'text-[#F7931A] border-[#F7931A]/20 bg-[#F7931A]/8')}>
+              {isPaper ? 'PAPER' : 'LIVE'}
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-5 space-y-5">
+      <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
 
-        {/* Tabs */}
-        <div className="flex gap-1 bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-1">
-          {[
-            { id: 'signal'     as Tab, label: 'Signal IA',                      icon: Brain },
-            { id: 'positions'  as Tab, label: `Positions (${positions.length})`, icon: Activity },
-            { id: 'historique' as Tab, label: 'Historique',                      icon: BookOpen },
-          ].map(t => (
-            <button key={t.id} onClick={() => setTab(t.id)} className={cn(
-              'flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-xs font-semibold transition-all',
-              tab === t.id ? 'bg-[#F7931A]/15 text-[#F7931A] border border-[#F7931A]/25' : 'text-[#555] hover:text-[#888]'
-            )}>
-              <t.icon className="w-3.5 h-3.5" />
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        {/* ── SIGNAL ── */}
-        {tab === 'signal' && (
+        {/* ── CONNECT VIEW ──────────────────────────────────────────────── */}
+        {view === 'connect' && (
           <div className="space-y-4">
-
-            {marketErr && (
-              <div className="flex items-center gap-2 bg-[#ef4444]/8 border border-[#ef4444]/20 rounded-xl p-4 text-xs text-[#ef4444]">
-                <AlertTriangle className="w-4 h-4 flex-shrink-0" />{marketErr}
-                <button onClick={fetchMarket} className="ml-auto underline">Réessayer</button>
-              </div>
-            )}
-
-            {signal && (
-              <div className="rounded-2xl border-2 p-5 space-y-4"
-                style={{ borderColor: `${sigColor}40`, backgroundColor: `${sigColor}06` }}>
-
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs text-[#555]">Signal IA · {signal.timeframe} · {new Date(signal.generatedAt).toLocaleTimeString('fr-FR')}</p>
-                    <p className="text-xs text-[#444] mt-0.5">Confiance {signal.confidence}/100 · Probabilité {signal.probability}%</p>
-                  </div>
-                  <div className="text-3xl font-black" style={{ color: sigColor }}>{signal.signal}</div>
-                </div>
-
-                <div className="space-y-1">
-                  <div className="h-2 bg-[#141414] rounded-full overflow-hidden">
-                    <div className="h-full rounded-full transition-all duration-500"
-                      style={{ width: `${signal.confidence}%`, backgroundColor: sigColor }} />
-                  </div>
-                  <div className="flex justify-between text-[10px] text-[#444]">
-                    <span>Niveau de confiance</span>
-                    <span style={{ color: sigColor }}>{signal.confidence >= 70 ? 'Fort' : signal.confidence >= 50 ? 'Modéré' : 'Faible'}</span>
-                  </div>
-                </div>
-
-                {signal.reasoning && (
-                  <p className="text-xs text-[#666] leading-relaxed border-l-2 pl-3" style={{ borderColor: `${sigColor}40` }}>
-                    {signal.reasoning}
-                  </p>
-                )}
-
-                {canTrade && (
-                  <>
-                    <div className="grid grid-cols-2 gap-2">
-                      {([
-                        { label: '📍 Entrée',        value: `${fmtPrice(signal.entryPrice)} $`, color: '#F2EDD7', sub: 'Prix recommandé' },
-                        { label: '🛑 Stop Loss',     value: `${fmtPrice(signal.stopLoss)} $`,   color: '#ef4444', sub: 'Sortie si ça tourne mal' },
-                        { label: '🎯 TP1',           value: `${fmtPrice(signal.tp1)} $`,        color: '#22c55e', sub: 'Objectif conservateur' },
-                        { label: '🎯 TP2',           value: `${fmtPrice(signal.tp2)} $`,        color: '#22c55e', sub: 'Objectif intermédiaire' },
-                        { label: '🚀 TP3',           value: `${fmtPrice(signal.tp3)} $`,        color: '#22c55e', sub: 'Objectif ambitieux' },
-                        { label: '⚖️ Risque/Profit', value: `1 : ${signal.riskReward.toFixed(1)}`, color: '#F7931A', sub: 'Ratio R/R' },
-                      ] as const).map(({ label, value, color, sub }) => (
-                        <div key={label} className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-xl p-3">
-                          <p className="text-[10px] text-[#444]">{label}</p>
-                          <p className="text-sm font-black mt-0.5" style={{ color }}>{value}</p>
-                          <p className="text-[9px] text-[#333] mt-0.5">{sub}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="flex gap-2">
-                      <div className="flex items-center bg-[#111] border border-[#2a2a2a] rounded-xl px-3 py-2.5 gap-2 w-32">
-                        <input type="number" min={10} value={tradeSize} onChange={e => setTradeSize(Number(e.target.value))}
-                          className="flex-1 bg-transparent text-sm font-bold text-[#F2EDD7] focus:outline-none text-right" />
-                        <span className="text-xs text-[#444]">$</span>
-                      </div>
-                      <button onClick={openPosition} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all border-2"
-                        style={{ borderColor: `${sigColor}50`, backgroundColor: `${sigColor}15`, color: sigColor }}>
-                        {signal.signal === 'LONG' ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
-                        Ouvrir {signal.signal} · {tradeSize} $
-                      </button>
-                    </div>
-                  </>
-                )}
-
-                {signal.signal === 'WAIT' && (
-                  <div className="text-center py-2">
-                    <p className="text-sm font-bold text-[#F7931A]">Patientez — setup non optimal</p>
-                    <p className="text-xs text-[#555] mt-1">Le robot recommande d'attendre une meilleure opportunité.</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {!signal && (
-              <div className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-2xl p-6 text-center space-y-3">
-                <div className="w-12 h-12 rounded-xl bg-[#F7931A]/10 border border-[#F7931A]/20 flex items-center justify-center mx-auto">
-                  <Brain className="w-6 h-6 text-[#F7931A]" />
+            <button onClick={() => setView('dashboard')} className="text-xs text-[#555] hover:text-[#888] flex items-center gap-1">
+              ← Retour
+            </button>
+            <div className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-2xl p-5 space-y-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#F7931A]/10 border border-[#F7931A]/20 flex items-center justify-center">
+                  <Key className="w-5 h-5 text-[#F7931A]" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-[#F2EDD7]">Prêt à analyser</p>
-                  <p className="text-xs text-[#555] mt-1">Le robot va analyser le prix BTC, les indicateurs et les actualités, puis vous donner un signal.</p>
+                  <p className="font-bold text-sm">Configuration du robot</p>
+                  <p className="text-xs text-[#555]">Choisissez le mode et connectez Bybit</p>
                 </div>
               </div>
-            )}
 
-            {news && (
-              <div className="flex items-center gap-3 bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl px-4 py-3">
-                <span className={cn('w-2 h-2 rounded-full flex-shrink-0',
-                  news.sentiment.direction === 'bullish' ? 'bg-[#22c55e]'
-                  : news.sentiment.direction === 'bearish' ? 'bg-[#ef4444]' : 'bg-[#F7931A]')} />
-                <p className="text-xs text-[#555] flex-1 truncate">
-                  <span className="font-bold text-[#888]">Actualités BTC</span> — {news.sentiment.summary}
-                </p>
-                <span className="text-xs font-bold text-[#444] flex-shrink-0">{news.sentiment.score}/100</span>
+              <div className="grid grid-cols-2 gap-2">
+                {(['paper', 'live'] as const).map(m => (
+                  <button key={m} onClick={() => setConnectMode(m)} className={cn(
+                    'flex flex-col items-center gap-2 py-4 rounded-xl border-2 transition-all',
+                    connectMode === m
+                      ? m === 'paper' ? 'border-[#38bdf8] bg-[#38bdf8]/8 text-[#38bdf8]' : 'border-[#F7931A] bg-[#F7931A]/8 text-[#F7931A]'
+                      : 'border-[#1a1a1a] text-[#444]'
+                  )}>
+                    {m === 'paper' ? <Activity className="w-5 h-5" /> : <Zap className="w-5 h-5" />}
+                    <div className="text-center">
+                      <p className="text-sm font-bold">{m === 'paper' ? 'Paper Trading' : 'Live Trading'}</p>
+                      <p className="text-[10px] opacity-60">{m === 'paper' ? 'Simulation · 10 000 $' : 'Ordres réels Bybit'}</p>
+                    </div>
+                  </button>
+                ))}
               </div>
-            )}
 
-            <button onClick={generateSignal} disabled={!market || isLoading} className={cn(
-              'w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-base transition-all',
-              !market || isLoading
-                ? 'bg-[#141414] text-[#333] cursor-not-allowed'
-                : 'bg-[#F7931A] text-white hover:bg-[#e8841a] shadow-[0_4px_24px_#F7931A25]'
-            )}>
-              {isLoading
-                ? <RefreshCw className="w-5 h-5 animate-spin" />
-                : <Bitcoin className="w-5 h-5" />
-              }
-              {btnLabel}
-            </button>
+              <div className={connectMode !== 'live' ? 'hidden' : 'space-y-3'}>
+                <div className="flex items-center gap-2 text-xs text-[#555]">
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>Clés chiffrées AES-256 — jamais exposées côté client</span>
+                </div>
+                {[
+                  { label: 'API Key', val: apiKey, set: setApiKey, type: 'text', icon: Key },
+                  { label: 'API Secret', val: apiSecret, set: setApiSecret, type: showSecret ? 'text' : 'password', icon: Lock },
+                ].map(({ label, val, set, type, icon: Icon }) => (
+                  <div key={label} className="space-y-1">
+                    <label className="text-xs text-[#555]">{label}</label>
+                    <div className="flex items-center bg-[#111] border border-[#2a2a2a] rounded-xl px-4 py-3 gap-2">
+                      <Icon className="w-4 h-4 text-[#444] flex-shrink-0" />
+                      <input value={val} onChange={e => set(e.target.value)} type={type}
+                        placeholder={`Votre ${label} Bybit`}
+                        className="flex-1 bg-transparent text-sm text-[#F2EDD7] placeholder:text-[#333] focus:outline-none" />
+                    </div>
+                  </div>
+                ))}
+                <div className="bg-[#F7931A]/5 border border-[#F7931A]/15 rounded-xl p-3 text-[11px] text-[#555] space-y-1">
+                  <p className="font-bold text-[#F7931A]/80">Créer vos clés API Bybit</p>
+                  <p>bybit.com → Mon Compte → Gestion API → Créer une clé</p>
+                  <p>Permissions requises : Lecture + Écriture sur Contrats</p>
+                </div>
+              </div>
 
-            {signalErr && (
-              <p className="text-xs text-[#ef4444] text-center">{signalErr}</p>
-            )}
+              {connectErr && (
+                <p className="text-xs text-[#ef4444] flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5" />{connectErr}
+                </p>
+              )}
+              {connectOk && (
+                <p className="text-xs text-[#22c55e] flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5" />Connexion réussie !
+                </p>
+              )}
 
-            {market && (
+              <button onClick={handleConnect} disabled={actionLoading} className={cn(
+                'w-full py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2',
+                actionLoading ? 'bg-[#141414] text-[#333] cursor-not-allowed'
+                  : connectMode === 'paper'
+                  ? 'bg-[#38bdf8] text-[#080808] hover:bg-[#5ac8f5]'
+                  : 'bg-[#F7931A] text-white hover:bg-[#e8841a]'
+              )}>
+                {actionLoading && <RefreshCw className="w-4 h-4 animate-spin" />}
+                {connectMode === 'paper' ? 'Démarrer en Paper Trading' : 'Connecter Bybit'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── SETTINGS VIEW ─────────────────────────────────────────────── */}
+        {view === 'settings' && (
+          <div className="space-y-4">
+            <button onClick={() => setView('dashboard')} className="text-xs text-[#555] hover:text-[#888] flex items-center gap-1">← Retour</button>
+            <div className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-2xl p-5 space-y-4">
+              <div className="flex items-center gap-3">
+                <Settings className="w-5 h-5 text-[#F7931A]" />
+                <p className="font-bold text-sm">Paramètres de risque</p>
+              </div>
+              {([
+                { key: 'max_risk_pct',          label: 'Risque max / trade (%)',       min: 0.1, max: 5,   step: 0.1 },
+                { key: 'min_confidence',         label: 'Score minimum (0-100)',         min: 60,  max: 95,  step: 1 },
+                { key: 'leverage',               label: 'Levier (x)',                    min: 1,   max: 20,  step: 1 },
+                { key: 'max_positions',          label: 'Positions simultanées max',     min: 1,   max: 3,   step: 1 },
+                { key: 'max_daily_loss_pct',     label: 'Perte journalière max (%)',     min: 1,   max: 20,  step: 0.5 },
+                { key: 'max_consecutive_losses', label: 'Pertes consécutives max',       min: 1,   max: 10,  step: 1 },
+              ] as const).map(({ key, label, min, max, step }) => (
+                <div key={key} className="space-y-1.5">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-[#666]">{label}</span>
+                    <span className="text-[#F7931A] font-bold">{settings[key]}</span>
+                  </div>
+                  <input type="range" min={min} max={max} step={step}
+                    value={settings[key]}
+                    onChange={e => setSettings(s => ({ ...s, [key]: parseFloat(e.target.value) }))}
+                    className="w-full accent-[#F7931A]" />
+                </div>
+              ))}
+              <button onClick={handleSaveSettings} disabled={actionLoading} className={cn(
+                'w-full py-3 rounded-xl font-bold text-sm transition-all',
+                actionLoading ? 'bg-[#141414] text-[#333]' : 'bg-[#F7931A] text-white hover:bg-[#e8841a]'
+              )}>
+                Sauvegarder
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── HISTORY VIEW ──────────────────────────────────────────────── */}
+        {view === 'history' && (
+          <div className="space-y-4">
+            <button onClick={() => setView('dashboard')} className="text-xs text-[#555] hover:text-[#888] flex items-center gap-1">← Retour</button>
+            {stats && (
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { label: 'Volume 24h', value: `${(market.volume24h / 1_000_000).toFixed(0)}M $` },
-                  { label: 'Funding',    value: `${(market.fundingRate * 100).toFixed(4)}%` },
-                  { label: 'Bid/Ask',    value: market.orderBook.ratio.toFixed(2), up: market.orderBook.ratio > 1 },
-                ].map(({ label, value, up }) => (
-                  <div key={label} className="bg-[#0a0a0a] border border-[#141414] rounded-xl p-3 text-center">
+                  { label: 'Trades', val: String(stats.total.trades), color: '#888' },
+                  { label: 'Win Rate', val: `${stats.total.winRate.toFixed(0)}%`, color: stats.total.winRate >= 50 ? '#22c55e' : '#ef4444' },
+                  { label: 'PnL Total', val: fmtUsd(stats.total.pnl), color: stats.total.pnl >= 0 ? '#22c55e' : '#ef4444' },
+                  { label: 'Profit Factor', val: stats.total.profitFactor.toFixed(2), color: stats.total.profitFactor >= 1.5 ? '#22c55e' : '#F7931A' },
+                  { label: 'Aujourd\'hui', val: fmtUsd(stats.daily.pnl), color: stats.daily.pnl >= 0 ? '#22c55e' : '#ef4444' },
+                  { label: 'Ce mois', val: fmtUsd(stats.monthly.pnl), color: stats.monthly.pnl >= 0 ? '#22c55e' : '#ef4444' },
+                ].map(({ label, val, color }) => (
+                  <div key={label} className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-3 text-center">
                     <p className="text-[10px] text-[#444]">{label}</p>
-                    <p className={cn('text-sm font-bold mt-0.5',
-                      up === true ? 'text-[#22c55e]' : up === false ? 'text-[#ef4444]' : 'text-[#888]')}>
-                      {value}
-                    </p>
+                    <p className="text-sm font-black mt-0.5" style={{ color }}>{val}</p>
                   </div>
                 ))}
               </div>
             )}
-          </div>
-        )}
-
-        {/* ── POSITIONS ── */}
-        {tab === 'positions' && (
-          <div className="space-y-3">
-            {positions.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
-                <Activity className="w-8 h-8 text-[#222]" />
-                <p className="text-sm text-[#444]">Aucune position ouverte</p>
-                <p className="text-xs text-[#333]">Générez un signal depuis l'onglet Signal IA</p>
-              </div>
-            )}
-            {positions.map(pos => {
-              const pnl = pnlOf(pos)
-              return (
-                <div key={pos.id} className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-2xl p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className={cn(
-                        'flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black',
-                        pos.side === 'LONG' ? 'text-[#22c55e] bg-[#22c55e]/10' : 'text-[#ef4444] bg-[#ef4444]/10'
-                      )}>
-                        {pos.side === 'LONG' ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
-                        {pos.side}
-                      </span>
-                      <span className="text-xs text-[#555]">BTC · {pos.usdtSize} $</span>
-                    </div>
-                    <span className={cn('text-base font-black', (pnl?.raw ?? 0) >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
-                      {pnl ? `${pnl.raw >= 0 ? '+' : ''}${pnl.raw.toFixed(2)} $` : '—'}
+            <div className="space-y-2">
+              {trades.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-12 gap-2">
+                  <BookOpen className="w-8 h-8 text-[#222]" />
+                  <p className="text-sm text-[#444]">Aucun trade clôturé</p>
+                </div>
+              )}
+              {trades.map(t => (
+                <div key={t.id} className="flex items-center justify-between bg-[#0f0f0f] border border-[#141414] rounded-xl px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className={cn('text-xs font-black flex items-center gap-1',
+                      t.side === 'LONG' ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
+                      {t.side === 'LONG' ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
+                      {t.side}
                     </span>
+                    <span className="text-[10px] text-[#444]">{fmt(t.entry_price)} → {fmt(t.close_price)} $</span>
+                    <span className="text-[9px] text-[#333] px-1.5 py-0.5 bg-[#141414] rounded">{t.close_reason}</span>
                   </div>
-                  <div className="grid grid-cols-4 gap-1.5 text-center">
-                    {[
-                      { label: 'Entrée', value: fmtPrice(pos.entryPrice), color: '#888' },
-                      { label: 'SL',     value: fmtPrice(pos.stopLoss),   color: '#ef4444' },
-                      { label: 'TP1',    value: fmtPrice(pos.tp1),        color: '#22c55e' },
-                      { label: 'TP2',    value: fmtPrice(pos.tp2),        color: '#22c55e' },
-                    ].map(({ label, value, color }) => (
-                      <div key={label} className="bg-[#111] rounded-lg py-2">
-                        <p className="text-[9px] text-[#444]">{label}</p>
-                        <p className="font-bold text-[11px] mt-0.5" style={{ color }}>{value}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    {(['tp1', 'tp2', 'tp3'] as const).map(tp => (
-                      <button key={tp} onClick={() => closePos(pos.id, pos[tp], tp)}
-                        className="flex-1 py-2 rounded-lg bg-[#22c55e]/10 text-[#22c55e] text-[11px] font-bold hover:bg-[#22c55e]/20 transition-all">
-                        {tp.toUpperCase()}
-                      </button>
-                    ))}
-                    <button onClick={() => closePos(pos.id, pos.stopLoss, 'stop_loss')}
-                      className="px-3 py-2 rounded-lg bg-[#ef4444]/10 text-[#ef4444] text-[11px] font-bold hover:bg-[#ef4444]/20 transition-all">
-                      SL
-                    </button>
-                    <button onClick={() => market && closePos(pos.id, market.price, 'manual')}
-                      className="px-3 py-2 rounded-lg bg-[#141414] text-[#555] text-[11px] font-bold hover:text-[#888] transition-all">
-                      Manuel
-                    </button>
+                  <div className="flex items-center gap-1.5">
+                    <span className={cn('text-sm font-bold', t.pnl >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
+                      {fmtUsd(t.pnl)}
+                    </span>
+                    {t.pnl >= 0 ? <CheckCircle2 className="w-3.5 h-3.5 text-[#22c55e]" /> : <AlertTriangle className="w-3.5 h-3.5 text-[#ef4444]" />}
                   </div>
                 </div>
-              )
-            })}
+              ))}
+            </div>
           </div>
         )}
 
-        {/* ── HISTORIQUE ── */}
-        {tab === 'historique' && (
+        {/* ── DASHBOARD VIEW ────────────────────────────────────────────── */}
+        {view === 'dashboard' && (
           <div className="space-y-4">
+
+            {error && (
+              <div className="flex items-center gap-2 bg-[#ef4444]/8 border border-[#ef4444]/20 rounded-xl p-3 text-xs text-[#ef4444]">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />{error}
+              </div>
+            )}
+
+            {/* PnL Stats */}
+            {stats && (
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { label: 'Aujourd\'hui', val: fmtUsd(stats.daily.pnl), pct: stats.daily.pnl, icon: TrendingUp },
+                  { label: 'Cette semaine', val: fmtUsd(stats.weekly.pnl), pct: stats.weekly.pnl, icon: TrendingUp },
+                  { label: 'Ce mois', val: fmtUsd(stats.monthly.pnl), pct: stats.monthly.pnl, icon: TrendingUp },
+                  { label: 'Win Rate', val: `${stats.total.winRate.toFixed(0)}%`, pct: stats.total.winRate - 50, icon: Activity },
+                ].map(({ label, val, pct, icon: Icon }) => (
+                  <div key={label} className="bg-[#0f0f0f] border border-[#141414] rounded-xl p-4">
+                    <p className="text-[10px] text-[#444]">{label}</p>
+                    <p className={cn('text-lg font-black mt-1', pct >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>{val}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Capital */}
+            {paper && (
+              <div className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-4 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] text-[#444]">Capital {isPaper ? 'virtuel' : 'disponible'}</p>
+                  <p className="text-xl font-black mt-0.5">{fmt(paper.balance)} <span className="text-xs text-[#444] font-normal">$</span></p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] text-[#444]">Performance totale</p>
+                  <p className={cn('text-sm font-bold', paper.balance >= paper.initial_balance ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
+                    {fmtPct(((paper.balance - paper.initial_balance) / paper.initial_balance) * 100)}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Open Positions */}
+            {(status?.positions ?? []).length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-bold text-[#555] uppercase tracking-wider">Positions ouvertes</p>
+                {(status?.positions ?? []).map(pos => (
+                  <div key={pos.id} className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className={cn('flex items-center gap-1 text-xs font-black px-2 py-1 rounded-lg',
+                        pos.side === 'LONG' ? 'text-[#22c55e] bg-[#22c55e]/10' : 'text-[#ef4444] bg-[#ef4444]/10')}>
+                        {pos.side === 'LONG' ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
+                        {pos.side} · {pos.usdt_size} $
+                      </span>
+                      <span className="text-xs text-[#555]">Score {pos.score}/100</span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-1 text-center">
+                      {[
+                        { l: 'Entrée', v: fmt(pos.entry_price), c: '#888' },
+                        { l: 'SL', v: fmt(pos.stop_loss), c: '#ef4444' },
+                        { l: 'TP1', v: fmt(pos.tp1), c: pos.tp1_hit ? '#22c55e' : '#555' },
+                        { l: 'TP2', v: fmt(pos.tp2), c: pos.tp2_hit ? '#22c55e' : '#555' },
+                      ].map(({ l, v, c }) => (
+                        <div key={l} className="bg-[#111] rounded-lg py-1.5">
+                          <p className="text-[9px] text-[#333]">{l}</p>
+                          <p className="text-[11px] font-bold" style={{ color: c }}>{v}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Stats */}
+            {stats && (
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { label: 'Trades',         val: String(stats.total.trades) },
+                  { label: 'Profit Factor',  val: stats.total.profitFactor.toFixed(2) },
+                  { label: 'PnL Total',      val: fmtUsd(stats.total.pnl), color: stats.total.pnl >= 0 ? '#22c55e' : '#ef4444' },
+                ].map(({ label, val, color }) => (
+                  <div key={label} className="bg-[#0f0f0f] border border-[#141414] rounded-xl p-3 text-center">
+                    <p className="text-[10px] text-[#444]">{label}</p>
+                    <p className="text-base font-black mt-0.5" style={{ color: color ?? '#F2EDD7' }}>{val}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="space-y-2">
+              {!hasCredentials && (
+                <button onClick={() => setView('connect')} className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-[#F7931A] text-white font-bold text-sm hover:bg-[#e8841a] transition-all">
+                  <span className="flex items-center gap-2"><Key className="w-4 h-4" />Configurer le robot</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              )}
+
+              {hasCredentials && !isActive && (
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={() => handleActivate('paper')} disabled={actionLoading} className={cn(
+                    'flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all',
+                    actionLoading ? 'bg-[#141414] text-[#333]' : 'bg-[#38bdf8]/15 text-[#38bdf8] border border-[#38bdf8]/25 hover:bg-[#38bdf8]/25'
+                  )}>
+                    <Activity className="w-4 h-4" />Paper
+                  </button>
+                  <button onClick={() => handleActivate('live')} disabled={actionLoading} className={cn(
+                    'flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all',
+                    actionLoading ? 'bg-[#141414] text-[#333]' : 'bg-[#F7931A]/15 text-[#F7931A] border border-[#F7931A]/25 hover:bg-[#F7931A]/25'
+                  )}>
+                    <Zap className="w-4 h-4" />Live
+                  </button>
+                </div>
+              )}
+
+              {hasCredentials && isActive && (
+                <button onClick={handleDeactivate} disabled={actionLoading} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm bg-[#ef4444]/10 text-[#ef4444] border border-[#ef4444]/20 hover:bg-[#ef4444]/20 transition-all">
+                  <LogOut className="w-4 h-4" />Désactiver le robot
+                </button>
+              )}
+            </div>
+
+            {/* Quick nav */}
             <div className="grid grid-cols-3 gap-2">
               {[
-                { label: 'Trades',   value: String(closed.length),                                    color: '#888' },
-                { label: 'Win Rate', value: `${winRate.toFixed(0)}%`,                                 color: winRate >= 50 ? '#22c55e' : '#ef4444' },
-                { label: 'PnL',      value: `${totalPnl >= 0 ? '+' : ''}${totalPnl.toFixed(0)} $`,   color: totalPnl >= 0 ? '#22c55e' : '#ef4444' },
-              ].map(({ label, value, color }) => (
-                <div key={label} className="bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl p-4 text-center">
-                  <p className="text-[10px] text-[#444]">{label}</p>
-                  <p className="text-lg font-black mt-1" style={{ color }}>{value}</p>
-                </div>
+                { label: 'Configurer', icon: Key, view: 'connect' as View },
+                { label: 'Historique', icon: BookOpen, view: 'history' as View },
+                { label: 'Paramètres', icon: Settings, view: 'settings' as View },
+              ].map(({ label, icon: Icon, view: v }) => (
+                <button key={v} onClick={() => setView(v)} className="flex flex-col items-center gap-1.5 py-3 bg-[#0f0f0f] border border-[#141414] rounded-xl text-[#555] hover:text-[#888] hover:border-[#222] transition-all">
+                  <Icon className="w-4 h-4" />
+                  <span className="text-[10px] font-medium">{label}</span>
+                </button>
               ))}
             </div>
-            {closed.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-12 gap-2">
-                <BookOpen className="w-8 h-8 text-[#222]" />
-                <p className="text-sm text-[#444]">Aucun trade clôturé</p>
+
+            {/* Robot logs */}
+            {(status?.logs ?? []).length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-bold text-[#333] uppercase tracking-wider">Activité récente</p>
+                <div className="bg-[#0a0a0a] border border-[#141414] rounded-xl p-3 space-y-1.5 max-h-48 overflow-y-auto">
+                  {(status?.logs ?? []).map(log => (
+                    <div key={log.id} className="flex items-start gap-2 text-[11px]">
+                      <span className={cn('shrink-0 mt-0.5',
+                        log.level === 'error' ? 'text-[#ef4444]'
+                        : log.level === 'trade' ? 'text-[#22c55e]'
+                        : log.level === 'signal' ? 'text-[#F7931A]'
+                        : log.level === 'warn' ? 'text-[#eab308]'
+                        : 'text-[#333]')}>●</span>
+                      <span className="text-[#555] flex-1">{log.message}</span>
+                      <span className="text-[#2a2a2a] shrink-0">
+                        {new Date(log.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
-            <div className="space-y-2">
-              {closed.map(t => (
-                <div key={t.id} className="flex items-center justify-between bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <span className={cn('text-xs font-black', t.side === 'LONG' ? 'text-[#22c55e]' : 'text-[#ef4444]')}>{t.side}</span>
-                    <span className="text-xs text-[#444]">{fmtPrice(t.entryPrice)} → {fmtPrice(t.closePrice)} $</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={cn('text-sm font-bold', t.pnl >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
-                      {t.pnl >= 0 ? '+' : ''}{t.pnl.toFixed(2)} $
-                    </span>
-                    {t.pnl >= 0
-                      ? <CheckCircle2 className="w-4 h-4 text-[#22c55e]" />
-                      : <AlertTriangle className="w-4 h-4 text-[#ef4444]" />
-                    }
-                  </div>
-                </div>
-              ))}
+
+            {/* Security notice */}
+            <div className="flex items-center gap-2 px-3 py-2 bg-[#0a0a0a] border border-[#141414] rounded-xl">
+              <Shield className="w-3.5 h-3.5 text-[#333] flex-shrink-0" />
+              <p className="text-[10px] text-[#2a2a2a]">
+                Clés API chiffrées AES-256 · Jamais exposées · Résultats passés non garantis
+              </p>
             </div>
-            {closed.length > 0 && (
-              <button onClick={() => { setClosed([]); save(SK.closed, []) }}
-                className="w-full text-xs text-[#333] hover:text-[#555] py-2 transition-colors">
-                Effacer l'historique
-              </button>
+
+            {/* Last tick info */}
+            {sess?.last_tick_at && (
+              <p className="text-center text-[10px] text-[#2a2a2a]">
+                Dernier tick : {new Date(sess.last_tick_at).toLocaleTimeString('fr-FR')}
+              </p>
             )}
           </div>
         )}
 
-        <p className="text-center text-[10px] text-[#2a2a2a] pb-4">
-          {mode === 'paper' ? 'Mode simulation — aucun capital réel engagé' : `Compte Live Bybit · ${apiKey.slice(0, 8)}…`}
-        </p>
       </div>
     </div>
   )
