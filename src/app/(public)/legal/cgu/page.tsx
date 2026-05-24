@@ -24,9 +24,10 @@ export default function CGUPage() {
 
       <Section title="3. Description des forfaits">
         <p><strong className="text-[#D4AF37]">Gratuit :</strong> Accès au tableau de bord, actualités marchés et calendrier économique uniquement.</p>
-        <p><strong className="text-[#38bdf8]">Starter (49€/mois) :</strong> Accès à l'Analyse IA (3 analyses/jour) et au Chat IA (30 messages/jour).</p>
-        <p><strong className="text-[#D4AF37]">Pro (149€/mois) :</strong> Analyse IA illimitée, Chat IA illimité, Signaux live, Portfolio & Analytics.</p>
-        <p><strong className="text-[#22c55e]">Premium (399€/mois) :</strong> Toutes les fonctionnalités incluant le Bot de trading automatisé et l'accès API.</p>
+        <p><strong className="text-[#38bdf8]">Starter X (59€/mois ou 499€/an) :</strong> 60 analyses IA/mois, 60 messages IA/mois, signaux de trading illimités.</p>
+        <p><strong className="text-[#D4AF37]">Pro X (89€/mois ou 819€/an) :</strong> 200 analyses IA/mois, 200 messages IA/mois, signaux illimités, robot de trading.</p>
+        <p><strong className="text-[#a78bfa]">Expert X (139€/mois ou 1 399€/an) :</strong> 1 000 analyses IA/mois, 1 000 messages IA/mois, signaux illimités, robot de trading.</p>
+        <p><strong className="text-[#22c55e]">Prime X (509€/mois ou 5 699€/an) :</strong> Accès illimité à tous les modules actuels et futurs, robot de trading illimité.</p>
       </Section>
 
       <Section title="4. Gestion des abonnements">
