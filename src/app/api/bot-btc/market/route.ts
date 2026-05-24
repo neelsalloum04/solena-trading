@@ -11,17 +11,22 @@ export const maxDuration = 30
 let cache: { data: MarketData; ts: number } | null = null
 const CACHE_TTL = 30_000
 
-// ─── Binance helpers ──────────────────────────────────────────────────────────
+// ─── Bybit helpers ────────────────────────────────────────────────────────────
+// Binance bloque les IPs Vercel — on utilise Bybit exclusivement.
 
-const BINANCE = 'https://api.binance.com'
+const BYBIT = 'https://api.bybit.com'
 
+// Bybit kline intervals: 1, 3, 5, 15, 60 (minutes)
 async function fetchKlines(interval: string, limit = 200): Promise<Candle[]> {
-  const url = `${BINANCE}/api/v3/klines?symbol=BTCUSDT&interval=${interval}&limit=${limit}`
+  const url = `${BYBIT}/v5/market/kline?category=linear&symbol=BTCUSDT&interval=${interval}&limit=${limit}`
   const res = await fetch(url, { next: { revalidate: 0 } })
-  if (!res.ok) throw new Error(`Binance klines ${interval}: ${res.status}`)
-  const raw: [number, string, string, string, string, string][] = await res.json()
-  return raw.map(k => ({
-    time:   k[0],
+  if (!res.ok) throw new Error(`Bybit klines ${interval}: ${res.status}`)
+  const json = await res.json()
+  if (json.retCode !== 0) throw new Error(`Bybit klines ${interval}: retCode ${json.retCode}`)
+  // Bybit returns newest-first — reverse to get chronological order
+  const list: string[][] = json.result.list.reverse()
+  return list.map(k => ({
+    time:   parseInt(k[0]),
     open:   parseFloat(k[1]),
     high:   parseFloat(k[2]),
     low:    parseFloat(k[3]),
@@ -31,35 +36,25 @@ async function fetchKlines(interval: string, limit = 200): Promise<Candle[]> {
 }
 
 async function fetchTicker() {
-  const res = await fetch(`${BINANCE}/api/v3/ticker/24hr?symbol=BTCUSDT`, { next: { revalidate: 0 } })
-  if (!res.ok) throw new Error(`Binance ticker: ${res.status}`)
-  return res.json()
+  const res = await fetch(
+    `${BYBIT}/v5/market/tickers?category=linear&symbol=BTCUSDT`,
+    { next: { revalidate: 0 } }
+  )
+  if (!res.ok) throw new Error(`Bybit ticker: ${res.status}`)
+  const json = await res.json()
+  if (json.retCode !== 0) throw new Error(`Bybit ticker: retCode ${json.retCode}`)
+  return json.result.list[0]
 }
 
-async function fetchDepth(limit = 20) {
-  const res = await fetch(`${BINANCE}/api/v3/depth?symbol=BTCUSDT&limit=${limit}`, { next: { revalidate: 0 } })
-  if (!res.ok) throw new Error(`Binance depth: ${res.status}`)
-  return res.json()
-}
-
-// ─── Bybit helpers ────────────────────────────────────────────────────────────
-
-async function fetchBybit() {
-  try {
-    const res = await fetch(
-      'https://api.bybit.com/v5/market/tickers?category=linear&symbol=BTCUSDT',
-      { next: { revalidate: 0 } }
-    )
-    if (!res.ok) return { fundingRate: 0, openInterest: 0 }
-    const json = await res.json()
-    const t = json?.result?.list?.[0]
-    return {
-      fundingRate:  parseFloat(t?.fundingRate ?? '0'),
-      openInterest: parseFloat(t?.openInterestValue ?? '0'),
-    }
-  } catch {
-    return { fundingRate: 0, openInterest: 0 }
-  }
+async function fetchOrderbook(limit = 25) {
+  const res = await fetch(
+    `${BYBIT}/v5/market/orderbook?category=linear&symbol=BTCUSDT&limit=${limit}`,
+    { next: { revalidate: 0 } }
+  )
+  if (!res.ok) throw new Error(`Bybit orderbook: ${res.status}`)
+  const json = await res.json()
+  if (json.retCode !== 0) throw new Error(`Bybit orderbook: retCode ${json.retCode}`)
+  return json.result
 }
 
 // ─── GET ──────────────────────────────────────────────────────────────────────
@@ -71,32 +66,30 @@ export async function GET() {
       return NextResponse.json({ ...cache.data, cached: true })
     }
 
-    // Fetch in parallel
-    const [klines1m, klines3m, klines5m, klines15m, klines1h, ticker, depth, bybit] = await Promise.all([
-      fetchKlines('1m',  200),
-      fetchKlines('3m',  200),
-      fetchKlines('5m',  200),
-      fetchKlines('15m', 200),
-      fetchKlines('1h',  200),
+    const [klines1m, klines3m, klines5m, klines15m, klines1h, ticker, orderbook] = await Promise.all([
+      fetchKlines('1',  200),
+      fetchKlines('3',  200),
+      fetchKlines('5',  200),
+      fetchKlines('15', 200),
+      fetchKlines('60', 200),
       fetchTicker(),
-      fetchDepth(20),
-      fetchBybit(),
+      fetchOrderbook(25),
     ])
 
-    // Order book
-    const bids: [number, number][] = depth.bids.map((b: string[]) => [parseFloat(b[0]), parseFloat(b[1])])
-    const asks: [number, number][] = depth.asks.map((a: string[]) => [parseFloat(a[0]), parseFloat(a[1])])
+    // Order book — Bybit: b = bids, a = asks, each [price, size]
+    const bids: [number, number][] = orderbook.b.map((b: string[]) => [parseFloat(b[0]), parseFloat(b[1])])
+    const asks: [number, number][] = orderbook.a.map((a: string[]) => [parseFloat(a[0]), parseFloat(a[1])])
     const bidVol = bids.reduce((s, b) => s + b[1], 0)
     const askVol = asks.reduce((s, a) => s + a[1], 0)
 
     const data: MarketData = {
-      price:       parseFloat(ticker.lastPrice),
-      change24h:   parseFloat(ticker.priceChangePercent),
-      volume24h:   parseFloat(ticker.quoteVolume),
-      high24h:     parseFloat(ticker.highPrice),
-      low24h:      parseFloat(ticker.lowPrice),
-      fundingRate:  bybit.fundingRate,
-      openInterest: bybit.openInterest,
+      price:        parseFloat(ticker.lastPrice),
+      change24h:    parseFloat(ticker.price24hPcnt) * 100,   // Bybit returns decimal (0.023 = 2.3%)
+      volume24h:    parseFloat(ticker.turnover24h),           // USDT turnover
+      high24h:      parseFloat(ticker.highPrice24h),
+      low24h:       parseFloat(ticker.lowPrice24h),
+      fundingRate:  parseFloat(ticker.fundingRate ?? '0'),
+      openInterest: parseFloat(ticker.openInterestValue ?? '0'),
       orderBook: {
         bids,
         asks,
@@ -116,6 +109,6 @@ export async function GET() {
     return NextResponse.json(data)
   } catch (err) {
     console.error('[bot-btc/market]', err)
-    return NextResponse.json({ error: 'Erreur récupération marché' }, { status: 500 })
+    return NextResponse.json({ error: String(err) }, { status: 500 })
   }
 }
