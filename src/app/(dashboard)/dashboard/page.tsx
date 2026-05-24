@@ -19,7 +19,6 @@ import { useEffect, useState } from 'react'
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { EconomicCalendar } from '@/components/dashboard/EconomicCalendar'
 import { LiveMarkets } from '@/components/dashboard/LiveMarkets'
-import { MarketNews } from '@/components/dashboard/MarketNews'
 import { MarketNotifications } from '@/components/dashboard/MarketNotifications'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -340,9 +339,6 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-
-      {/* ── Actualités des marchés ── */}
-      <MarketNews />
 
       {/* ── Calendrier économique ── */}
       <EconomicCalendar />
