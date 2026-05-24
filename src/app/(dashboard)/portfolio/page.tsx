@@ -16,8 +16,6 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface Coin {
   id: string
   symbol: string
@@ -48,8 +46,6 @@ interface PriceAlert {
   created_at: string
 }
 
-// ─── Formatters ───────────────────────────────────────────────────────────────
-
 function fmtUSD(n: number) {
   const abs = Math.abs(n)
   const sign = n < 0 ? '-' : ''
@@ -67,8 +63,6 @@ function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
 export default function PortfolioPage() {
   const [tab, setTab] = useState<'portfolio' | 'alerts'>('portfolio')
   const [coins, setCoins] = useState<Coin[]>([])
@@ -76,7 +70,6 @@ export default function PortfolioPage() {
   const [alerts, setAlerts] = useState<PriceAlert[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Add holding form
   const [showAddH, setShowAddH] = useState(false)
   const [hCoin, setHCoin] = useState('')
   const [hQty, setHQty] = useState('')
@@ -84,7 +77,6 @@ export default function PortfolioPage() {
   const [hSaving, setHSaving] = useState(false)
   const [hError, setHError] = useState('')
 
-  // Add alert form
   const [showAddA, setShowAddA] = useState(false)
   const [aCoin, setACoin] = useState('')
   const [aPrice, setAPrice] = useState('')
@@ -112,8 +104,6 @@ export default function PortfolioPage() {
     load()
   }, [])
 
-  // ── Portfolio stats ──────────────────────────────────────────────────────────
-
   const stats = useMemo(() => {
     let totalValue = 0
     let totalInvested = 0
@@ -128,9 +118,10 @@ export default function PortfolioPage() {
     return { totalValue, totalInvested, pnl, pnlPct }
   }, [holdings, coins])
 
-  // ── Handlers ─────────────────────────────────────────────────────────────────
+  const activeAlerts = alerts.filter(a => a.active)
+  const triggeredAlerts = alerts.filter(a => !a.active)
 
-  const handleAddHolding = async () => {
+  async function handleAddHolding() {
     setHError('')
     if (!hCoin || !hQty || !hPrice) { setHError('Remplis tous les champs.'); return }
     const coin = coins.find(c => c.id === hCoin)
@@ -162,12 +153,12 @@ export default function PortfolioPage() {
     setHSaving(false)
   }
 
-  const handleDeleteHolding = async (id: string) => {
+  async function handleDeleteHolding(id: string) {
     setHoldings(prev => prev.filter(h => h.id !== id))
     await fetch(`/api/portfolio?id=${id}`, { method: 'DELETE' })
   }
 
-  const handleAddAlert = async () => {
+  async function handleAddAlert() {
     setAError('')
     if (!aCoin || !aPrice) { setAError('Remplis tous les champs.'); return }
     const coin = coins.find(c => c.id === aCoin)
@@ -198,106 +189,90 @@ export default function PortfolioPage() {
     setASaving(false)
   }
 
-  const handleDeleteAlert = async (id: string) => {
+  async function handleDeleteAlert(id: string) {
     setAlerts(prev => prev.filter(a => a.id !== id))
     await fetch(`/api/alerts?id=${id}`, { method: 'DELETE' })
   }
 
-  const activeAlerts = alerts.filter(a => a.active)
-  const triggeredAlerts = alerts.filter(a => !a.active)
-
-  // ── Render ───────────────────────────────────────────────────────────────────
-
   return (
     <div className="p-4 md:p-6 max-w-[1100px] mx-auto space-y-6">
-
-      {/* Header */}
       <div>
-        <h1 className="text-xl md:text-2xl font-black text-white">Portfolio & Alertes</h1>
+        <h1 className="text-xl md:text-2xl font-black text-white">Portfolio &amp; Alertes</h1>
         <p className="text-xs text-[#444] mt-0.5">Suivez vos positions et créez des alertes de prix</p>
       </div>
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-[#1a1a1a]">
-        {([
-          { id: 'portfolio', label: 'Portefeuille', icon: Wallet },
-          { id: 'alerts',    label: 'Alertes de prix', icon: Bell, badge: activeAlerts.length },
-        ] as const).map(t => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={cn(
-              'flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors',
-              tab === t.id
-                ? 'border-[#D4AF37] text-[#D4AF37]'
-                : 'border-transparent text-[#555] hover:text-[#888]'
-            )}
-          >
-            <t.icon className="w-4 h-4" />
-            {t.label}
-            {'badge' in t && t.badge > 0 && (
-              <span className="bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
-                {t.badge}
-              </span>
-            )}
-          </button>
-        ))}
+        <button
+          onClick={() => setTab('portfolio')}
+          className={cn(
+            'flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors',
+            tab === 'portfolio' ? 'border-[#D4AF37] text-[#D4AF37]' : 'border-transparent text-[#555] hover:text-[#888]'
+          )}
+        >
+          <Wallet className="w-4 h-4" />
+          Portefeuille
+        </button>
+        <button
+          onClick={() => setTab('alerts')}
+          className={cn(
+            'flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors',
+            tab === 'alerts' ? 'border-[#D4AF37] text-[#D4AF37]' : 'border-transparent text-[#555] hover:text-[#888]'
+          )}
+        >
+          <Bell className="w-4 h-4" />
+          Alertes de prix
+          {activeAlerts.length > 0 && (
+            <span className="bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+              {activeAlerts.length}
+            </span>
+          )}
+        </button>
       </div>
 
-      {/* Content */}
-      {loading ? (
+      {loading && (
         <div className="flex items-center justify-center py-24">
           <Loader2 className="w-8 h-8 text-[#D4AF37] animate-spin" />
         </div>
-      ) : tab === 'portfolio' ? (
-        <>
-          {/* ── Stats cards ── */}
+      )}
+
+      {!loading && tab === 'portfolio' && (
+        <div className="space-y-6">
+          {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              {
-                label: 'Valeur totale',
-                value: fmtUSD(stats.totalValue),
-                icon: <Wallet className="w-4 h-4" />,
-                color: 'text-[#D4AF37]',
-                bg: 'bg-[#D4AF37]/5',
-                border: 'border-[#D4AF37]/20',
-              },
-              {
-                label: 'Investi',
-                value: fmtUSD(stats.totalInvested),
-                icon: <TrendingUp className="w-4 h-4" />,
-                color: 'text-[#38bdf8]',
-                bg: 'bg-[#38bdf8]/5',
-                border: 'border-[#38bdf8]/20',
-              },
-              {
-                label: 'P&L',
-                value: fmtUSD(stats.pnl),
-                icon: stats.pnl >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />,
-                color: stats.pnl >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
-                bg: stats.pnl >= 0 ? 'bg-[#22c55e]/5' : 'bg-[#ef4444]/5',
-                border: stats.pnl >= 0 ? 'border-[#22c55e]/20' : 'border-[#ef4444]/20',
-              },
-              {
-                label: 'Rendement',
-                value: holdings.length > 0 ? fmtPct(stats.pnlPct) : '—',
-                icon: stats.pnlPct >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />,
-                color: stats.pnlPct >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
-                bg: stats.pnlPct >= 0 ? 'bg-[#22c55e]/5' : 'bg-[#ef4444]/5',
-                border: stats.pnlPct >= 0 ? 'border-[#22c55e]/20' : 'border-[#ef4444]/20',
-              },
-            ].map(card => (
-              <div key={card.label} className={cn('rounded-2xl border p-4', card.bg, card.border)}>
-                <div className={cn('flex items-center gap-1.5 mb-2', card.color)}>
-                  {card.icon}
-                  <span className="text-[10px] font-bold uppercase tracking-wider">{card.label}</span>
-                </div>
-                <p className={cn('text-xl font-black font-mono', card.color)}>{card.value}</p>
+            <div className="rounded-2xl border bg-[#D4AF37]/5 border-[#D4AF37]/20 p-4">
+              <div className="flex items-center gap-1.5 mb-2 text-[#D4AF37]">
+                <Wallet className="w-4 h-4" />
+                <span className="text-[10px] font-bold uppercase tracking-wider">Valeur totale</span>
               </div>
-            ))}
+              <p className="text-xl font-black font-mono text-[#D4AF37]">{fmtUSD(stats.totalValue)}</p>
+            </div>
+            <div className="rounded-2xl border bg-[#38bdf8]/5 border-[#38bdf8]/20 p-4">
+              <div className="flex items-center gap-1.5 mb-2 text-[#38bdf8]">
+                <TrendingUp className="w-4 h-4" />
+                <span className="text-[10px] font-bold uppercase tracking-wider">Investi</span>
+              </div>
+              <p className="text-xl font-black font-mono text-[#38bdf8]">{fmtUSD(stats.totalInvested)}</p>
+            </div>
+            <div className={cn('rounded-2xl border p-4', stats.pnl >= 0 ? 'bg-[#22c55e]/5 border-[#22c55e]/20' : 'bg-[#ef4444]/5 border-[#ef4444]/20')}>
+              <div className={cn('flex items-center gap-1.5 mb-2', stats.pnl >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
+                {stats.pnl >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                <span className="text-[10px] font-bold uppercase tracking-wider">P&amp;L</span>
+              </div>
+              <p className={cn('text-xl font-black font-mono', stats.pnl >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>{fmtUSD(stats.pnl)}</p>
+            </div>
+            <div className={cn('rounded-2xl border p-4', stats.pnlPct >= 0 ? 'bg-[#22c55e]/5 border-[#22c55e]/20' : 'bg-[#ef4444]/5 border-[#ef4444]/20')}>
+              <div className={cn('flex items-center gap-1.5 mb-2', stats.pnlPct >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
+                {stats.pnlPct >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                <span className="text-[10px] font-bold uppercase tracking-wider">Rendement</span>
+              </div>
+              <p className={cn('text-xl font-black font-mono', stats.pnlPct >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
+                {holdings.length > 0 ? fmtPct(stats.pnlPct) : '—'}
+              </p>
+            </div>
           </div>
 
-          {/* ── Holdings list ── */}
+          {/* Holdings */}
           <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#1a1a1a]">
               <span className="text-sm font-bold text-white">Positions ({holdings.length})</span>
@@ -310,7 +285,6 @@ export default function PortfolioPage() {
               </button>
             </div>
 
-            {/* Add holding form */}
             {showAddH && (
               <div className="px-5 py-4 border-b border-[#1a1a1a] bg-[#0d0d0d]">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
@@ -321,9 +295,7 @@ export default function PortfolioPage() {
                   >
                     <option value="">Sélectionner une crypto</option>
                     {coins.map(c => (
-                      <option key={c.id} value={c.id}>
-                        {c.name} ({c.symbol.toUpperCase()})
-                      </option>
+                      <option key={c.id} value={c.id}>{c.name} ({c.symbol.toUpperCase()})</option>
                     ))}
                   </select>
                   <input
@@ -343,6 +315,7 @@ export default function PortfolioPage() {
                 </div>
                 {hError && <p className="text-xs text-[#ef4444] mb-2">{hError}</p>}
                 <button
+                  type="button"
                   onClick={handleAddHolding}
                   disabled={hSaving}
                   className="flex items-center gap-2 bg-[#D4AF37] text-[#080808] font-bold text-sm px-4 py-2 rounded-xl hover:bg-[#c9a227] transition-colors disabled:opacity-50"
@@ -353,15 +326,16 @@ export default function PortfolioPage() {
               </div>
             )}
 
-            {holdings.length === 0 ? (
+            {holdings.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <Wallet className="w-10 h-10 text-[#222] mb-3" />
                 <p className="text-sm text-[#444] font-medium">Aucune position</p>
-                <p className="text-xs text-[#333] mt-1">Ajoutez vos cryptos pour suivre votre P&L en temps réel</p>
+                <p className="text-xs text-[#333] mt-1">Ajoutez vos cryptos pour suivre votre P&amp;L en temps réel</p>
               </div>
-            ) : (
+            )}
+
+            {holdings.length > 0 && (
               <>
-                {/* Table header */}
                 <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_1fr_40px] gap-4 px-5 py-2 border-b border-[#111]">
                   {['Actif', 'Quantité', 'Prix moyen', 'Prix actuel', 'P&L', ''].map(h => (
                     <span key={h} className="text-[10px] font-bold text-[#444] uppercase tracking-wider">{h}</span>
@@ -376,16 +350,12 @@ export default function PortfolioPage() {
                   const pnlPct = invested > 0 ? (pnl / invested) * 100 : 0
                   const positive = pnl >= 0
                   return (
-                    <div
-                      key={h.id}
-                      className="grid grid-cols-[1fr_auto] md:grid-cols-[2fr_1fr_1fr_1fr_1fr_40px] gap-4 px-5 py-4 border-b border-[#0f0f0f] last:border-0 hover:bg-[#0d0d0d] transition-colors items-center"
-                    >
+                    <div key={h.id} className="grid grid-cols-[1fr_auto] md:grid-cols-[2fr_1fr_1fr_1fr_1fr_40px] gap-4 px-5 py-4 border-b border-[#0f0f0f] last:border-0 hover:bg-[#0d0d0d] transition-colors items-center">
                       <div className="flex items-center gap-3">
-                        {h.coin_image ? (
-                          <img src={h.coin_image} alt={h.coin_name} className="w-8 h-8 rounded-full flex-shrink-0" />
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-[#1a1a1a] flex-shrink-0" />
-                        )}
+                        {h.coin_image
+                          ? <img src={h.coin_image} alt={h.coin_name} className="w-8 h-8 rounded-full flex-shrink-0" />
+                          : <div className="w-8 h-8 rounded-full bg-[#1a1a1a] flex-shrink-0" />
+                        }
                         <div>
                           <p className="text-sm font-bold text-white">{h.coin_name}</p>
                           <p className="text-[10px] text-[#555] uppercase">{h.coin_symbol}</p>
@@ -398,34 +368,19 @@ export default function PortfolioPage() {
                       <p className="hidden md:block text-sm text-[#888] font-mono">{fmtUSD(h.avg_buy_price)}</p>
                       <p className="hidden md:block text-sm text-white font-mono">{fmtUSD(currentPrice)}</p>
                       <div className="hidden md:block">
-                        <p className={cn('text-sm font-bold font-mono', positive ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
-                          {fmtUSD(pnl)}
-                        </p>
-                        <p className={cn('text-[10px] font-bold', positive ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
-                          {fmtPct(pnlPct)}
-                        </p>
+                        <p className={cn('text-sm font-bold font-mono', positive ? 'text-[#22c55e]' : 'text-[#ef4444]')}>{fmtUSD(pnl)}</p>
+                        <p className={cn('text-[10px] font-bold', positive ? 'text-[#22c55e]' : 'text-[#ef4444]')}>{fmtPct(pnlPct)}</p>
                       </div>
-                      {/* Mobile P&L */}
                       <div className="flex items-center gap-3 md:hidden">
                         <div className="text-right">
-                          <p className={cn('text-sm font-bold', positive ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
-                            {fmtUSD(pnl)}
-                          </p>
-                          <p className={cn('text-[10px]', positive ? 'text-[#22c55e]' : 'text-[#ef4444]')}>
-                            {fmtPct(pnlPct)}
-                          </p>
+                          <p className={cn('text-sm font-bold', positive ? 'text-[#22c55e]' : 'text-[#ef4444]')}>{fmtUSD(pnl)}</p>
+                          <p className={cn('text-[10px]', positive ? 'text-[#22c55e]' : 'text-[#ef4444]')}>{fmtPct(pnlPct)}</p>
                         </div>
-                        <button
-                          onClick={() => handleDeleteHolding(h.id)}
-                          className="p-1.5 rounded-lg text-[#333] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-colors"
-                        >
+                        <button type="button" onClick={() => handleDeleteHolding(h.id)} className="p-1.5 rounded-lg text-[#333] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-colors">
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
-                      <button
-                        onClick={() => handleDeleteHolding(h.id)}
-                        className="hidden md:flex p-1.5 rounded-lg text-[#333] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-colors"
-                      >
+                      <button type="button" onClick={() => handleDeleteHolding(h.id)} className="hidden md:flex p-1.5 rounded-lg text-[#333] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-colors">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -434,15 +389,17 @@ export default function PortfolioPage() {
               </>
             )}
           </div>
-        </>
-      ) : (
-        <>
-          {/* ── Alerts tab ── */}
+        </div>
+      )}
+
+      {!loading && tab === 'alerts' && (
+        <div className="space-y-6">
+          {/* Active alerts */}
           <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#1a1a1a]">
               <div>
                 <span className="text-sm font-bold text-white">Alertes actives ({activeAlerts.length})</span>
-                <p className="text-[10px] text-[#444] mt-0.5">Vous recevrez un email dès que le prix atteint votre cible</p>
+                <p className="text-[10px] text-[#444] mt-0.5">Email envoyé dès que le prix atteint votre cible</p>
               </div>
               <button
                 onClick={() => { setShowAddA(v => !v); setAError('') }}
@@ -453,7 +410,6 @@ export default function PortfolioPage() {
               </button>
             </div>
 
-            {/* Add alert form */}
             {showAddA && (
               <div className="px-5 py-4 border-b border-[#1a1a1a] bg-[#0d0d0d]">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
@@ -464,9 +420,7 @@ export default function PortfolioPage() {
                   >
                     <option value="">Sélectionner une crypto</option>
                     {coins.map(c => (
-                      <option key={c.id} value={c.id}>
-                        {c.name} ({c.symbol.toUpperCase()})
-                      </option>
+                      <option key={c.id} value={c.id}>{c.name} ({c.symbol.toUpperCase()})</option>
                     ))}
                   </select>
                   <select
@@ -487,6 +441,7 @@ export default function PortfolioPage() {
                 </div>
                 {aError && <p className="text-xs text-[#ef4444] mb-2">{aError}</p>}
                 <button
+                  type="button"
                   onClick={handleAddAlert}
                   disabled={aSaving}
                   className="flex items-center gap-2 bg-[#D4AF37] text-[#080808] font-bold text-sm px-4 py-2 rounded-xl hover:bg-[#c9a227] transition-colors disabled:opacity-50"
@@ -494,111 +449,84 @@ export default function PortfolioPage() {
                   {aSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bell className="w-4 h-4" />}
                   Créer l'alerte
                 </button>
-                <p className="text-[10px] text-[#444] mt-2">Plan Gratuit / Starter : max 3 alertes actives. Plan Pro+ : illimité.</p>
+                <p className="text-[10px] text-[#444] mt-2">Plan Gratuit / Starter : 3 alertes max · Plan Pro+ : illimité</p>
               </div>
             )}
 
-            {activeAlerts.length === 0 && !showAddA ? (
+            {activeAlerts.length === 0 && (
               <div className="flex flex-col items-center justify-center py-14 text-center">
                 <BellOff className="w-10 h-10 text-[#222] mb-3" />
                 <p className="text-sm text-[#444] font-medium">Aucune alerte active</p>
                 <p className="text-xs text-[#333] mt-1">Créez une alerte pour être notifié par email</p>
               </div>
-            ) : (
-              activeAlerts.map(alert => {
-                const coin = coins.find(c => c.id === alert.coin_id)
-                const currentPrice = coin?.current_price
-                const isClose = currentPrice
-                  ? Math.abs(currentPrice - alert.target_price) / alert.target_price < 0.05
-                  : false
-                return (
-                  <div
-                    key={alert.id}
-                    className="flex items-center gap-4 px-5 py-4 border-b border-[#0f0f0f] last:border-0 hover:bg-[#0d0d0d] transition-colors"
-                  >
-                    <div className={cn(
-                      'w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0',
-                      alert.direction === 'above' ? 'bg-[#22c55e]/10' : 'bg-[#ef4444]/10'
-                    )}>
-                      {alert.direction === 'above'
-                        ? <ArrowUpRight className="w-4 h-4 text-[#22c55e]" />
-                        : <ArrowDownRight className="w-4 h-4 text-[#ef4444]" />
-                      }
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-bold text-white">{alert.coin_symbol}</span>
-                        <span className="text-xs text-[#555]">
-                          {alert.direction === 'above' ? 'passe au-dessus de' : 'passe en-dessous de'}
-                        </span>
-                        <span className="text-sm font-bold text-[#D4AF37] font-mono">
-                          ${Number(alert.target_price).toLocaleString('en-US')}
-                        </span>
-                        {isClose && (
-                          <span className="text-[9px] font-bold text-[#f97316] bg-[#f97316]/10 px-1.5 py-0.5 rounded">PROCHE</span>
-                        )}
-                      </div>
-                      {currentPrice && (
-                        <p className="text-[10px] text-[#444] mt-0.5">
-                          Prix actuel : <span className="text-[#888]">${currentPrice.toLocaleString('en-US')}</span>
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="flex items-center gap-1 text-[10px] font-bold text-[#22c55e] bg-[#22c55e]/10 px-2 py-1 rounded-lg">
-                        <span className="w-1.5 h-1.5 bg-[#22c55e] rounded-full animate-pulse" />
-                        Actif
-                      </span>
-                      <button
-                        onClick={() => handleDeleteAlert(alert.id)}
-                        className="p-1.5 rounded-lg text-[#333] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-colors"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                )
-              })
             )}
+
+            {activeAlerts.map(alert => {
+              const coin = coins.find(c => c.id === alert.coin_id)
+              const currentPrice = coin?.current_price
+              const isClose = currentPrice
+                ? Math.abs(currentPrice - alert.target_price) / alert.target_price < 0.05
+                : false
+              return (
+                <div key={alert.id} className="flex items-center gap-4 px-5 py-4 border-b border-[#0f0f0f] last:border-0 hover:bg-[#0d0d0d] transition-colors">
+                  <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0', alert.direction === 'above' ? 'bg-[#22c55e]/10' : 'bg-[#ef4444]/10')}>
+                    {alert.direction === 'above'
+                      ? <ArrowUpRight className="w-4 h-4 text-[#22c55e]" />
+                      : <ArrowDownRight className="w-4 h-4 text-[#ef4444]" />
+                    }
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-bold text-white">{alert.coin_symbol}</span>
+                      <span className="text-xs text-[#555]">{alert.direction === 'above' ? 'au-dessus de' : 'en-dessous de'}</span>
+                      <span className="text-sm font-bold text-[#D4AF37] font-mono">${Number(alert.target_price).toLocaleString('en-US')}</span>
+                      {isClose && <span className="text-[9px] font-bold text-[#f97316] bg-[#f97316]/10 px-1.5 py-0.5 rounded">PROCHE</span>}
+                    </div>
+                    {currentPrice && (
+                      <p className="text-[10px] text-[#444] mt-0.5">Prix actuel : <span className="text-[#888]">${currentPrice.toLocaleString('en-US')}</span></p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-1 text-[10px] font-bold text-[#22c55e] bg-[#22c55e]/10 px-2 py-1 rounded-lg">
+                      <span className="w-1.5 h-1.5 bg-[#22c55e] rounded-full animate-pulse" />
+                      Actif
+                    </span>
+                    <button type="button" onClick={() => handleDeleteAlert(alert.id)} className="p-1.5 rounded-lg text-[#333] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-colors">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
           </div>
 
-          {/* ── Triggered alerts history ── */}
+          {/* Triggered history */}
           {triggeredAlerts.length > 0 && (
             <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl overflow-hidden">
               <div className="px-5 py-4 border-b border-[#1a1a1a]">
                 <span className="text-sm font-bold text-[#555]">Historique ({triggeredAlerts.length})</span>
               </div>
               {triggeredAlerts.map(alert => (
-                <div
-                  key={alert.id}
-                  className="flex items-center gap-4 px-5 py-3.5 border-b border-[#0f0f0f] last:border-0 opacity-50"
-                >
+                <div key={alert.id} className="flex items-center gap-4 px-5 py-3.5 border-b border-[#0f0f0f] last:border-0 opacity-50">
                   <CheckCircle2 className="w-4 h-4 text-[#22c55e] flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-[#888]">{alert.coin_symbol}</span>
-                      <span className="text-xs text-[#444]">
-                        {alert.direction === 'above' ? '>' : '<'}
-                      </span>
-                      <span className="text-sm font-mono text-[#888]">
-                        ${Number(alert.target_price).toLocaleString('en-US')}
-                      </span>
+                      <span className="text-xs text-[#444]">{alert.direction === 'above' ? '>' : '<'}</span>
+                      <span className="text-sm font-mono text-[#888]">${Number(alert.target_price).toLocaleString('en-US')}</span>
                     </div>
                     {alert.triggered_at && (
                       <p className="text-[10px] text-[#333] mt-0.5">Déclenché le {fmtDate(alert.triggered_at)}</p>
                     )}
                   </div>
-                  <button
-                    onClick={() => handleDeleteAlert(alert.id)}
-                    className="p-1.5 rounded-lg text-[#222] hover:text-[#555] transition-colors"
-                  >
+                  <button type="button" onClick={() => handleDeleteAlert(alert.id)} className="p-1.5 rounded-lg text-[#222] hover:text-[#555] transition-colors">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               ))}
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   )
