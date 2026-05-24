@@ -4,6 +4,7 @@ import { FinancialDisclaimer } from '@/components/FinancialDisclaimer'
 import { cn } from '@/lib/utils'
 import { TRADEABLE_PAIRS, resolvePairConfig } from '@/lib/broker/binance-shared'
 import type { LiveSignal } from '@/lib/signal-engine'
+import Image from 'next/image'
 import {
   AlertTriangle, ArrowDownRight, ArrowUpRight,
   CheckCircle2, Clock, Eye, EyeOff, Key, Loader2,
@@ -497,8 +498,8 @@ function BotContent() {
       <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#F7A600]/10 border border-[#F7A600]/20 flex items-center justify-center">
-              <span className="text-[10px] font-black text-[#F7A600]">BY</span>
+            <div className="w-8 h-8 rounded-xl overflow-hidden flex-shrink-0">
+              <Image src="/bybit-logo.svg" alt="Bybit" width={32} height={32} />
             </div>
             <div>
               <p className="font-bold text-white text-sm">Bybit</p>
