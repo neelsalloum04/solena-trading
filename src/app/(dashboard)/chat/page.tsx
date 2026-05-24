@@ -124,10 +124,13 @@ function ChatContent() {
       .catch(() => {})
   }, [])
 
-  // Save messages to localStorage
+  // Save messages to localStorage (max 30 messages, sans images pour éviter quota exceeded)
   useEffect(() => {
     if (!hydrated) return
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(messages)) } catch {}
+    try {
+      const toSave = messages.slice(-30).map(m => ({ ...m, imageUrl: undefined }))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
+    } catch {}
   }, [messages, hydrated])
 
   useEffect(() => {

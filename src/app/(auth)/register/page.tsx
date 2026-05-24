@@ -37,8 +37,19 @@ export default function RegisterPage() {
       // If email confirmation is required, show success message
       if (data.user && !data.session) {
         setEmailSent(true)
+        // Send welcome email (fire & forget — don't block UX)
+        fetch('/api/email/welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email.trim(), name: name.trim() }),
+        }).catch(() => {})
       } else {
         // Auto-confirmed (email confirmation disabled in Supabase)
+        fetch('/api/email/welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email.trim(), name: name.trim() }),
+        }).catch(() => {})
         toast.success('Compte créé avec succès !')
         window.location.href = '/dashboard'
       }

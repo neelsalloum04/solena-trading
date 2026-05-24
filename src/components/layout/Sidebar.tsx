@@ -5,6 +5,7 @@ import { FREE_TRIAL_ROUTES, PLAN_META, getRequiredPlan, hasAccess, normalizePlan
 import { cn } from '@/lib/utils'
 import {
 
+  BarChart2,
   Bot,
   ChevronLeft,
   HelpCircle,
@@ -12,7 +13,6 @@ import {
   Lock,
   LogOut,
   MessageSquare,
-  Newspaper,
   Radio,
   Settings,
   ShieldCheck,
@@ -25,11 +25,10 @@ import { useMemo, useState } from 'react'
 
 const NAV = [
   { label: 'Dashboard',    href: '/dashboard',    icon: LayoutDashboard },
-  { label: 'Info Trading', href: '/info-trading',  icon: Newspaper       },
+  { label: 'Analyse IA',   href: '/analyse',      icon: BarChart2       },
   { label: 'Chat IA',      href: '/chat',         icon: MessageSquare   },
   { label: 'Signaux Live', href: '/signals',      icon: Radio           },
   { label: 'Trading Bot',  href: '/bot',          icon: Bot             },
-
 ]
 
 const BOTTOM_NAV = [

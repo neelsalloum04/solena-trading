@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Allow: /plans
+Allow: /legal/
+Disallow: /dashboard
+Disallow: /analyse
+Disallow: /signals
+Disallow: /chat
+Disallow: /bot
+Disallow: /portfolio
+Disallow: /settings
+Disallow: /api/
+
+Sitemap: https://primex-trading.vercel.app/sitemap.xml

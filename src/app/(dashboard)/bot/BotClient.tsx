@@ -30,7 +30,7 @@ export interface LivePosition {
   id: string; symbol: string; pair: string
   side: 'LONG'; entryPrice: number; quantity: number; usdtSize: number
   stopLoss: number; takeProfit: number; openedAt: string
-  entryOrderId: number; orderListId: number
+  entryOrderId: string; orderListId?: number
   fromSignal?: boolean
 }
 
@@ -46,7 +46,7 @@ interface RiskSettings {
   maxRiskPct: number; dailyLossLimit: number; maxPositions: number; minConfidence: number
 }
 
-// ─── Binance crypto pairs only ────────────────────────────────────────────────
+// ─── Bybit crypto pairs only ─────────────────────────────────────────────────
 
 const LIVE_PAIRS = ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'BNB/USDT', 'XRP/USDT']
 
@@ -340,8 +340,8 @@ function BotContent() {
   // ── Live: execute signal ──────────────────────────────────────────────────
 
   const executeLiveSignal = async (signal: LiveSignal) => {
-    if (!connected || !account) { alert('Connecte ton compte Binance d\'abord.'); return }
-    if (!account.canTrade) { alert('Ton compte Binance n\'a pas la permission de trader. Active la permission SPOT dans Binance.'); return }
+    if (!connected || !account) { alert("Connecte ton compte Bybit d'abord."); return }
+    if (!account.canTrade) { alert("Ton compte Bybit n'a pas la permission de trader. Active la permission SPOT dans Bybit."); return }
     const sl = parsePrice(signal.stopLoss)
     const tp = parsePrice(signal.tp1)
     if (!sl || !tp || signal.type !== 'BUY') { alert('Seuls les signaux BUY sont supportés en mode Live (Spot).'); return }
@@ -354,7 +354,7 @@ function BotContent() {
     if (usdtSize < 10) { alert('Solde insuffisant (minimum $10 par trade).'); return }
 
     const confirmed = confirm(
-      `⚠ ORDRE RÉEL BINANCE ⚠\n\nAcheter ${signal.pair} avec $${usdtSize} USDT\nStop Loss : ${sl}\nTake Profit : ${tp}\n\nCet ordre utilise des FONDS RÉELS.\nConfirmer ?`
+      `⚠ ORDRE RÉEL BYBIT ⚠\n\nAcheter ${signal.pair} avec $${usdtSize} USDT\nStop Loss : ${sl}\nTake Profit : ${tp}\n\nCet ordre utilise des FONDS RÉELS.\nConfirmer ?`
     )
     if (!confirmed) return
 
@@ -372,7 +372,7 @@ function BotContent() {
         id: `live_${Date.now()}`, symbol, pair: signal.pair,
         side: 'LONG', entryPrice: data.avgEntryPrice, quantity: data.executedQty,
         usdtSize, stopLoss: sl, takeProfit: tp, openedAt: new Date().toISOString(),
-        entryOrderId: data.entryOrderId, orderListId: data.orderListId, fromSignal: true,
+        entryOrderId: data.entryOrderId, fromSignal: true,
       }
       setLiveOpen(prev => { const u = [pos, ...prev]; save(S.liveOpen, u); return u })
       setDismissed(prev => new Set([...prev, signal.id]))
@@ -391,7 +391,7 @@ function BotContent() {
       const res  = await fetch('/api/bot/order', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apiKey: creds.apiKey, apiSecret: creds.apiSecret, symbol: pos.symbol, quantity: pos.quantity, orderListId: pos.orderListId }),
+        body: JSON.stringify({ apiKey: creds.apiKey, apiSecret: creds.apiSecret, symbol: pos.symbol, quantity: pos.quantity }),
       })
       const data = await res.json()
       if (!res.ok) { alert(`Erreur: ${data.error}`); return }
@@ -460,7 +460,7 @@ function BotContent() {
           )}
         >
           <Play className="w-4 h-4" />
-          Live Binance
+          Live Bybit
           <span className="text-[10px] font-medium opacity-70">— Fonds réels</span>
         </button>
       </div>
@@ -487,22 +487,21 @@ function BotContent() {
         <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-[#ef4444]/5 border border-[#ef4444]/30">
           <AlertTriangle className="w-4 h-4 text-[#ef4444] flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-xs font-bold text-[#ef4444]">Mode Live — Fonds réels Binance</p>
+            <p className="text-xs font-bold text-[#ef4444]">Mode Live — Fonds réels Bybit</p>
             <p className="text-[11px] text-[#666] mt-0.5">Ordres exécutés sur ton vrai compte. Clé API avec permission <strong className="text-[#888]">SPOT Trading</strong> requise. Les pertes sont réelles.</p>
           </div>
         </div>
       )}
 
-      {/* ── Connexion Binance ──────────────────────────────────────── */}
+      {/* ── Connexion Bybit ────────────────────────────────────────── */}
       <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#F0B90B]/10 border border-[#F0B90B]/20 flex items-center justify-center p-1.5">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/binance-logo.svg" alt="Binance" width={20} height={20} />
+            <div className="w-8 h-8 rounded-xl bg-[#F7A600]/10 border border-[#F7A600]/20 flex items-center justify-center">
+              <span className="text-[10px] font-black text-[#F7A600]">BY</span>
             </div>
             <div>
-              <p className="font-bold text-white text-sm">Binance</p>
+              <p className="font-bold text-white text-sm">Bybit</p>
               <p className="text-[10px] text-[#555]">
                 {mode === 'paper' ? 'Lecture seule (pour afficher le solde)' : 'Permission SPOT Trading requise'}
               </p>
@@ -538,7 +537,7 @@ function BotContent() {
               <input
                 value={creds.apiKey}
                 onChange={e => setCreds(p => ({ ...p, apiKey: e.target.value }))}
-                placeholder="Clé API Binance"
+                placeholder="Clé API Bybit"
                 className="w-full bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-[#444] focus:outline-none focus:border-[#D4AF37]/40 transition-colors"
               />
             </div>
@@ -567,7 +566,7 @@ function BotContent() {
             >
               {connecting
                 ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Connexion…</>
-                : <><CheckCircle2 className="w-3.5 h-3.5" />Se connecter à Binance</>
+                : <><CheckCircle2 className="w-3.5 h-3.5" />Se connecter à Bybit</>
               }
             </button>
           </div>
@@ -728,9 +727,9 @@ function BotContent() {
                         : !isBuy
                         ? 'SHORT non disponible en Spot'
                         : !isLiveOk
-                        ? 'Paire non disponible sur Binance'
+                        ? 'Paire non disponible sur Bybit'
                         : !connected
-                        ? 'Connecte Binance d\'abord'
+                        ? "Connecte Bybit d'abord"
                         : <><Play className="w-3.5 h-3.5" />Acheter RÉEL · ${size}</>
                       }
                     </button>
@@ -798,7 +797,7 @@ function BotContent() {
       {mode === 'live' && liveOpen.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-xs font-bold uppercase tracking-wider text-[#555]">
-            Positions Live Binance · {liveOpen.length}
+            Positions Live Bybit · {liveOpen.length}
             {priceLoading && <RefreshCw className="w-3 h-3 inline ml-2 animate-spin" />}
           </h2>
           {liveOpen.map(pos => {
@@ -834,7 +833,7 @@ function BotContent() {
                   ))}
                 </div>
                 <div className="flex items-center justify-between text-xs text-[#444]">
-                  <span>Taille: ${fmt(pos.usdtSize)} · OCO #{pos.orderListId}</span>
+                  <span>Taille: ${fmt(pos.usdtSize)} · TP/SL Bybit actif</span>
                   <button
                     onClick={() => closeLivePosition(pos)}
                     disabled={isClosing}

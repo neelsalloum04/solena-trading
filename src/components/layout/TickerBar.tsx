@@ -26,7 +26,8 @@ export function TickerBar() {
         prev.map(t => ({
           ...t,
           price: t.price * (1 + (Math.random() - 0.5) * 0.001),
-          change: t.change + (Math.random() - 0.5) * 0.05,
+          // Borner change entre -10% et +10% pour éviter le drift infini
+          change: Math.max(-10, Math.min(10, t.change + (Math.random() - 0.5) * 0.05)),
         }))
       )
     }, 3000)

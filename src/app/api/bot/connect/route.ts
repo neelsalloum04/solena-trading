@@ -1,4 +1,4 @@
-import { getAccountInfo } from '@/lib/broker/binance'
+import { getAccountInfo } from '@/lib/broker/bybit'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
@@ -21,10 +21,10 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     const msg: string = error?.message ?? 'Erreur inconnue'
     const hint =
-      msg.includes('Signature') || msg.includes('Invalid') || msg.includes('1100')
+      msg.includes('signature') || msg.includes('Invalid') || msg.includes('10003') || msg.includes('10004')
         ? 'Clé API invalide ou permissions insuffisantes.'
-        : msg.includes('IP') || msg.includes('restriction')
-        ? 'IP non autorisée — vérifie les restrictions IP dans Binance.'
+        : msg.includes('IP') || msg.includes('restricted') || msg.includes('10010')
+        ? 'IP non autorisée — vérifie les restrictions IP dans Bybit.'
         : msg
     return NextResponse.json({ error: hint }, { status: 400 })
   }

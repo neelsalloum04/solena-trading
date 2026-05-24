@@ -2,7 +2,7 @@
 
 // DEV MODE: set to true to bypass all subscription gates (any logged-in user = full access)
 // Set back to false before going live with paid plans.
-export const DEV_UNLOCK_ALL = true
+export const DEV_UNLOCK_ALL = false
 
 export type PlanId = 'free' | 'starter' | 'pro' | 'premium' | 'admin'
 
@@ -32,7 +32,7 @@ export const ROUTE_REQUIREMENTS: Record<string, PlanId> = {
   '/dashboard':   'free',
   '/settings':    'free',
   '/support':     'free',
-  '/info-trading': 'free',
+  '/analyse':     'starter',
   '/chat':        'free',
   '/signals':     'pro',
 

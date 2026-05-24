@@ -1,6 +1,6 @@
 'use client'
 import { createClient } from '@/lib/supabase/client'
-import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
+import { Eye, EyeOff, Lock, Mail, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useMemo, useState } from 'react'
@@ -12,16 +12,21 @@ function LoginForm() {
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+
+  // MFA step
+  const [step, setStep] = useState<'credentials' | 'mfa'>('credentials')
+  const [mfaFactorId, setMfaFactorId] = useState('')
+  const [mfaChallengeId, setMfaChallengeId] = useState('')
+  const [mfaCode, setMfaCode] = useState('')
+  const [mfaLoading, setMfaLoading] = useState(false)
+
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = useMemo(() => createClient(), [])
 
-  // Show URL error once on mount — never during render
   useEffect(() => {
     const urlError = searchParams.get('error')
-    if (urlError === 'auth_failed') {
-      toast.error('Authentification échouée. Réessayez.')
-    }
+    if (urlError === 'auth_failed') toast.error('Authentification échouée. Réessayez.')
   }, [searchParams])
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -30,26 +35,33 @@ function LoginForm() {
       toast.error('Veuillez saisir une adresse email valide.')
       return
     }
-    if (!password) {
-      toast.error('Veuillez saisir votre mot de passe.')
-      return
-    }
+    if (!password) { toast.error('Veuillez saisir votre mot de passe.'); return }
     setLoading(true)
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      })
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
       if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          toast.error('Email ou mot de passe incorrect.')
-        } else if (error.message.includes('Email not confirmed')) {
-          toast.error('Veuillez confirmer votre email avant de vous connecter.')
-        } else {
-          toast.error(error.message)
-        }
+        if (error.message.includes('Invalid login credentials')) toast.error('Email ou mot de passe incorrect.')
+        else if (error.message.includes('Email not confirmed')) toast.error('Veuillez confirmer votre email avant de vous connecter.')
+        else toast.error(error.message)
         return
       }
+
+      // Check if user has MFA enrolled
+      const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+      if (aal?.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
+        const { data: factors } = await supabase.auth.mfa.listFactors()
+        const totp = factors?.totp?.[0]
+        if (totp) {
+          const { data: challenge, error: cErr } = await supabase.auth.mfa.challenge({ factorId: totp.id })
+          if (!cErr && challenge) {
+            setMfaFactorId(totp.id)
+            setMfaChallengeId(challenge.id)
+            setStep('mfa')
+            return
+          }
+        }
+      }
+
       toast.success('Bienvenue !')
       router.push('/dashboard')
       router.refresh()
@@ -57,6 +69,31 @@ function LoginForm() {
       toast.error('Une erreur est survenue. Réessayez.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleMfaVerify = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (mfaCode.length !== 6) return
+    setMfaLoading(true)
+    try {
+      const { error } = await supabase.auth.mfa.verify({
+        factorId: mfaFactorId,
+        challengeId: mfaChallengeId,
+        code: mfaCode,
+      })
+      if (error) {
+        toast.error('Code incorrect ou expiré. Réessayez.')
+        setMfaCode('')
+        return
+      }
+      toast.success('Bienvenue !')
+      router.push('/dashboard')
+      router.refresh()
+    } catch {
+      toast.error('Erreur. Réessayez.')
+    } finally {
+      setMfaLoading(false)
     }
   }
 
@@ -77,6 +114,53 @@ function LoginForm() {
     }
   }
 
+  // ── MFA verification step ─────────────────────────────────────────────────
+  if (step === 'mfa') {
+    return (
+      <div className="w-full max-w-sm">
+        <div className="mb-8 text-center">
+          <div className="w-14 h-14 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/20 flex items-center justify-center mx-auto mb-4">
+            <ShieldCheck className="w-6 h-6 text-[#D4AF37]" />
+          </div>
+          <h1 className="text-2xl font-bold text-[#F2EDD7] mb-1">Vérification</h1>
+          <p className="text-[#666] text-sm leading-relaxed">
+            Entrez le code à 6 chiffres<br />de votre application d&apos;authentification
+          </p>
+        </div>
+
+        <form onSubmit={handleMfaVerify} className="space-y-4">
+          <input
+            type="tel"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={6}
+            value={mfaCode}
+            onChange={e => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            placeholder="000000"
+            autoFocus
+            className="input text-center text-2xl tracking-[0.6em] font-mono placeholder:tracking-normal placeholder:text-base"
+          />
+          <button
+            type="submit"
+            disabled={mfaCode.length !== 6 || mfaLoading}
+            className="btn-gold w-full py-2.5 text-sm flex items-center justify-center gap-2 disabled:opacity-60"
+          >
+            {mfaLoading && <span className="w-4 h-4 border-2 border-[#080808]/40 border-t-[#080808] rounded-full animate-spin" />}
+            Vérifier
+          </button>
+        </form>
+
+        <button
+          onClick={() => { setStep('credentials'); setMfaCode('') }}
+          className="w-full text-center text-xs text-[#555] mt-4 hover:text-[#888] transition-colors"
+        >
+          ← Retour à la connexion
+        </button>
+      </div>
+    )
+  }
+
+  // ── Credentials step ──────────────────────────────────────────────────────
   return (
     <div className="w-full max-w-sm">
       <div className="mb-8">

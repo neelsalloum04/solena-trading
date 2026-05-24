@@ -4,12 +4,11 @@ import {
   ArrowDownRight,
   ArrowRight,
   ArrowUpRight,
-
+  BarChart2,
   Bot,
   Flame,
   Globe,
   MessageSquare,
-  Newspaper,
   Radio,
   TrendingDown,
   TrendingUp,
@@ -261,10 +260,10 @@ export default function DashboardPage() {
         <p className="text-[10px] font-bold text-[#444] uppercase tracking-widest mb-3">Outils PrimeX</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { href: '/info-trading', icon: <Newspaper className="w-5 h-5" />, label: 'Info Trading', desc: 'Actualités marchés', color: 'text-[#D4AF37]', bg: 'bg-[#D4AF37]/10', border: 'border-[#D4AF37]/20' },
-            { href: '/signals',     icon: <Radio className="w-5 h-5" />,     label: 'Signaux',      desc: 'Alertes en direct',   color: 'text-[#22c55e]', bg: 'bg-[#22c55e]/10', border: 'border-[#22c55e]/20' },
-            { href: '/chat',        icon: <MessageSquare className="w-5 h-5" />, label: 'Assistant IA', desc: 'Chat trading',    color: 'text-[#818cf8]', bg: 'bg-[#818cf8]/10', border: 'border-[#818cf8]/20' },
-            { href: '/bot',         icon: <Bot className="w-5 h-5" />,       label: 'Bot Auto',     desc: 'Trading automatisé', color: 'text-[#f97316]', bg: 'bg-[#f97316]/10', border: 'border-[#f97316]/20' },
+            { href: '/analyse',      icon: <BarChart2 className="w-5 h-5" />,  label: 'Analyse IA',   desc: 'Graphique par IA',     color: 'text-[#818cf8]', bg: 'bg-[#818cf8]/10', border: 'border-[#818cf8]/20' },
+            { href: '/signals',      icon: <Radio className="w-5 h-5" />,      label: 'Signaux',      desc: 'Alertes en direct',    color: 'text-[#22c55e]', bg: 'bg-[#22c55e]/10', border: 'border-[#22c55e]/20' },
+            { href: '/chat',         icon: <MessageSquare className="w-5 h-5" />, label: 'Assistant IA', desc: 'Chat trading',      color: 'text-[#38bdf8]', bg: 'bg-[#38bdf8]/10', border: 'border-[#38bdf8]/20' },
+            { href: '/bot',          icon: <Bot className="w-5 h-5" />,        label: 'Bot Auto',     desc: 'Trading automatisé',   color: 'text-[#f97316]', bg: 'bg-[#f97316]/10', border: 'border-[#f97316]/20' },
           ].map((tool) => (
             <Link key={tool.href} href={tool.href}>
               <div className={`group flex flex-col items-center gap-2 p-4 rounded-2xl border ${tool.border} ${tool.bg} hover:brightness-125 transition-all duration-200 cursor-pointer`}>

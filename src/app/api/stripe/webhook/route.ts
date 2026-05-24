@@ -1,3 +1,5 @@
+import { sendEmail } from '@/lib/email/resend'
+import { cancellationEmail, subscriptionEmail } from '@/lib/email/templates'
 import { requireStripe } from '@/lib/stripe/client'
 import { normalizePlan } from '@/lib/plans'
 import { createAdminClient } from '@/lib/supabase/server'
@@ -79,6 +81,20 @@ export async function POST(req: NextRequest) {
 
         if (profileError) console.error('[webhook] profiles update error:', profileError)
 
+        // Send subscription confirmation email
+        try {
+          const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', userId).single()
+          const { data: authUser } = await supabase.auth.admin.getUserById(userId)
+          const email = authUser?.user?.email
+          const amount = session.amount_total ? `${(session.amount_total / 100).toFixed(2)}€` : ''
+          if (email) {
+            const { subject, html } = subscriptionEmail(profile?.full_name ?? '', plan, amount)
+            await sendEmail({ to: email, subject, html })
+          }
+        } catch (emailErr) {
+          console.warn('[webhook] email send failed:', emailErr)
+        }
+
         console.log(`[webhook] checkout.completed: user=${userId} plan=${plan}`)
         break
       }
@@ -128,9 +144,23 @@ export async function POST(req: NextRequest) {
         }).eq('stripe_subscription_id', sub.id)
 
         // Downgrade to free when subscription is deleted
+        const { data: deletedProfile } = await supabase.from('profiles').select('full_name, plan').eq('id', userId).single()
         await supabase.from('profiles').update({
           plan: 'free', updated_at: new Date().toISOString(),
         }).eq('id', userId)
+
+        // Send cancellation email
+        try {
+          const { data: authUser } = await supabase.auth.admin.getUserById(userId)
+          const email = authUser?.user?.email
+          const endsAt = new Date(sub.current_period_end * 1000).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+          if (email) {
+            const { subject, html } = cancellationEmail(deletedProfile?.full_name ?? '', deletedProfile?.plan ?? 'pro', endsAt)
+            await sendEmail({ to: email, subject, html })
+          }
+        } catch (emailErr) {
+          console.warn('[webhook] cancellation email failed:', emailErr)
+        }
 
         console.log(`[webhook] subscription.deleted: user=${userId} → downgraded to free`)
         break

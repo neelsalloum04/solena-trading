@@ -11,8 +11,11 @@ function isSupabaseConfigured() {
 // Routes requiring authentication (any plan)
 const PROTECTED = [
   '/dashboard', '/chat', '/signals', '/bot', '/portfolio',
-  '/settings', '/admin', '/analyse', '/support',
+  '/settings', '/admin', '/analyse', '/support', '/mfa',
 ]
+
+// These routes skip the AAL2 check to avoid redirect loops
+const SKIP_AAL_CHECK = ['/mfa']
 
 const AUTH_PAGES = ['/login', '/register']
 
@@ -76,13 +79,32 @@ export async function middleware(request: NextRequest) {
   const isProtected = PROTECTED.some(p => pathname === p || pathname.startsWith(p + '/'))
   const isAuthPage = AUTH_PAGES.includes(pathname)
 
+  // Unauthenticated user trying to access protected route → login
   if (isProtected && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
+  // Authenticated user on a protected route: check MFA (AAL2) if needed
+  if (isProtected && user && !SKIP_AAL_CHECK.some(p => pathname === p || pathname.startsWith(p + '/'))) {
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    if (aal && aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/mfa'
+      return NextResponse.redirect(url)
+    }
+  }
+
+  // Authenticated user on login/register → dashboard
   if (isAuthPage && user) {
+    // Check MFA first — if needed, send to /mfa not dashboard
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    if (aal && aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/mfa'
+      return NextResponse.redirect(url)
+    }
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)

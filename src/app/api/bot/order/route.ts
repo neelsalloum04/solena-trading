@@ -1,15 +1,14 @@
 import {
-  cancelOCO,
+  cancelAllOrders,
   getAccountInfo,
-  placeMarketOrder,
+  placeMarketBuyWithTPSL,
   placeMarketSell,
-  placeOCOSell,
-} from '@/lib/broker/binance'
+} from '@/lib/broker/bybit'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
 
-// POST — Open a live trade: market BUY + OCO for SL/TP
+// POST — Open a live trade: market BUY with native TP/SL (Bybit)
 export async function POST(req: NextRequest) {
   try {
     const { apiKey, apiSecret, symbol, usdtAmount, tpPrice, slPrice } = await req.json()
@@ -21,69 +20,52 @@ export async function POST(req: NextRequest) {
     // Verify account can trade
     const account = await getAccountInfo(apiKey, apiSecret)
     if (!account.canTrade) {
-      return NextResponse.json({ error: 'Le compte Binance n\'a pas la permission de trader.' }, { status: 403 })
+      return NextResponse.json({ error: "Le compte Bybit n'a pas la permission de trader." }, { status: 403 })
     }
     if (account.usdtBalance < usdtAmount) {
       return NextResponse.json({ error: `Solde insuffisant. Disponible: $${account.usdtBalance.toFixed(2)}` }, { status: 400 })
     }
 
-    // 1. Market BUY
-    const entry = await placeMarketOrder(apiKey, apiSecret, symbol, 'BUY', usdtAmount)
-
-    // 2. OCO SELL (SL + TP)
-    let oco = null
-    try {
-      oco = await placeOCOSell(apiKey, apiSecret, symbol, entry.executedQty, tpPrice, slPrice)
-    } catch (ocoErr: any) {
-      // OCO failed — try to close the position immediately to avoid unprotected exposure
-      try { await placeMarketSell(apiKey, apiSecret, symbol, entry.executedQty) } catch {}
-      return NextResponse.json({
-        error: `Ordre d'entrée exécuté mais OCO échoué: ${ocoErr.message}. Position fermée immédiatement.`
-      }, { status: 500 })
-    }
+    // Market BUY with TP/SL in a single Bybit order
+    const entry = await placeMarketBuyWithTPSL(apiKey, apiSecret, symbol, usdtAmount, tpPrice, slPrice)
 
     return NextResponse.json({
       ok: true,
       entryOrderId:  entry.orderId,
       avgEntryPrice: entry.avgPrice,
       executedQty:   entry.executedQty,
-      orderListId:   oco.orderListId,
-      tpOrderId:     oco.tpOrderId,
-      slOrderId:     oco.slOrderId,
     })
   } catch (err: any) {
     const msg: string = err?.message ?? 'Erreur inconnue'
-    const hint = msg.includes('Signature') || msg.includes('Invalid')
-      ? 'Clé API invalide. Vérifie tes clés Binance.'
-      : msg.includes('insufficient')
-      ? 'Solde insuffisant sur Binance.'
-      : msg.includes('MIN_NOTIONAL') || msg.includes('trop faible')
+    const hint = msg.includes('signature') || msg.includes('Invalid')
+      ? 'Clé API invalide. Vérifie tes clés Bybit.'
+      : msg.includes('insufficient') || msg.includes('Solde')
+      ? 'Solde insuffisant sur Bybit.'
+      : msg.includes('trop faible') || msg.includes('trop petite')
       ? 'Montant trop faible (minimum $10 par trade).'
       : msg
     return NextResponse.json({ error: hint }, { status: 400 })
   }
 }
 
-// DELETE — Close a live position (market SELL + cancel OCO)
+// DELETE — Close a live position (cancel TP/SL orders + market SELL)
 export async function DELETE(req: NextRequest) {
   try {
-    const { apiKey, apiSecret, symbol, quantity, orderListId } = await req.json()
+    const { apiKey, apiSecret, symbol, quantity } = await req.json()
 
     if (!apiKey || !apiSecret || !symbol || !quantity) {
       return NextResponse.json({ error: 'Paramètres manquants.' }, { status: 400 })
     }
 
-    // Cancel OCO first
-    if (orderListId) {
-      try { await cancelOCO(apiKey, apiSecret, symbol, orderListId) } catch {}
-    }
+    // Cancel all open TP/SL orders first
+    await cancelAllOrders(apiKey, apiSecret, symbol)
 
     // Market SELL to close
     const result = await placeMarketSell(apiKey, apiSecret, symbol, quantity)
 
     return NextResponse.json({
       ok: true,
-      closeOrderId: result.orderId,
+      closeOrderId:  result.orderId,
       avgClosePrice: result.avgPrice,
       executedQty:   result.executedQty,
     })
