@@ -12,26 +12,32 @@ export async function POST(req: Request) {
     if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
 
     const { apiKey, apiSecret, mode } = await req.json()
-    if (!apiKey?.trim() || !apiSecret?.trim()) {
-      return NextResponse.json({ error: 'Clés API requises' }, { status: 400 })
+
+    let check: { valid: boolean; permissions: string[] | Record<string, unknown>; balance?: string } = { valid: true, permissions: {} }
+
+    if (mode === 'live') {
+      if (!apiKey?.trim() || !apiSecret?.trim()) {
+        return NextResponse.json({ error: 'Clés API requises pour le mode Live' }, { status: 400 })
+      }
+      // Vérification des clés sur Bybit uniquement en Live
+      check = await verifyApiKeys(apiKey.trim(), apiSecret.trim())
+      if (!check.valid) {
+        return NextResponse.json({ error: 'Clés API invalides ou permissions insuffisantes' }, { status: 400 })
+      }
     }
 
-    // Vérification des clés sur Bybit
-    const check = await verifyApiKeys(apiKey.trim(), apiSecret.trim())
-    if (!check.valid) {
-      return NextResponse.json({ error: 'Clés API invalides ou permissions insuffisantes' }, { status: 400 })
-    }
-
-    // Chiffrement AES-256-GCM
-    const apiKeyEnc    = encrypt(apiKey.trim())
-    const apiSecretEnc = encrypt(apiSecret.trim())
+    // Chiffrement AES-256-GCM (pour paper on chiffre une valeur placeholder)
+    const keyToStore    = mode === 'paper' ? 'paper' : apiKey.trim()
+    const secretToStore = mode === 'paper' ? 'paper' : apiSecret.trim()
+    const apiKeyEnc    = encrypt(keyToStore)
+    const apiSecretEnc = encrypt(secretToStore)
 
     // Upsert dans Supabase
     const { error } = await supabase.from('bybit_credentials').upsert({
       user_id:         user.id,
       api_key_enc:     apiKeyEnc,
       api_secret_enc:  apiSecretEnc,
-      api_key_preview: apiKey.slice(0, 8) + '...',
+      api_key_preview: mode === 'paper' ? 'paper-trading' : apiKey.slice(0, 8) + '...',
       is_valid:        true,
       permissions:     check.permissions,
       validated_at:    new Date().toISOString(),
@@ -56,9 +62,10 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success:     true,
+      mode,
       balance:     check.balance,
       permissions: check.permissions,
-      preview:     apiKey.slice(0, 8) + '...',
+      preview:     mode === 'paper' ? 'paper-trading' : apiKey.slice(0, 8) + '...',
     })
 
   } catch (err) {
