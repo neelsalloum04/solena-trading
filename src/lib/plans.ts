@@ -1,6 +1,6 @@
 // ─── Plan system — single source of truth ─────────────────────────────────────
 
-export const DEV_UNLOCK_ALL = false
+export const DEV_UNLOCK_ALL = true
 
 export type PlanId = 'free' | 'starter' | 'pro' | 'expert' | 'premium' | 'admin'
 
