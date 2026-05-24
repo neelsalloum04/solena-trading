@@ -189,29 +189,46 @@ export default function SettingsPage() {
             )}
           </div>
 
-          {/* Billing toggle */}
-          <div className="flex items-center gap-4">
-            <span className={cn('text-sm font-semibold', !billingYearly ? 'text-white' : 'text-[#555]')}>
-              Mensuel
-            </span>
-            <button
-              onClick={() => setBillingYearly(v => !v)}
-              className={cn('relative w-12 h-6 rounded-full transition-colors', billingYearly ? 'bg-[#D4AF37]' : 'bg-[#333]')}
-            >
-              <span className={cn('absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform', billingYearly ? 'translate-x-7' : 'translate-x-1')} />
-            </button>
-            <div className="flex items-center gap-2">
-              <span className={cn('text-sm font-semibold', billingYearly ? 'text-white' : 'text-[#555]')}>Annuel</span>
-              <span className="text-[10px] font-bold text-[#22c55e] bg-[#22c55e]/10 border border-[#22c55e]/20 px-2 py-0.5 rounded-full">
-                Économisez jusqu&apos;à 409€
-              </span>
+          {/* Billing tabs */}
+          <div className="flex flex-col gap-2">
+            <div className="inline-flex bg-[#0c0c0c] border border-[#1e1e1e] rounded-2xl p-1 gap-1 w-fit">
+              <button
+                onClick={() => setBillingYearly(false)}
+                className={cn(
+                  'px-5 py-2 rounded-xl text-sm font-semibold transition-all',
+                  !billingYearly ? 'bg-white text-[#080808] shadow' : 'text-[#555] hover:text-[#999]'
+                )}
+              >
+                Mensuel
+              </button>
+              <button
+                onClick={() => setBillingYearly(true)}
+                className={cn(
+                  'px-5 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2',
+                  billingYearly ? 'bg-[#D4AF37] text-[#080808] shadow' : 'text-[#555] hover:text-[#999]'
+                )}
+              >
+                Annuel
+                <span className={cn(
+                  'text-[9px] font-black px-1.5 py-0.5 rounded-full',
+                  billingYearly ? 'bg-[#00000020] text-[#080808]' : 'bg-[#22c55e]/15 text-[#22c55e]'
+                )}>
+                  −409€
+                </span>
+              </button>
             </div>
+            <p className={cn('text-[11px] text-[#444] pl-1 transition-opacity', billingYearly ? 'opacity-100' : 'opacity-0')}>
+              Facturé en une fois · Économie directe sur l&apos;année
+            </p>
           </div>
 
           <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4" id="subscription">
             {Object.values(PLANS).map((p) => {
               const isCurrent = plan === p.plan
               const isLoading = loadingPlan === p.plan
+              const price    = billingYearly ? p.yearlyMonthly : String(p.monthlyPrice)
+              const sublabel = billingYearly ? `${p.yearlyTotal} € / an` : `ou ${p.yearlyMonthly} €/mois en annuel`
+
               return (
                 <div
                   key={p.plan}
@@ -224,45 +241,49 @@ export default function SettingsPage() {
                       : 'border-[#1a1a1a]'
                   )}
                 >
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="font-black text-white">{p.name}</h3>
+                  {/* Name + badge */}
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-[11px] font-black uppercase tracking-widest" style={{ color: p.color }}>
+                      {p.name}
+                    </p>
                     {p.badge && (
-                      <span className={cn(
-                        'text-[9px] font-bold px-2 py-0.5 rounded-full',
-                        p.highlighted
-                          ? 'bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30'
-                          : 'bg-[#1a1a1a] text-[#555] border border-[#222]'
-                      )}>
+                      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#1a1a1a] text-[#555] border border-[#222]">
                         {p.badge.toUpperCase()}
                       </span>
                     )}
                   </div>
-                  {billingYearly ? (
-                    <>
-                      <p className="text-2xl font-black mb-0.5" style={{ color: p.color }}>
-                        {p.yearlyMonthly}€<span className="text-xs font-normal text-[#555]">/mois</span>
-                      </p>
-                      <p className="text-[11px] text-[#444] mb-1">Facturé {p.yearlyTotal}€/an</p>
-                      <p className="text-[10px] text-[#22c55e] mb-3">Économisez {p.yearlyDiscount}€</p>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-2xl font-black mb-0.5" style={{ color: p.color }}>
-                        {p.monthlyPrice}€<span className="text-xs font-normal text-[#555]">/mois</span>
-                      </p>
-                      <p className="text-[11px] text-[#444] mb-3">
-                        ou <span className="text-[#22c55e]">{p.yearlyMonthly}€/mois</span> en annuel
-                      </p>
-                    </>
-                  )}
+
+                  {/* Price — DOM stable */}
+                  <div className="mb-4">
+                    <div className="flex items-end gap-1 leading-none mb-1">
+                      <span className="text-3xl font-black text-white leading-none">{price}</span>
+                      <span className="text-[#444] text-xs pb-0.5">€/mois</span>
+                    </div>
+                    <p className="text-[10px] text-[#3a3a3a]">{sublabel}</p>
+                    <p className={cn(
+                      'text-[10px] font-semibold mt-0.5 transition-opacity',
+                      billingYearly ? 'text-[#22c55e] opacity-100' : 'opacity-0'
+                    )}>
+                      Économie de {p.yearlyDiscount} €
+                    </p>
+                  </div>
+
+                  {/* Features */}
                   <ul className="space-y-2 mb-5 flex-1">
                     {p.features.map(f => (
-                      <li key={f} className="flex items-start gap-2 text-xs text-[#888]">
-                        <CheckCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: p.color }} />
+                      <li key={f} className="flex items-start gap-2 text-xs text-[#666]">
+                        <span
+                          className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 rounded-full flex items-center justify-center"
+                          style={{ backgroundColor: `${p.color}18` }}
+                        >
+                          <CheckCircle className="w-2 h-2" style={{ color: p.color }} />
+                        </span>
                         {f}
                       </li>
                     ))}
                   </ul>
+
+                  {/* CTA */}
                   <button
                     onClick={() => handleUpgrade(p.plan)}
                     disabled={isCurrent || !!loadingPlan}
@@ -271,8 +292,8 @@ export default function SettingsPage() {
                       isCurrent
                         ? 'bg-[#22c55e]/10 text-[#22c55e] border border-[#22c55e]/20 cursor-default'
                         : p.highlighted
-                        ? 'bg-[#D4AF37] text-[#080808] hover:opacity-90'
-                        : 'bg-[#141414] text-white border border-[#222] hover:border-[#444]',
+                        ? 'bg-[#D4AF37] text-[#080808] hover:brightness-110'
+                        : 'border border-[#222] text-white hover:border-[#383838] hover:bg-[#111]',
                       !!loadingPlan && !isLoading && 'opacity-40'
                     )}
                   >
@@ -289,7 +310,7 @@ export default function SettingsPage() {
             })}
           </div>
 
-          <p className="text-xs text-[#444] text-center">
+          <p className="text-xs text-[#333] text-center">
             Paiement sécurisé par Stripe · Annulation possible à tout moment · Sans engagement
           </p>
         </div>
