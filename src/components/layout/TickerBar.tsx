@@ -30,7 +30,7 @@ export function TickerBar() {
           change: Math.max(-10, Math.min(10, t.change + (Math.random() - 0.5) * 0.05)),
         }))
       )
-    }, 3000)
+    }, 30000)
     return () => clearInterval(interval)
   }, [])
 
