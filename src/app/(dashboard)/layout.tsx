@@ -1,6 +1,5 @@
 import { MobileBottomNav, MobileHeader } from '@/components/layout/MobileNav'
 import { Sidebar } from '@/components/layout/Sidebar'
-import { TickerBar } from '@/components/layout/TickerBar'
 import { UserPlanProvider } from '@/contexts/UserPlanContext'
 import { normalizePlan } from '@/lib/plans'
 import { createClient } from '@/lib/supabase/server'
@@ -30,7 +29,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
         <div className="flex-1 flex flex-col overflow-hidden">
           <MobileHeader />
-          <TickerBar />
           <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
             {children}
           </main>

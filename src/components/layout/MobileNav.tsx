@@ -1,28 +1,26 @@
 'use client'
 import { cn } from '@/lib/utils'
-import { BarChart2, Bitcoin, LayoutDashboard, MessageSquare, Radio, Wallet } from 'lucide-react'
+import { BarChart2, MessageSquare } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
+// ─── V1 : 2 onglets uniquement ───────────────────────────────────────────────
 const NAV = [
-  { label: 'Dashboard', href: '/dashboard',   icon: LayoutDashboard },
-  { label: 'Portfolio', href: '/portfolio',   icon: Wallet },
-  { label: 'Chat',      href: '/chat',        icon: MessageSquare },
-  { label: 'Signaux',   href: '/signals',     icon: Radio },
-  { label: 'Robot BTC', href: '/bot-btc',    icon: Bitcoin },
+  { label: 'Assistant IA',      href: '/chat',    icon: MessageSquare },
+  { label: 'Analyse',           href: '/analyse', icon: BarChart2     },
 ]
 
 export function MobileHeader() {
   return (
     <header className="md:hidden flex items-center justify-between px-4 h-14 bg-[#0a0a0a] border-b border-[#1a1a1a] flex-shrink-0 sticky top-0 z-40">
-      <Link href="/dashboard" className="flex items-center gap-2">
+      <Link href="/chat" className="flex items-center gap-2">
         <Image src="/primex-logo-dark.webp" alt="PrimeX" width={28} height={28} className="rounded-lg" />
         <span className="font-black text-base text-[#D4AF37] tracking-tight">PrimeX</span>
       </Link>
-      <div className="flex items-center gap-1.5 bg-[#22c55e]/5 border border-[#22c55e]/20 px-2.5 py-1 rounded-lg">
-        <span className="w-1.5 h-1.5 bg-[#22c55e] rounded-full animate-pulse" />
-        <span className="text-[10px] font-bold text-[#22c55e]">LIVE</span>
+      <div className="flex items-center gap-1.5 bg-[#D4AF37]/5 border border-[#D4AF37]/20 px-2.5 py-1 rounded-lg">
+        <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full animate-pulse" />
+        <span className="text-[10px] font-bold text-[#D4AF37]">IA LIVE</span>
       </div>
     </header>
   )
@@ -46,12 +44,9 @@ export function MobileBottomNav() {
               )}
             >
               <item.icon className={cn('w-5 h-5', active && 'drop-shadow-[0_0_6px_#D4AF37]')} />
-              <span className={cn('text-[9px] font-semibold tracking-wide', active ? 'text-[#D4AF37]' : 'text-[#444]')}>
+              <span className={cn('text-[10px] font-semibold tracking-wide', active ? 'text-[#D4AF37]' : 'text-[#444]')}>
                 {item.label}
               </span>
-              {item.href === '/signals' && (
-                <span className="absolute top-2 w-1 h-1 bg-[#22c55e] rounded-full" />
-              )}
             </Link>
           )
         })}
