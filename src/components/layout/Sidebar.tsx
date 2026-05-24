@@ -1,7 +1,7 @@
 'use client'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
-import { BarChart2, LogOut, MessageSquare, Settings } from 'lucide-react'
+import { BarChart2, ImageIcon, LogOut, MessageSquare, Settings, TrendingUp } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -12,8 +12,9 @@ import { useMemo } from 'react'
 // sont conservés dans le code mais masqués de la navigation.
 
 const NAV = [
-  { label: 'Assistant IA',      href: '/chat',    icon: MessageSquare },
-  { label: 'Analyse Graphique', href: '/analyse', icon: BarChart2     },
+  { label: 'Marchés',           href: '/dashboard', icon: TrendingUp   },
+  { label: 'Assistant IA',      href: '/chat',      icon: MessageSquare },
+  { label: 'Analyse Graphique', href: '/analyse',   icon: ImageIcon    },
 ]
 
 interface SidebarProps {
@@ -35,7 +36,7 @@ export function Sidebar({ user }: SidebarProps) {
 
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-5 h-16 border-b border-[#1a1a1a] flex-shrink-0">
-        <Link href="/chat" className="flex items-center gap-2.5 min-w-0">
+        <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0">
           <Image src="/primex-logo-dark.webp" alt="PrimeX" width={30} height={30} className="rounded-lg flex-shrink-0" />
           <span className="font-black text-base text-[#D4AF37] tracking-tight">PrimeX</span>
         </Link>
