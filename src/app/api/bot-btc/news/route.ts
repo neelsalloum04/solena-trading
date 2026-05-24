@@ -18,8 +18,8 @@ async function fetchNews(): Promise<NewsArticle[]> {
   const key = process.env.NEWSAPI_KEY
   if (!key) return []
 
-  const from = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString()
-  const url = `https://newsapi.org/v2/everything?q=bitcoin+BTC+crypto&language=fr&sortBy=publishedAt&from=${from}&pageSize=10&apiKey=${key}`
+  const from = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString()
+  const url = `https://newsapi.org/v2/everything?q=bitcoin+BTC+crypto&language=en&sortBy=publishedAt&from=${from}&pageSize=10&apiKey=${key}`
 
   try {
     const res = await fetch(url, { next: { revalidate: 0 } })
