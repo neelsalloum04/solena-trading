@@ -54,7 +54,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             {/* Stats */}
             <div className="flex items-center gap-6 pt-8 border-t border-[#1a1a1a]">
               {[
-                { v: '$2.4B+',  l: 'Volume' },
+                { v: '2,4 Md€+', l: 'Volume' },
                 { v: '18 000+', l: 'Traders' },
                 { v: '73.2%',   l: 'Win Rate' },
               ].map((s, i) => (

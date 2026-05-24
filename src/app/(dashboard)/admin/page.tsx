@@ -62,7 +62,7 @@ function AdminContent() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: 'Total Users', value: '18,247', change: '+842 this week', icon: Users, color: 'text-solena-primary', bg: 'bg-solena-primary/10' },
-          { label: 'Monthly Revenue', value: '$117,600', change: '+26.5% vs last month', icon: CreditCard, color: 'text-solena-success', bg: 'bg-solena-success/10' },
+          { label: 'Monthly Revenue', value: '117 600 €', change: '+26.5% vs last month', icon: CreditCard, color: 'text-solena-success', bg: 'bg-solena-success/10' },
           { label: 'Active Bots', value: '3,241', change: '67.4% of Pro+ users', icon: Bot, color: 'text-solena-accent', bg: 'bg-solena-accent/10' },
           { label: 'Signals Generated', value: '148,432', change: '+12,400 this week', icon: Zap, color: 'text-solena-secondary', bg: 'bg-solena-secondary/10' },
         ].map((s) => (
@@ -112,8 +112,8 @@ function AdminContent() {
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#1a1a2e" vertical={false} />
               <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
-              <Tooltip contentStyle={{ background: '#111120', border: '1px solid #1a1a2e', borderRadius: '12px', color: '#e2e8f0' }} formatter={(v: number) => [`$${v.toLocaleString()}`, 'Revenue']} />
+              <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}k€`} />
+              <Tooltip contentStyle={{ background: '#111120', border: '1px solid #1a1a2e', borderRadius: '12px', color: '#e2e8f0' }} formatter={(v: number) => [`${v.toLocaleString('fr-FR')} €`, 'Revenue']} />
               <Area type="monotone" dataKey="revenue" stroke="#00e5b4" strokeWidth={2} fill="url(#revGrad)" dot={false} />
             </AreaChart>
           </ResponsiveContainer>
