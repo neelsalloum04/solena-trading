@@ -46,6 +46,7 @@ export const ROUTE_REQUIREMENTS: Record<string, PlanId> = {
   '/chat':        'free',
   '/signals':     'starter',
   '/bot':         'pro',
+  '/bot-btc':     'pro',
   '/admin':       'admin',
 }
 

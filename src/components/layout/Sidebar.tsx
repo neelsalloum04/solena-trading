@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Wallet,
   Zap,
+  Bitcoin,
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -30,6 +31,7 @@ const NAV = [
   { label: 'Chat IA',      href: '/chat',         icon: MessageSquare   },
   { label: 'Signaux Live', href: '/signals',      icon: Radio           },
   { label: 'Trading Bot',  href: '/bot',          icon: Bot             },
+  { label: 'Robot BTC',   href: '/bot-btc',      icon: Bitcoin         },
 ]
 
 const BOTTOM_NAV = [
