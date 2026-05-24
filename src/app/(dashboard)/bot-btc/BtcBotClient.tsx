@@ -31,28 +31,18 @@ function fmtPrice(n: number) {
   return n.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 }
 
-// ─── Spinner identique côté serveur et client ─────────────────────────────────
-
-function Spinner() {
-  return (
-    <div className="min-h-screen bg-[#080808] flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-[#F7931A] border-t-transparent rounded-full animate-spin" />
-    </div>
-  )
-}
-
-// ─── Main ─────────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type Tab = 'signal' | 'positions' | 'historique'
 
+// ─── Main component — client-only (loaded via BtcBotWrapper with ssr:false) ──
+// localStorage is available from the very first render; no mounted pattern needed.
+
 export function BtcBotClient() {
-  // Le premier rendu (serveur + client) = Spinner.
-  // Après mount, on lit le localStorage et on affiche le vrai UI.
-  const [mounted, setMounted]       = useState(false)
-  const [connected, setConnected]   = useState(false)
-  const [mode, setMode]             = useState<'paper' | 'live'>('paper')
-  const [apiKey, setApiKey]         = useState('')
-  const [apiSecret, setApiSecret]   = useState('')
+  const [connected, setConnected]   = useState(() => load<boolean>(SK.connected, false))
+  const [mode, setMode]             = useState<'paper' | 'live'>(() => load<'paper' | 'live'>(SK.mode, 'paper'))
+  const [apiKey, setApiKey]         = useState(() => load<string>(SK.apiKey, ''))
+  const [apiSecret, setApiSecret]   = useState(() => load<string>(SK.apiSecret, ''))
   const [showSecret, setShowSecret] = useState(false)
   const [setupErr, setSetupErr]     = useState('')
 
@@ -60,8 +50,8 @@ export function BtcBotClient() {
   const [market, setMarket]         = useState<MarketData | null>(null)
   const [signal, setSignal]         = useState<BtcSignal | null>(null)
   const [news, setNews]             = useState<NewsData | null>(null)
-  const [positions, setPositions]   = useState<BtcPosition[]>([])
-  const [closed, setClosed]         = useState<BtcClosedTrade[]>([])
+  const [positions, setPositions]   = useState<BtcPosition[]>(() => load<BtcPosition[]>(SK.positions, []))
+  const [closed, setClosed]         = useState<BtcClosedTrade[]>(() => load<BtcClosedTrade[]>(SK.closed, []))
   const [tradeSize, setTradeSize]   = useState(100)
   const [autoRefresh, setAutoRefresh] = useState(false)
   const [loadingMarket, setLoadingMarket] = useState(false)
@@ -69,20 +59,6 @@ export function BtcBotClient() {
   const [marketErr, setMarketErr]   = useState('')
   const [signalErr, setSignalErr]   = useState('')
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  // ── Mount : restore session ────────────────────────────────────────────────
-
-  useEffect(() => {
-    if (load<boolean>(SK.connected, false)) {
-      setMode(load<'paper' | 'live'>(SK.mode, 'paper'))
-      setApiKey(load<string>(SK.apiKey, ''))
-      setApiSecret(load<string>(SK.apiSecret, ''))
-      setConnected(true)
-    }
-    setPositions(load<BtcPosition[]>(SK.positions, []))
-    setClosed(load<BtcClosedTrade[]>(SK.closed, []))
-    setMounted(true)   // déclenche le rendu du vrai UI
-  }, [])
 
   // ── API calls ──────────────────────────────────────────────────────────────
 
@@ -189,14 +165,9 @@ export function BtcBotClient() {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // RENDU
-  // Avant mount → spinner identique au rendu serveur (pas de mismatch)
-  // Après mount → UI complète avec DOM stable (CSS show/hide)
+  // RENDU — ce composant est 100% client (ssr:false via BtcBotWrapper)
   // ─────────────────────────────────────────────────────────────────────────
 
-  if (!mounted) return <Spinner />
-
-  // Computed values — pas d'inline ternaires qui swappent des types JSX
   const totalPnl  = closed.reduce((s, t) => s + t.pnl, 0)
   const winRate   = closed.length > 0 ? (closed.filter(t => t.pnl > 0).length / closed.length) * 100 : 0
   const sigColor  = signal?.signal === 'LONG' ? '#22c55e' : signal?.signal === 'SHORT' ? '#ef4444' : '#F7931A'
@@ -262,7 +233,7 @@ export function BtcBotClient() {
             </button>
           </div>
 
-          {/* API keys — CSS show/hide, jamais de swap JSX */}
+          {/* API keys — CSS show/hide, aucun swap JSX */}
           <div className={mode !== 'live' ? 'hidden' : 'space-y-3'}>
             <div className="flex items-center gap-2 text-xs text-[#555]">
               <Lock className="w-3.5 h-3.5 flex-shrink-0" />

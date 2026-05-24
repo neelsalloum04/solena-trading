@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { BtcBotClient } from './BtcBotClient'
+import { BtcBotWrapper } from './BtcBotWrapper'
 
 export const metadata: Metadata = {
   title: 'Robot BTC Scalping IA | PrimeX',
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 }
 
 export default function BotBtcPage() {
-  return <BtcBotClient />
+  return <BtcBotWrapper />
 }
