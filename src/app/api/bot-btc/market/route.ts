@@ -6,25 +6,26 @@ import { NextResponse } from 'next/server'
 export const runtime = 'nodejs'
 export const maxDuration = 30
 
-// ─── Module-level cache (30s TTL) ─────────────────────────────────────────────
-
 let cache: { data: MarketData; ts: number } | null = null
 const CACHE_TTL = 30_000
-
-// ─── Bybit helpers ────────────────────────────────────────────────────────────
-// Binance bloque les IPs Vercel — on utilise Bybit exclusivement.
-
 const BYBIT = 'https://api.bybit.com'
 
-// Bybit kline intervals: 1, 3, 5, 15, 60 (minutes)
-async function fetchKlines(interval: string, limit = 200): Promise<Candle[]> {
-  const url = `${BYBIT}/v5/market/kline?category=linear&symbol=BTCUSDT&interval=${interval}&limit=${limit}`
-  const res = await fetch(url, { next: { revalidate: 0 } })
-  if (!res.ok) throw new Error(`Bybit klines ${interval}: ${res.status}`)
+// Fetch with hard timeout so Vercel never hangs past limit
+function bybitFetch(path: string, timeoutMs = 7000) {
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs)
+  return fetch(`${BYBIT}${path}`, { signal: ctrl.signal, cache: 'no-store' })
+    .finally(() => clearTimeout(timer))
+}
+
+async function fetchKlines(interval: string, limit = 150): Promise<Candle[]> {
+  const res = await bybitFetch(
+    `/v5/market/kline?category=linear&symbol=BTCUSDT&interval=${interval}&limit=${limit}`
+  )
+  if (!res.ok) throw new Error(`klines ${interval} HTTP ${res.status}`)
   const json = await res.json()
-  if (json.retCode !== 0) throw new Error(`Bybit klines ${interval}: retCode ${json.retCode}`)
-  // Bybit returns newest-first — reverse to get chronological order
-  const list: string[][] = json.result.list.reverse()
+  if (json.retCode !== 0) throw new Error(`klines ${interval} retCode=${json.retCode}: ${json.retMsg}`)
+  const list: string[][] = [...json.result.list].reverse()   // DESC→ASC
   return list.map(k => ({
     time:   parseInt(k[0]),
     open:   parseFloat(k[1]),
@@ -36,28 +37,20 @@ async function fetchKlines(interval: string, limit = 200): Promise<Candle[]> {
 }
 
 async function fetchTicker() {
-  const res = await fetch(
-    `${BYBIT}/v5/market/tickers?category=linear&symbol=BTCUSDT`,
-    { next: { revalidate: 0 } }
-  )
-  if (!res.ok) throw new Error(`Bybit ticker: ${res.status}`)
+  const res = await bybitFetch('/v5/market/tickers?category=linear&symbol=BTCUSDT')
+  if (!res.ok) throw new Error(`ticker HTTP ${res.status}`)
   const json = await res.json()
-  if (json.retCode !== 0) throw new Error(`Bybit ticker: retCode ${json.retCode}`)
+  if (json.retCode !== 0) throw new Error(`ticker retCode=${json.retCode}: ${json.retMsg}`)
   return json.result.list[0]
 }
 
-async function fetchOrderbook(limit = 25) {
-  const res = await fetch(
-    `${BYBIT}/v5/market/orderbook?category=linear&symbol=BTCUSDT&limit=${limit}`,
-    { next: { revalidate: 0 } }
-  )
-  if (!res.ok) throw new Error(`Bybit orderbook: ${res.status}`)
+async function fetchOrderbook() {
+  const res = await bybitFetch('/v5/market/orderbook?category=linear&symbol=BTCUSDT&limit=20')
+  if (!res.ok) throw new Error(`orderbook HTTP ${res.status}`)
   const json = await res.json()
-  if (json.retCode !== 0) throw new Error(`Bybit orderbook: retCode ${json.retCode}`)
+  if (json.retCode !== 0) throw new Error(`orderbook retCode=${json.retCode}: ${json.retMsg}`)
   return json.result
 }
-
-// ─── GET ──────────────────────────────────────────────────────────────────────
 
 export async function GET() {
   try {
@@ -66,17 +59,15 @@ export async function GET() {
       return NextResponse.json({ ...cache.data, cached: true })
     }
 
-    const [klines1m, klines3m, klines5m, klines15m, klines1h, ticker, orderbook] = await Promise.all([
-      fetchKlines('1',  200),
-      fetchKlines('3',  200),
-      fetchKlines('5',  200),
-      fetchKlines('15', 200),
-      fetchKlines('60', 200),
+    // 5 parallel requests — 3 timeframes only (was 7, timeout fix)
+    const [klines5m, klines15m, klines1h, ticker, orderbook] = await Promise.all([
+      fetchKlines('5',  150),
+      fetchKlines('15', 150),
+      fetchKlines('60', 150),
       fetchTicker(),
-      fetchOrderbook(25),
+      fetchOrderbook(),
     ])
 
-    // Order book — Bybit: b = bids, a = asks, each [price, size]
     const bids: [number, number][] = orderbook.b.map((b: string[]) => [parseFloat(b[0]), parseFloat(b[1])])
     const asks: [number, number][] = orderbook.a.map((a: string[]) => [parseFloat(a[0]), parseFloat(a[1])])
     const bidVol = bids.reduce((s, b) => s + b[1], 0)
@@ -84,20 +75,14 @@ export async function GET() {
 
     const data: MarketData = {
       price:        parseFloat(ticker.lastPrice),
-      change24h:    parseFloat(ticker.price24hPcnt) * 100,   // Bybit returns decimal (0.023 = 2.3%)
-      volume24h:    parseFloat(ticker.turnover24h),           // USDT turnover
+      change24h:    parseFloat(ticker.price24hPcnt) * 100,
+      volume24h:    parseFloat(ticker.turnover24h),
       high24h:      parseFloat(ticker.highPrice24h),
       low24h:       parseFloat(ticker.lowPrice24h),
-      fundingRate:  parseFloat(ticker.fundingRate ?? '0'),
+      fundingRate:  parseFloat(ticker.fundingRate  ?? '0'),
       openInterest: parseFloat(ticker.openInterestValue ?? '0'),
-      orderBook: {
-        bids,
-        asks,
-        ratio: askVol > 0 ? bidVol / askVol : 1,
-      },
+      orderBook: { bids, asks, ratio: askVol > 0 ? bidVol / askVol : 1 },
       indicators: {
-        '1m':  computeTimeframe(klines1m),
-        '3m':  computeTimeframe(klines3m),
         '5m':  computeTimeframe(klines5m),
         '15m': computeTimeframe(klines15m),
         '1h':  computeTimeframe(klines1h),
@@ -107,8 +92,11 @@ export async function GET() {
 
     cache = { data, ts: now }
     return NextResponse.json(data)
+
   } catch (err) {
-    console.error('[bot-btc/market]', err)
-    return NextResponse.json({ error: String(err) }, { status: 500 })
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[bot-btc/market]', msg)
+    // Renvoie le message d'erreur exact pour pouvoir diagnostiquer depuis le client
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

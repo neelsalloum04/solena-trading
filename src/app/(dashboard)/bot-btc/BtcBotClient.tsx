@@ -66,10 +66,13 @@ export function BtcBotClient() {
     setLoadingMarket(true); setMarketErr('')
     try {
       const r = await fetch('/api/bot-btc/market')
-      if (!r.ok) throw new Error()
-      setMarket(await r.json())
-    } catch { setMarketErr('Impossible de récupérer les données BTC.') }
-    finally   { setLoadingMarket(false) }
+      const json = await r.json()
+      if (!r.ok) throw new Error(json?.error ?? `HTTP ${r.status}`)
+      setMarket(json)
+    } catch (e) {
+      setMarketErr(`Erreur marché : ${e instanceof Error ? e.message : String(e)}`)
+    }
+    finally { setLoadingMarket(false) }
   }, [])
 
   const fetchNews = useCallback(async () => {

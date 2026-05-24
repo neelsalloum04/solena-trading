@@ -11,11 +11,9 @@ export interface MarketData {
   orderBook: {
     bids: [number, number][]
     asks: [number, number][]
-    ratio: number   // bid vol / ask vol
+    ratio: number
   }
   indicators: {
-    '1m':  TimeframeIndicators
-    '3m':  TimeframeIndicators
     '5m':  TimeframeIndicators
     '15m': TimeframeIndicators
     '1h':  TimeframeIndicators
@@ -52,7 +50,7 @@ export interface BtcSignal {
 }
 
 export interface NewsSentiment {
-  score:     number   // 0-100, 50=neutral
+  score:     number
   direction: 'bullish' | 'bearish' | 'neutral'
   confidence: number
   summary:   string

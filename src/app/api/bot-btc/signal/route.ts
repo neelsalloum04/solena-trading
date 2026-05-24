@@ -32,8 +32,6 @@ Open Interest: ${(market.openInterest / 1_000_000).toFixed(0)}M $
 Carnet d'ordres bid/ask ratio: ${market.orderBook.ratio.toFixed(2)}
 
 === INDICATEURS TECHNIQUES ===
-${tf('1 minute', '1m')}
-${tf('3 minutes', '3m')}
 ${tf('5 minutes', '5m')}
 ${tf('15 minutes', '15m')}
 ${tf('1 heure', '1h')}
