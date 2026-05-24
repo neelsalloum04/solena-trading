@@ -188,7 +188,7 @@ export default function SettingsPage() {
             )}
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4" id="subscription">
+          <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4" id="subscription">
             {Object.values(PLANS).map((p) => {
               const isCurrent = plan === p.plan
               const isLoading = loadingPlan === p.plan

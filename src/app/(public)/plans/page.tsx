@@ -3,57 +3,94 @@ import Link from 'next/link'
 import { CheckCircle, ChevronRight, Zap } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Tarifs — PrimeX IA',
-  description: 'Choisissez le plan qui correspond à votre style de trading. Essai gratuit 14 jours, sans carte bancaire.',
+  title: 'Tarifs — PrimeX',
+  description: 'Choisissez le plan qui correspond à votre style de trading. Starter X, Pro X, Expert X ou PrimeX.',
 }
 
 const PLANS = [
   {
-    name: 'Starter',
-    price: 9.99,
-    description: 'Pour découvrir le trading IA',
+    id: 'starter',
+    name: 'Starter X',
+    price: 49,
+    yearlyPrice: '41,58',
+    yearlyTotal: '499',
+    description: 'Pour commencer à trader avec l\'IA',
     features: [
-      '3 analyses IA / jour',
-      '50 messages chat / jour',
-      'Accès Portfolio',
+      '60 analyses IA / mois',
+      '60 messages chat / mois',
+      'Signaux de trading illimités',
       'Support par email',
     ],
     highlighted: false,
     badge: undefined as string | undefined,
     href: '/register',
     color: '#38bdf8',
+    borderColor: 'border-[#38bdf8]/30',
+    bg: 'bg-[#0e0e0e]',
   },
   {
-    name: 'Pro',
-    price: 29.99,
+    id: 'pro',
+    name: 'Pro X',
+    price: 79,
+    yearlyPrice: '74,91',
+    yearlyTotal: '899',
     description: 'Pour les traders actifs',
     features: [
-      '50 analyses IA / jour',
-      'Chat illimité',
-      'Signaux Live en temps réel',
-      'Outils de décision avancés',
+      '200 analyses IA / mois',
+      '200 messages chat / mois',
+      'Signaux de trading illimités',
+      'Robot de trading',
       'Support prioritaire',
     ],
     highlighted: true,
     badge: 'Populaire',
     href: '/register',
     color: '#D4AF37',
+    borderColor: 'border-[#D4AF37]/50',
+    bg: 'bg-[#141414]',
   },
   {
-    name: 'Prime',
-    price: 79.99,
+    id: 'expert',
+    name: 'Expert X',
+    price: 129,
+    yearlyPrice: '124,91',
+    yearlyTotal: '1 499',
+    description: 'Pour les traders confirmés',
+    features: [
+      '1000 analyses IA / mois',
+      '1000 messages chat / mois',
+      'Signaux de trading illimités',
+      'Robot de trading',
+      'Support prioritaire',
+    ],
+    highlighted: false,
+    badge: undefined as string | undefined,
+    href: '/register',
+    color: '#a78bfa',
+    borderColor: 'border-[#a78bfa]/30',
+    bg: 'bg-[#0e0e0e]',
+  },
+  {
+    id: 'premium',
+    name: 'PrimeX',
+    price: 499,
+    yearlyPrice: '483,25',
+    yearlyTotal: '5 799',
     description: 'Pour les pros et institutions',
     features: [
-      'Tout illimité',
-      'Bot de trading automatisé',
-      'Alertes email',
-      'Accès prioritaire aux nouveautés',
+      'Accès illimité à tous les modules',
+      'Analyses IA illimitées',
+      'Chat IA illimité',
+      'Signaux de trading illimités',
+      'Robot de trading',
       'Support VIP dédié',
     ],
     highlighted: false,
-    badge: 'Meilleure valeur',
+    badge: 'Tout inclus',
     href: '/register',
     color: '#22c55e',
+    borderColor: 'border-[#22c55e]/30',
+    bg: 'bg-[#0e0e0e]',
   },
 ]
 
@@ -64,7 +101,7 @@ const FAQ = [
   },
   {
     q: "Y a-t-il un engagement ?",
-    a: "Aucun. Les abonnements sont mensuels sans durée minimale.",
+    a: "Aucun. Les abonnements sont mensuels ou annuels sans durée minimale supplémentaire.",
   },
   {
     q: "Les paiements sont-ils sécurisés ?",
@@ -85,23 +122,22 @@ export default function PlansPage() {
           Tarifs
         </span>
         <h1 className="text-3xl font-black text-[#F2EDD7] mb-3">Tarification Transparente</h1>
-        <p className="text-[#555] text-sm">Essai gratuit 14 jours — Sans carte bancaire — Annulation à tout moment</p>
+        <p className="text-[#555] text-sm">Sans engagement — Annulation à tout moment — Paiement sécurisé Stripe</p>
       </div>
 
       {/* Plans grid */}
-      <div className="grid md:grid-cols-3 gap-5">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {PLANS.map((plan) => (
           <div
-            key={plan.name}
-            className={`relative p-6 rounded-xl border transition-colors flex flex-col ${
-              plan.highlighted
-                ? 'bg-[#141414] border-[#D4AF37]/50'
-                : 'bg-[#0e0e0e] border-[#222]'
-            }`}
+            key={plan.id}
+            className={`relative p-6 rounded-xl border transition-colors flex flex-col ${plan.bg} ${plan.borderColor}`}
           >
             {plan.badge && (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="bg-[#D4AF37] text-[#080808] text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
+                <span
+                  className="text-[#080808] text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap"
+                  style={{ backgroundColor: plan.color }}
+                >
                   {plan.badge}
                 </span>
               </div>
@@ -110,12 +146,15 @@ export default function PlansPage() {
             <div className="mb-5">
               <p className="font-bold text-[#F2EDD7] mb-1">{plan.name}</p>
               <p className="text-xs text-[#555] mb-3">{plan.description}</p>
-              <div className="flex items-end gap-1">
-                <span className="text-4xl font-black" style={{ color: plan.color }}>
-                  {plan.price.toFixed(2).replace('.', ',')}€
+              <div className="flex items-end gap-1 mb-1">
+                <span className="text-3xl font-black" style={{ color: plan.color }}>
+                  {plan.price}€
                 </span>
                 <span className="text-[#555] mb-1 text-sm">/mois</span>
               </div>
+              <p className="text-[11px] text-[#444]">
+                ou {plan.yearlyPrice}€/mois · <span className="text-[#555]">{plan.yearlyTotal}€/an</span>
+              </p>
             </div>
 
             <ul className="space-y-2.5 mb-6 flex-1">
@@ -135,7 +174,7 @@ export default function PlansPage() {
                   : 'border border-[#333] text-[#F2EDD7] hover:border-[#D4AF37]/40 hover:text-[#D4AF37]'
               }`}
             >
-              Commencer gratuitement <ChevronRight className="w-4 h-4" />
+              Commencer <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
         ))}
@@ -145,7 +184,7 @@ export default function PlansPage() {
       <div className="text-center p-5 bg-[#0e0e0e] border border-[#1a1a1a] rounded-xl">
         <p className="text-sm text-[#555]">
           <span className="text-[#F2EDD7] font-semibold">Plan Gratuit également disponible</span> —
-          Accès au tableau de bord, actualités marchés et calendrier économique. Pas de carte bancaire requise.
+          Accès au tableau de bord et au calendrier économique. Pas de carte bancaire requise.
         </p>
         <Link href="/register" className="inline-flex items-center gap-1 text-xs text-[#D4AF37] mt-2 hover:underline">
           <Zap className="w-3 h-3" /> Créer un compte gratuit

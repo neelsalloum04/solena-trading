@@ -11,6 +11,7 @@ function priceIdToPlan(priceId: string): string {
   const map: Record<string, string> = {
     [process.env.STRIPE_PRICE_STARTER || '']: 'starter',
     [process.env.STRIPE_PRICE_PRO     || '']: 'pro',
+    [process.env.STRIPE_PRICE_EXPERT  || '']: 'expert',
     [process.env.STRIPE_PRICE_ELITE   || '']: 'premium',
   }
   return map[priceId] || 'starter'

@@ -1,12 +1,10 @@
 // ─── Plan system — single source of truth ─────────────────────────────────────
 
-// DEV MODE: set to true to bypass all subscription gates (any logged-in user = full access)
-// Set back to false before going live with paid plans.
 export const DEV_UNLOCK_ALL = false
 
-export type PlanId = 'free' | 'starter' | 'pro' | 'premium' | 'admin'
+export type PlanId = 'free' | 'starter' | 'pro' | 'expert' | 'premium' | 'admin'
 
-export const PLAN_ORDER: PlanId[] = ['free', 'starter', 'pro', 'premium', 'admin']
+export const PLAN_ORDER: PlanId[] = ['free', 'starter', 'pro', 'expert', 'premium', 'admin']
 
 export function planLevel(plan: PlanId): number {
   return PLAN_ORDER.indexOf(plan)
@@ -26,6 +24,17 @@ export function normalizePlan(dbPlan: string | null | undefined): PlanId {
   return 'free'
 }
 
+// ─── Monthly quotas per plan ──────────────────────────────────────────────────
+
+export const PLAN_MONTHLY_QUOTAS: Record<string, { analyse: number; chat: number }> = {
+  free:    { analyse: 3,        chat: 3 },
+  starter: { analyse: 60,       chat: 60 },
+  pro:     { analyse: 200,      chat: 200 },
+  expert:  { analyse: 1000,     chat: 1000 },
+  premium: { analyse: Infinity, chat: Infinity },
+  admin:   { analyse: Infinity, chat: Infinity },
+}
+
 // ─── Route access ─────────────────────────────────────────────────────────────
 
 export const ROUTE_REQUIREMENTS: Record<string, PlanId> = {
@@ -35,13 +44,11 @@ export const ROUTE_REQUIREMENTS: Record<string, PlanId> = {
   '/support':     'free',
   '/analyse':     'starter',
   '/chat':        'free',
-  '/signals':     'pro',
-
-  '/bot':         'premium',
+  '/signals':     'starter',
+  '/bot':         'pro',
   '/admin':       'admin',
 }
 
-// Routes with free trial access (3 uses, then upgrade wall)
 export const FREE_TRIAL_ROUTES = new Set(['/chat'])
 
 export function getRequiredPlan(pathname: string): PlanId {
@@ -58,12 +65,14 @@ export interface PlanMeta {
   label: string
   price: string
   yearlyPrice: string
+  yearlyTotal: string
   color: string
   borderColor: string
   bgColor: string
   features: string[]
   highlighted: boolean
-  stripePriceKey?: 'STRIPE_PRICE_STARTER' | 'STRIPE_PRICE_PRO' | 'STRIPE_PRICE_ELITE'
+  badge?: string
+  stripePriceKey?: 'STRIPE_PRICE_STARTER' | 'STRIPE_PRICE_PRO' | 'STRIPE_PRICE_EXPERT' | 'STRIPE_PRICE_ELITE'
 }
 
 export const PLAN_META: Record<Exclude<PlanId, 'admin'>, PlanMeta> = {
@@ -72,73 +81,88 @@ export const PLAN_META: Record<Exclude<PlanId, 'admin'>, PlanMeta> = {
     label: 'Gratuit',
     price: '0€',
     yearlyPrice: '0€',
+    yearlyTotal: '0€',
     color: 'text-[#666]',
     borderColor: 'border-[#333]',
     bgColor: 'bg-[#111]',
     features: [
       'Tableau de bord',
-      'Actualités des marchés',
       'Calendrier économique',
     ],
     highlighted: false,
   },
   starter: {
     id: 'starter',
-    label: 'Starter',
+    label: 'Starter X',
     price: '49€',
-    yearlyPrice: '39€',
+    yearlyPrice: '41,58€',
+    yearlyTotal: '499€',
     color: 'text-[#38bdf8]',
     borderColor: 'border-[#38bdf8]/40',
     bgColor: 'bg-[#38bdf8]/5',
     features: [
-      'Analyse IA : 3 analyses par jour',
-      'Chat IA : 50 messages par jour',
-      'Tableau de bord trading',
-      'Suivi du portefeuille',
-      'Actualités financières',
+      '60 analyses IA / mois',
+      '60 messages chat / mois',
+      'Signaux de trading illimités',
     ],
     highlighted: false,
     stripePriceKey: 'STRIPE_PRICE_STARTER',
   },
   pro: {
     id: 'pro',
-    label: 'Pro',
-    price: '149€',
-    yearlyPrice: '119€',
+    label: 'Pro X',
+    price: '79€',
+    yearlyPrice: '74,91€',
+    yearlyTotal: '899€',
     color: 'text-[#D4AF37]',
     borderColor: 'border-[#D4AF37]/40',
     bgColor: 'bg-[#D4AF37]/5',
     features: [
-      'Analyse IA : 50 analyses par jour',
-      'Chat IA : Illimité',
-      'Accès complet aux signaux de trading',
-      'Tableau de bord trading avancé',
-      'Actualités financières en temps réel',
-      'Outils d\'aide à la décision',
-      'Support prioritaire',
+      '200 analyses IA / mois',
+      '200 messages chat / mois',
+      'Signaux de trading illimités',
+      'Robot de trading',
     ],
     highlighted: true,
+    badge: 'Populaire',
     stripePriceKey: 'STRIPE_PRICE_PRO',
+  },
+  expert: {
+    id: 'expert',
+    label: 'Expert X',
+    price: '129€',
+    yearlyPrice: '124,91€',
+    yearlyTotal: '1499€',
+    color: 'text-[#a78bfa]',
+    borderColor: 'border-[#a78bfa]/40',
+    bgColor: 'bg-[#a78bfa]/5',
+    features: [
+      '1000 analyses IA / mois',
+      '1000 messages chat / mois',
+      'Signaux de trading illimités',
+      'Robot de trading',
+    ],
+    highlighted: false,
+    stripePriceKey: 'STRIPE_PRICE_EXPERT',
   },
   premium: {
     id: 'premium',
-    label: 'Prime',
-    price: '399€',
-    yearlyPrice: '319€',
+    label: 'PrimeX',
+    price: '499€',
+    yearlyPrice: '483,25€',
+    yearlyTotal: '5799€',
     color: 'text-[#22c55e]',
     borderColor: 'border-[#22c55e]/40',
     bgColor: 'bg-[#22c55e]/5',
     features: [
-      'Analyse IA : Illimitée',
-      'Chat IA : Illimité',
-      'Signaux de trading premium',
-      'Robot de trading automatisé',
-      'Actualités financières mondiales en temps réel',
-      'Alertes personnalisées',
-      'Toutes les futures mises à jour incluses',
-      'Accès prioritaire aux nouvelles fonctionnalités',
+      'Accès illimité à tous les modules',
+      'Analyses IA illimitées',
+      'Chat IA illimité',
+      'Signaux de trading illimités',
+      'Robot de trading',
     ],
     highlighted: false,
+    badge: 'Tout inclus',
     stripePriceKey: 'STRIPE_PRICE_ELITE',
   },
 }
