@@ -228,7 +228,7 @@ export default function LandingPage() {
                 <div className="mb-5">
                   <p className="font-semibold text-[#F2EDD7] mb-1">{plan.name}</p>
                   <div className="flex items-end gap-1">
-                    <span className="text-4xl font-black text-[#D4AF37]">{plan.price.toFixed(2).replace('.', ',')}€</span>
+                    <span className="text-4xl font-black text-[#D4AF37]">{plan.monthlyPrice}€</span>
                     <span className="text-[#555] mb-1 text-sm">/mois</span>
                   </div>
                 </div>

@@ -9,10 +9,14 @@ import Stripe from 'stripe'
 // Map Stripe price IDs to DB plan names
 function priceIdToPlan(priceId: string): string {
   const map: Record<string, string> = {
-    [process.env.STRIPE_PRICE_STARTER || '']: 'starter',
-    [process.env.STRIPE_PRICE_PRO     || '']: 'pro',
-    [process.env.STRIPE_PRICE_EXPERT  || '']: 'expert',
-    [process.env.STRIPE_PRICE_ELITE   || '']: 'premium',
+    [process.env.STRIPE_PRICE_STARTER_MONTHLY || '']: 'starter',
+    [process.env.STRIPE_PRICE_STARTER_YEARLY  || '']: 'starter',
+    [process.env.STRIPE_PRICE_PRO_MONTHLY     || '']: 'pro',
+    [process.env.STRIPE_PRICE_PRO_YEARLY      || '']: 'pro',
+    [process.env.STRIPE_PRICE_EXPERT_MONTHLY  || '']: 'expert',
+    [process.env.STRIPE_PRICE_EXPERT_YEARLY   || '']: 'expert',
+    [process.env.STRIPE_PRICE_PRIME_MONTHLY   || '']: 'premium',
+    [process.env.STRIPE_PRICE_PRIME_YEARLY    || '']: 'premium',
   }
   return map[priceId] || 'starter'
 }

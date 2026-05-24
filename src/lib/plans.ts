@@ -66,13 +66,14 @@ export interface PlanMeta {
   price: string
   yearlyPrice: string
   yearlyTotal: string
+  yearlyDiscount: string
   color: string
   borderColor: string
   bgColor: string
   features: string[]
   highlighted: boolean
   badge?: string
-  stripePriceKey?: 'STRIPE_PRICE_STARTER' | 'STRIPE_PRICE_PRO' | 'STRIPE_PRICE_EXPERT' | 'STRIPE_PRICE_ELITE'
+  stripePriceKey?: 'STRIPE_PRICE_STARTER' | 'STRIPE_PRICE_PRO' | 'STRIPE_PRICE_EXPERT' | 'STRIPE_PRICE_PRIME'
 }
 
 export const PLAN_META: Record<Exclude<PlanId, 'admin'>, PlanMeta> = {
@@ -82,6 +83,7 @@ export const PLAN_META: Record<Exclude<PlanId, 'admin'>, PlanMeta> = {
     price: '0€',
     yearlyPrice: '0€',
     yearlyTotal: '0€',
+    yearlyDiscount: '0€',
     color: 'text-[#666]',
     borderColor: 'border-[#333]',
     bgColor: 'bg-[#111]',
@@ -94,16 +96,17 @@ export const PLAN_META: Record<Exclude<PlanId, 'admin'>, PlanMeta> = {
   starter: {
     id: 'starter',
     label: 'Starter X',
-    price: '49€',
+    price: '59€',
     yearlyPrice: '41,58€',
     yearlyTotal: '499€',
+    yearlyDiscount: '209€',
     color: 'text-[#38bdf8]',
     borderColor: 'border-[#38bdf8]/40',
     bgColor: 'bg-[#38bdf8]/5',
     features: [
       '60 analyses IA / mois',
-      '60 messages chat / mois',
-      'Signaux de trading illimités',
+      '60 messages IA / mois',
+      'Signaux de trading IA illimités',
     ],
     highlighted: false,
     stripePriceKey: 'STRIPE_PRICE_STARTER',
@@ -111,17 +114,18 @@ export const PLAN_META: Record<Exclude<PlanId, 'admin'>, PlanMeta> = {
   pro: {
     id: 'pro',
     label: 'Pro X',
-    price: '79€',
-    yearlyPrice: '74,91€',
-    yearlyTotal: '899€',
+    price: '89€',
+    yearlyPrice: '68,25€',
+    yearlyTotal: '819€',
+    yearlyDiscount: '249€',
     color: 'text-[#D4AF37]',
     borderColor: 'border-[#D4AF37]/40',
     bgColor: 'bg-[#D4AF37]/5',
     features: [
       '200 analyses IA / mois',
-      '200 messages chat / mois',
-      'Signaux de trading illimités',
-      'Robot de trading',
+      '200 messages IA / mois',
+      'Signaux de trading IA illimités',
+      'Accès au robot de trading',
     ],
     highlighted: true,
     badge: 'Populaire',
@@ -130,40 +134,42 @@ export const PLAN_META: Record<Exclude<PlanId, 'admin'>, PlanMeta> = {
   expert: {
     id: 'expert',
     label: 'Expert X',
-    price: '129€',
-    yearlyPrice: '124,91€',
-    yearlyTotal: '1499€',
+    price: '139€',
+    yearlyPrice: '116,58€',
+    yearlyTotal: '1 399€',
+    yearlyDiscount: '269€',
     color: 'text-[#a78bfa]',
     borderColor: 'border-[#a78bfa]/40',
     bgColor: 'bg-[#a78bfa]/5',
     features: [
-      '1000 analyses IA / mois',
-      '1000 messages chat / mois',
-      'Signaux de trading illimités',
-      'Robot de trading',
+      '1 000 analyses IA / mois',
+      '1 000 messages IA / mois',
+      'Signaux de trading IA illimités',
+      'Accès au robot de trading',
     ],
     highlighted: false,
     stripePriceKey: 'STRIPE_PRICE_EXPERT',
   },
   premium: {
     id: 'premium',
-    label: 'PrimeX',
-    price: '499€',
-    yearlyPrice: '483,25€',
-    yearlyTotal: '5799€',
+    label: 'Prime X',
+    price: '509€',
+    yearlyPrice: '474,92€',
+    yearlyTotal: '5 699€',
+    yearlyDiscount: '409€',
     color: 'text-[#22c55e]',
     borderColor: 'border-[#22c55e]/40',
     bgColor: 'bg-[#22c55e]/5',
     features: [
-      'Accès illimité à tous les modules',
       'Analyses IA illimitées',
-      'Chat IA illimité',
-      'Signaux de trading illimités',
-      'Robot de trading',
+      'Messages IA illimités',
+      'Signaux de trading IA illimités',
+      'Robot de trading illimité',
+      'Accès illimité à tous les modules actuels et futurs',
     ],
     highlighted: false,
     badge: 'Tout inclus',
-    stripePriceKey: 'STRIPE_PRICE_ELITE',
+    stripePriceKey: 'STRIPE_PRICE_PRIME',
   },
 }
 

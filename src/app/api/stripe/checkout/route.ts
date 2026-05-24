@@ -12,15 +12,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { plan } = await req.json()
-    const priceMap: Record<string, string> = {
-      starter: process.env.STRIPE_PRICE_STARTER || '',
-      pro: process.env.STRIPE_PRICE_PRO || '',
-      expert: process.env.STRIPE_PRICE_EXPERT || '',
-      premium: process.env.STRIPE_PRICE_ELITE || '',
+    const { plan, billing } = await req.json()
+    const isYearly = billing === 'yearly'
+
+    const priceMap: Record<string, { monthly: string; yearly: string }> = {
+      starter: { monthly: process.env.STRIPE_PRICE_STARTER_MONTHLY || '', yearly: process.env.STRIPE_PRICE_STARTER_YEARLY || '' },
+      pro:     { monthly: process.env.STRIPE_PRICE_PRO_MONTHLY     || '', yearly: process.env.STRIPE_PRICE_PRO_YEARLY     || '' },
+      expert:  { monthly: process.env.STRIPE_PRICE_EXPERT_MONTHLY  || '', yearly: process.env.STRIPE_PRICE_EXPERT_YEARLY  || '' },
+      premium: { monthly: process.env.STRIPE_PRICE_PRIME_MONTHLY   || '', yearly: process.env.STRIPE_PRICE_PRIME_YEARLY   || '' },
     }
 
-    const priceId = priceMap[plan]
+    const priceId = priceMap[plan]?.[isYearly ? 'yearly' : 'monthly']
     if (!priceId) {
       return NextResponse.json({ error: 'Invalid plan or Stripe prices not configured' }, { status: 400 })
     }
@@ -32,7 +34,7 @@ export async function POST(req: NextRequest) {
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings?canceled=true`,
-      metadata: { user_id: user.id, plan },
+      metadata: { user_id: user.id, plan, billing: isYearly ? 'yearly' : 'monthly' },
     })
 
     return NextResponse.json({ url: session.url })

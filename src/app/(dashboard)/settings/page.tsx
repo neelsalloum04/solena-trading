@@ -13,6 +13,7 @@ const TABS = ['Abonnement', 'Sécurité']
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('Abonnement')
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
+  const [billingYearly, setBillingYearly] = useState(false)
   const { plan } = useUserPlan()
   const planMeta = plan !== 'admin' ? PLAN_META[plan] : null
   const supabase = useMemo(() => createClient(), [])
@@ -114,7 +115,7 @@ export default function SettingsPage() {
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: targetPlan }),
+        body: JSON.stringify({ plan: targetPlan, billing: billingYearly ? 'yearly' : 'monthly' }),
       })
       const data = await res.json()
       if (data.url) window.location.href = data.url
@@ -188,6 +189,25 @@ export default function SettingsPage() {
             )}
           </div>
 
+          {/* Billing toggle */}
+          <div className="flex items-center gap-4">
+            <span className={cn('text-sm font-semibold', !billingYearly ? 'text-white' : 'text-[#555]')}>
+              Mensuel
+            </span>
+            <button
+              onClick={() => setBillingYearly(v => !v)}
+              className={cn('relative w-12 h-6 rounded-full transition-colors', billingYearly ? 'bg-[#D4AF37]' : 'bg-[#333]')}
+            >
+              <span className={cn('absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform', billingYearly ? 'translate-x-7' : 'translate-x-1')} />
+            </button>
+            <div className="flex items-center gap-2">
+              <span className={cn('text-sm font-semibold', billingYearly ? 'text-white' : 'text-[#555]')}>Annuel</span>
+              <span className="text-[10px] font-bold text-[#22c55e] bg-[#22c55e]/10 border border-[#22c55e]/20 px-2 py-0.5 rounded-full">
+                Économisez jusqu&apos;à 409€
+              </span>
+            </div>
+          </div>
+
           <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4" id="subscription">
             {Object.values(PLANS).map((p) => {
               const isCurrent = plan === p.plan
@@ -217,14 +237,28 @@ export default function SettingsPage() {
                       </span>
                     )}
                   </div>
-                  <p className="text-2xl font-black text-white mb-1">
-                    {p.price.toFixed(2).replace('.', ',')}€
-                    <span className="text-xs font-normal text-[#555]">/mois</span>
-                  </p>
-                  <ul className="space-y-2 mb-5 mt-3 flex-1">
+                  {billingYearly ? (
+                    <>
+                      <p className="text-2xl font-black mb-0.5" style={{ color: p.color }}>
+                        {p.yearlyMonthly}€<span className="text-xs font-normal text-[#555]">/mois</span>
+                      </p>
+                      <p className="text-[11px] text-[#444] mb-1">Facturé {p.yearlyTotal}€/an</p>
+                      <p className="text-[10px] text-[#22c55e] mb-3">Économisez {p.yearlyDiscount}€</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-2xl font-black mb-0.5" style={{ color: p.color }}>
+                        {p.monthlyPrice}€<span className="text-xs font-normal text-[#555]">/mois</span>
+                      </p>
+                      <p className="text-[11px] text-[#444] mb-3">
+                        ou <span className="text-[#22c55e]">{p.yearlyMonthly}€/mois</span> en annuel
+                      </p>
+                    </>
+                  )}
+                  <ul className="space-y-2 mb-5 flex-1">
                     {p.features.map(f => (
                       <li key={f} className="flex items-start gap-2 text-xs text-[#888]">
-                        <CheckCircle className="w-3.5 h-3.5 text-[#22c55e] flex-shrink-0 mt-0.5" />
+                        <CheckCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: p.color }} />
                         {f}
                       </li>
                     ))}
