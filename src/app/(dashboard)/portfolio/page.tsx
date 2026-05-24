@@ -285,8 +285,7 @@ export default function PortfolioPage() {
               </button>
             </div>
 
-            {showAddH && (
-              <div className="px-5 py-4 border-b border-[#1a1a1a] bg-[#0d0d0d]">
+            <div className={cn('px-5 py-4 border-b border-[#1a1a1a] bg-[#0d0d0d]', !showAddH && 'hidden')}>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                   <select
                     value={hCoin}
@@ -324,15 +323,12 @@ export default function PortfolioPage() {
                   Ajouter la position
                 </button>
               </div>
-            )}
 
-            {holdings.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <Wallet className="w-10 h-10 text-[#222] mb-3" />
-                <p className="text-sm text-[#444] font-medium">Aucune position</p>
-                <p className="text-xs text-[#333] mt-1">Ajoutez vos cryptos pour suivre votre P&amp;L en temps réel</p>
-              </div>
-            )}
+            <div className={cn('flex flex-col items-center justify-center py-16 text-center', holdings.length > 0 && 'hidden')}>
+              <Wallet className="w-10 h-10 text-[#222] mb-3" />
+              <p className="text-sm text-[#444] font-medium">Aucune position</p>
+              <p className="text-xs text-[#333] mt-1">Ajoutez vos cryptos pour suivre votre P&amp;L en temps réel</p>
+            </div>
 
             {holdings.length > 0 && (
               <>
@@ -410,8 +406,7 @@ export default function PortfolioPage() {
               </button>
             </div>
 
-            {showAddA && (
-              <div className="px-5 py-4 border-b border-[#1a1a1a] bg-[#0d0d0d]">
+            <div className={cn('px-5 py-4 border-b border-[#1a1a1a] bg-[#0d0d0d]', !showAddA && 'hidden')}>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                   <select
                     value={aCoin}
@@ -451,15 +446,12 @@ export default function PortfolioPage() {
                 </button>
                 <p className="text-[10px] text-[#444] mt-2">Plan Gratuit / Starter : 3 alertes max · Plan Pro+ : illimité</p>
               </div>
-            )}
 
-            {activeAlerts.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-14 text-center">
-                <BellOff className="w-10 h-10 text-[#222] mb-3" />
-                <p className="text-sm text-[#444] font-medium">Aucune alerte active</p>
-                <p className="text-xs text-[#333] mt-1">Créez une alerte pour être notifié par email</p>
-              </div>
-            )}
+            <div className={cn('flex flex-col items-center justify-center py-14 text-center', activeAlerts.length > 0 && 'hidden')}>
+              <BellOff className="w-10 h-10 text-[#222] mb-3" />
+              <p className="text-sm text-[#444] font-medium">Aucune alerte active</p>
+              <p className="text-xs text-[#333] mt-1">Créez une alerte pour être notifié par email</p>
+            </div>
 
             {activeAlerts.map(alert => {
               const coin = coins.find(c => c.id === alert.coin_id)
