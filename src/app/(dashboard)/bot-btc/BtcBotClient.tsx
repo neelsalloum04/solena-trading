@@ -202,14 +202,14 @@ export function BtcBotClient() {
   // ── Manual tick (for users without Vercel Pro cron) ───────────────────────
 
   async function manualTick() {
-    setActionLoading(true)
+    setActionLoading(true); setError('')
     try {
-      await fetch('/api/trading/tick', {
-        method: 'POST',
-        headers: { 'x-cron-secret': '' },
-      })
-      await fetchStatus()
-    } finally { setActionLoading(false) }
+      const r = await fetch('/api/trading/tick-manual', { method: 'POST' })
+      const d = await r.json()
+      if (!r.ok) { setError(d.error ?? 'Erreur tick'); return }
+      await Promise.all([fetchStatus(), fetchStats()])
+    } catch { setError('Erreur réseau') }
+    finally { setActionLoading(false) }
   }
 
   // ─── Loading ─────────────────────────────────────────────────────────────
@@ -562,9 +562,22 @@ export function BtcBotClient() {
               )}
 
               {hasCredentials && isActive && (
-                <button onClick={handleDeactivate} disabled={actionLoading} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm bg-[#ef4444]/10 text-[#ef4444] border border-[#ef4444]/20 hover:bg-[#ef4444]/20 transition-all">
-                  <LogOut className="w-4 h-4" />Désactiver le robot
-                </button>
+                <div className="space-y-2">
+                  <button onClick={manualTick} disabled={actionLoading} className={cn(
+                    'w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm transition-all',
+                    actionLoading
+                      ? 'bg-[#141414] text-[#333] cursor-not-allowed'
+                      : 'bg-[#F7931A] text-white hover:bg-[#e8841a]'
+                  )}>
+                    {actionLoading
+                      ? <RefreshCw className="w-4 h-4 animate-spin" />
+                      : <Zap className="w-4 h-4" />}
+                    {actionLoading ? 'Analyse en cours...' : 'Lancer une analyse'}
+                  </button>
+                  <button onClick={handleDeactivate} disabled={actionLoading} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm bg-[#ef4444]/10 text-[#ef4444] border border-[#ef4444]/20 hover:bg-[#ef4444]/20 transition-all">
+                    <LogOut className="w-4 h-4" />Désactiver le robot
+                  </button>
+                </div>
               )}
             </div>
 
