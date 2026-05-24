@@ -1,17 +1,11 @@
 'use client'
 import dynamic from 'next/dynamic'
 
-function Spinner() {
-  return (
-    <div className="min-h-screen bg-[#080808] flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-[#F7931A] border-t-transparent rounded-full animate-spin" />
-    </div>
-  )
-}
-
+// Pas de loading prop : le serveur envoie rien, le client monte BtcBotClient
+// directement dans un parent vide → zéro insertBefore sur nœud existant.
 const BtcBotClientDynamic = dynamic(
   () => import('./BtcBotClient').then(m => ({ default: m.BtcBotClient })),
-  { ssr: false, loading: Spinner }
+  { ssr: false }
 )
 
 export function BtcBotWrapper() {
