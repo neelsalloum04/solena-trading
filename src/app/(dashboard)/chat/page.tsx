@@ -1,5 +1,6 @@
 'use client'
 import { Button } from '@/components/ui/button'
+import { UpgradeOverlay } from '@/components/upgrade/UpgradeOverlay'
 import { useTokens } from '@/contexts/TokenContext'
 import { cn } from '@/lib/utils'
 import {
@@ -55,13 +56,14 @@ function renderMarkdown(text: string) {
 
 function ChatContent() {
   const { syncBalance } = useTokens()
-  const [messages, setMessages]     = useState<Message[]>([WELCOME])
-  const [input, setInput]           = useState('')
-  const [loading, setLoading]       = useState(false)
-  const [imageFile, setImageFile]   = useState<File | null>(null)
+  const [messages, setMessages]         = useState<Message[]>([WELCOME])
+  const [input, setInput]               = useState('')
+  const [loading, setLoading]           = useState(false)
+  const [imageFile, setImageFile]       = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [missingKey, setMissingKey] = useState(false)
-  const [hydrated, setHydrated]     = useState(false)
+  const [missingKey, setMissingKey]     = useState(false)
+  const [tokenExhausted, setTokenExhausted] = useState(false)
+  const [hydrated, setHydrated]         = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const bottomRef    = useRef<HTMLDivElement>(null)
   const textareaRef  = useRef<HTMLTextAreaElement>(null)
@@ -142,12 +144,7 @@ function ChatContent() {
       if (res.status === 503) { setMissingKey(true); setLoading(false); return }
 
       if (res.status === 402) {
-        setMessages(prev => [...prev, {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: `**Tokens épuisés.**\n\nTu as utilisé tous tes tokens disponibles. Passe à un forfait payant pour continuer à utiliser l'IA.`,
-          timestamp: new Date().toISOString(),
-        }])
+        setTokenExhausted(true)
         setLoading(false)
         return
       }
@@ -197,7 +194,21 @@ function ChatContent() {
   const showQuickPrompts = messages.length === 1
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative overflow-hidden">
+
+      {/* Token exhaustion overlay */}
+      {tokenExhausted && (
+        <UpgradeOverlay
+          title="Tokens épuisés"
+          subtitle="Vous avez utilisé tous vos tokens. Choisissez un forfait pour continuer à utiliser l'Assistant IA."
+        />
+      )}
+
+      {/* Content — blurred when tokens exhausted */}
+      <div
+        className="flex flex-col h-full"
+        style={tokenExhausted ? { filter: 'blur(6px)', pointerEvents: 'none', userSelect: 'none' } : {}}
+      >
 
       {/* Missing key banner */}
       {missingKey && (
@@ -375,6 +386,8 @@ function ChatContent() {
           Contenu éducatif uniquement · Pas un conseil en investissement · Le trading comporte un risque de perte en capital
         </p>
       </div>
+
+      </div>{/* end blurred content wrapper */}
     </div>
   )
 }

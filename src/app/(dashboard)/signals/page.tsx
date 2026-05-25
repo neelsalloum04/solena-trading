@@ -223,15 +223,18 @@ export default function SignalsPage() {
         }
       `}</style>
 
-      <div className="relative min-h-full bg-[#080808]">
+      <div className="relative min-h-full bg-[#080808] overflow-hidden">
 
-        {/* Upgrade overlay — blocks free users */}
+        {/* Upgrade overlay on top — plan cards visible, content blurred behind */}
         {isLocked && (
           <UpgradeOverlay
             title="Signaux Crypto réservés aux abonnés"
             subtitle="Accédez aux signaux en temps réel sur 15 cryptomonnaies avec un forfait Starter ou supérieur."
           />
         )}
+
+        {/* Content wrapper — blurred when locked */}
+        <div style={isLocked ? { filter: 'blur(6px)', pointerEvents: 'none', userSelect: 'none', transform: 'scale(1.03)' } : {}}>
 
         {/* ── IDLE ── */}
         {phase === 'idle' && (
@@ -368,6 +371,7 @@ export default function SignalsPage() {
           </div>
         )}
 
+        </div>{/* end content wrapper */}
       </div>
     </>
   )

@@ -17,8 +17,8 @@ export function UpgradeOverlay({
 
   return (
     <div
-      className="absolute inset-0 z-20 flex items-center justify-center p-4 md:p-8"
-      style={{ backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', backgroundColor: 'rgba(8,8,8,0.80)' }}
+      className="absolute inset-0 z-20 flex items-center justify-center p-4 md:p-8 overflow-y-auto"
+      style={{ backgroundColor: 'rgba(8,8,8,0.55)' }}
     >
       <div className="max-w-3xl w-full">
 
