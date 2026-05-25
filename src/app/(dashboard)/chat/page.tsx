@@ -1,5 +1,4 @@
 'use client'
-import { FreeTrialBanner, FreeTrialUpgradeWall, type FreeQuota } from '@/components/FreeTrialBanner'
 import { Button } from '@/components/ui/button'
 import { useTokens } from '@/contexts/TokenContext'
 import { cn } from '@/lib/utils'
@@ -14,7 +13,6 @@ import {
   TrendingUp,
   X,
   Zap,
-  Activity,
 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
@@ -28,14 +26,7 @@ interface Message {
   cached?: boolean
 }
 
-interface Quota {
-  remaining: number
-  limit: number
-  resetAt: number
-}
-
 const STORAGE_KEY = 'solena-chat-v2'
-const QUOTA_KEY = 'solena-quota-v1'
 
 const QUICK_PROMPTS = [
   'À combien est le Bitcoin aujourd\'hui ?',
@@ -62,44 +53,20 @@ function renderMarkdown(text: string) {
     .replace(/\n/g, '<br/>')
 }
 
-function QuotaBar({ quota }: { quota: Quota | null }) {
-  if (!quota) return null
-  const pct = Math.round((quota.remaining / quota.limit) * 100)
-  const color = pct > 50 ? 'bg-solena-success' : pct > 20 ? 'bg-solena-accent' : 'bg-solena-danger'
-  const textColor = pct > 50 ? 'text-solena-success' : pct > 20 ? 'text-solena-accent' : 'text-solena-danger'
-  const resetTime = new Date(quota.resetAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-
-  return (
-    <div className="flex items-center gap-2 px-3 py-1.5 bg-solena-card border border-solena-border rounded-xl">
-      <Activity className="w-3 h-3 text-solena-text-muted flex-shrink-0" />
-      <div className="flex items-center gap-1.5">
-        <div className="w-16 h-1.5 bg-solena-bg rounded-full overflow-hidden">
-          <div className={cn('h-full rounded-full transition-all', color)} style={{ width: `${pct}%` }} />
-        </div>
-        <span className={cn('text-[10px] font-bold tabular-nums', textColor)}>{quota.remaining}/{quota.limit}</span>
-      </div>
-      <span className="text-[10px] text-solena-text-muted hidden sm:inline">reset {resetTime}</span>
-    </div>
-  )
-}
-
 function ChatContent() {
   const { syncBalance } = useTokens()
-  const [messages, setMessages] = useState<Message[]>([WELCOME])
-  const [input, setInput] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [messages, setMessages]     = useState<Message[]>([WELCOME])
+  const [input, setInput]           = useState('')
+  const [loading, setLoading]       = useState(false)
+  const [imageFile, setImageFile]   = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [missingKey, setMissingKey] = useState(false)
-  const [quota, setQuota] = useState<Quota | null>(null)
-  const [quotaExceeded, setQuotaExceeded] = useState(false)
-  const [freeQuota, setFreeQuota] = useState<FreeQuota | null>(null)
-  const [hydrated, setHydrated] = useState(false)
+  const [hydrated, setHydrated]     = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const bottomRef    = useRef<HTMLDivElement>(null)
+  const textareaRef  = useRef<HTMLTextAreaElement>(null)
 
-  // Load from localStorage on mount + fetch free quota from DB
+  // Load messages from localStorage
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
@@ -107,26 +74,11 @@ function ChatContent() {
         const parsed: Message[] = JSON.parse(saved)
         if (parsed.length > 0) setMessages(parsed)
       }
-      const savedQuota = localStorage.getItem(QUOTA_KEY)
-      if (savedQuota) {
-        const q: Quota = JSON.parse(savedQuota)
-        if (Date.now() < q.resetAt) setQuota(q)
-      }
     } catch {}
     setHydrated(true)
-
-    fetch('/api/quota?type=chat')
-      .then(r => r.json())
-      .then((q: FreeQuota) => {
-        if (!q.isPaidPlan) {
-          setFreeQuota(q)
-          if (!q.allowed) setQuotaExceeded(true)
-        }
-      })
-      .catch(() => {})
   }, [])
 
-  // Save messages to localStorage (max 30 messages, sans images pour éviter quota exceeded)
+  // Save messages to localStorage
   useEffect(() => {
     if (!hydrated) return
     try {
@@ -153,12 +105,10 @@ function ChatContent() {
     setInput('')
     setImageFile(null)
     setImagePreview(null)
-    setQuotaExceeded(false)
   }
 
   const sendMessage = useCallback(async () => {
     if (!input.trim() && !imageFile) return
-    if (quotaExceeded) return
 
     const userMsg: Message = {
       id: Date.now().toString(),
@@ -168,7 +118,6 @@ function ChatContent() {
       timestamp: new Date().toISOString(),
     }
 
-    // Only send last 5 messages as history (smart memory)
     const historyForApi = messages.slice(-5).map(m => ({ role: m.role, content: m.content }))
 
     setMessages(prev => [...prev, userMsg])
@@ -190,32 +139,13 @@ function ChatContent() {
       })
       const data = await res.json()
 
-      // Update quota display
-      if (data.quota) {
-        if ((data.quota as FreeQuota).isPaidPlan === false) {
-          setFreeQuota(data.quota as FreeQuota)
-        } else {
-          const q = data.quota as Quota
-          setQuota(q)
-          try { localStorage.setItem(QUOTA_KEY, JSON.stringify(q)) } catch {}
-        }
-      }
-
       if (res.status === 503) { setMissingKey(true); setLoading(false); return }
 
-      if (res.status === 403 && data.error === 'free_quota_exceeded') {
-        setFreeQuota({ ...data.quota, remaining: 0, allowed: false })
-        setQuotaExceeded(true)
-        setLoading(false)
-        return
-      }
-
-      if (res.status === 429) {
-        setQuotaExceeded(true)
+      if (res.status === 402) {
         setMessages(prev => [...prev, {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: `**Quota journalier atteint.**\n\nTu as utilisé tous tes messages pour aujourd'hui. Le quota se recharge automatiquement à minuit.\n\n→ Pour augmenter ta limite, passe au plan Pro dans les Paramètres.`,
+          content: `**Tokens épuisés.**\n\nTu as utilisé tous tes tokens disponibles. Passe à un forfait payant pour continuer à utiliser l'IA.`,
           timestamp: new Date().toISOString(),
         }])
         setLoading(false)
@@ -252,13 +182,13 @@ function ChatContent() {
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'Erreur réseau. Vérifie que le serveur est démarré (`npm run dev`).',
+        content: 'Erreur réseau. Vérifie ta connexion.',
         timestamp: new Date().toISOString(),
       }])
     } finally {
       setLoading(false)
     }
-  }, [input, imageFile, imagePreview, messages, quotaExceeded])
+  }, [input, imageFile, imagePreview, messages, syncBalance])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
@@ -266,26 +196,12 @@ function ChatContent() {
 
   const showQuickPrompts = messages.length === 1
 
-  if (freeQuota && !freeQuota.allowed) {
-    return (
-      <div className="flex flex-col h-full">
-        <FreeTrialUpgradeWall type="chat" />
-      </div>
-    )
-  }
-
   return (
     <div className="flex flex-col h-full">
-      {/* Free trial banner */}
-      {freeQuota && freeQuota.allowed && (
-        <div className="px-4 pt-3 flex-shrink-0">
-          <FreeTrialBanner quota={freeQuota} type="chat" />
-        </div>
-      )}
 
       {/* Missing key banner */}
       {missingKey && (
-        <div className="mx-4 mt-4 bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 animate-slide-up">
+        <div className="mx-4 mt-4 bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4">
           <div className="flex items-start justify-between">
             <div>
               <p className="font-semibold text-amber-400 mb-1.5">Clé Anthropic manquante</p>
@@ -307,7 +223,7 @@ function ChatContent() {
             <Bot className="w-4 h-4 text-solena-bg" />
           </div>
           <div>
-            <h1 className="font-semibold text-solena-text text-sm">Analyste IA Solena</h1>
+            <h1 className="font-semibold text-solena-text text-sm">Analyste IA PrimeX</h1>
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 bg-solena-success rounded-full animate-pulse" />
               <span className="text-[10px] text-solena-success font-medium">En ligne · Données temps réel</span>
@@ -315,7 +231,6 @@ function ChatContent() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <QuotaBar quota={quota} />
           <span className="hidden md:flex items-center gap-1.5 bg-gradient-to-r from-solena-primary/10 to-solena-secondary/10 border border-solena-primary/20 text-solena-primary text-xs font-bold px-2.5 py-1 rounded-lg">
             <Sparkles className="w-3 h-3" /> Claude
           </span>
@@ -422,47 +337,40 @@ function ChatContent() {
 
       {/* Input */}
       <div className="p-4 border-t border-solena-border flex-shrink-0">
-        {quotaExceeded ? (
-          <div className="text-center py-3 bg-solena-danger/5 border border-solena-danger/20 rounded-2xl">
-            <p className="text-sm text-solena-danger font-semibold mb-1">Quota journalier atteint</p>
-            <p className="text-xs text-solena-text-muted">Revient demain ou <a href="/settings" className="text-solena-primary underline">passe au plan Pro</a></p>
-          </div>
-        ) : (
-          <div className="flex items-end gap-2 bg-solena-card border border-solena-border rounded-2xl p-3 focus-within:border-solena-primary/30 transition-colors">
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="p-2 text-solena-text-muted hover:text-solena-primary hover:bg-solena-bg rounded-xl transition-all flex-shrink-0"
-              title="Envoyer un graphique"
-            >
-              <ImageIcon className="w-4 h-4" />
-            </button>
-            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
-            <textarea
-              ref={textareaRef}
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Pose ta question… (Entrée pour envoyer)"
-              rows={1}
-              className="flex-1 bg-transparent text-sm text-solena-text placeholder-solena-text-muted resize-none focus:outline-none min-h-[20px] max-h-28"
-              style={{ height: 'auto' }}
-              onInput={e => {
-                const t = e.target as HTMLTextAreaElement
-                t.style.height = 'auto'
-                t.style.height = t.scrollHeight + 'px'
-              }}
-            />
-            <Button
-              onClick={sendMessage}
-              disabled={(!input.trim() && !imageFile) || loading}
-              loading={loading}
-              size="icon"
-              className="w-9 h-9 rounded-xl flex-shrink-0"
-            >
-              <ArrowUp className="w-4 h-4" />
-            </Button>
-          </div>
-        )}
+        <div className="flex items-end gap-2 bg-solena-card border border-solena-border rounded-2xl p-3 focus-within:border-solena-primary/30 transition-colors">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="p-2 text-solena-text-muted hover:text-solena-primary hover:bg-solena-bg rounded-xl transition-all flex-shrink-0"
+            title="Envoyer un graphique"
+          >
+            <ImageIcon className="w-4 h-4" />
+          </button>
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
+          <textarea
+            ref={textareaRef}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Pose ta question… (Entrée pour envoyer)"
+            rows={1}
+            className="flex-1 bg-transparent text-sm text-solena-text placeholder-solena-text-muted resize-none focus:outline-none min-h-[20px] max-h-28"
+            style={{ height: 'auto' }}
+            onInput={e => {
+              const t = e.target as HTMLTextAreaElement
+              t.style.height = 'auto'
+              t.style.height = t.scrollHeight + 'px'
+            }}
+          />
+          <Button
+            onClick={sendMessage}
+            disabled={(!input.trim() && !imageFile) || loading}
+            loading={loading}
+            size="icon"
+            className="w-9 h-9 rounded-xl flex-shrink-0"
+          >
+            <ArrowUp className="w-4 h-4" />
+          </Button>
+        </div>
         <p className="text-center text-[10px] text-solena-text-muted mt-2">
           Contenu éducatif uniquement · Pas un conseil en investissement · Le trading comporte un risque de perte en capital
         </p>
