@@ -99,12 +99,13 @@ export default function SupportPage() {
   const [messages, setMessages] = useState<ChatMsg[]>([WELCOME])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
 
   const filtered = FAQ.filter(f => activeCategory === 'Tous' || f.category === activeCategory)
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const el = messagesContainerRef.current
+    if (el) el.scrollTop = el.scrollHeight
   }, [messages])
 
   const sendMessage = async (text?: string) => {
@@ -186,7 +187,7 @@ export default function SupportPage() {
         </div>
 
         {/* Messages */}
-        <div className="h-72 overflow-y-auto px-4 py-4 space-y-3 no-scrollbar">
+        <div ref={messagesContainerRef} className="h-72 overflow-y-auto px-4 py-4 space-y-3 no-scrollbar">
           {messages.map((m, i) => (
             <div key={i} className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}>
               <div className={cn(
@@ -210,7 +211,6 @@ export default function SupportPage() {
               </div>
             </div>
           )}
-          <div ref={messagesEndRef} />
         </div>
 
         {/* Quick questions (only show at start) */}
