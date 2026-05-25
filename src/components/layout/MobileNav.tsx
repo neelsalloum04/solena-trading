@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation'
 const NAV = [
   { label: 'Chat IA',   href: '/chat',    icon: MessageSquare, live: false },
   { label: 'Analyse',   href: '/analyse', icon: ImageIcon,     live: false },
-  { label: 'Signaux',   href: '/signals', icon: Zap,           live: true  },
+  { label: 'Crypto',    href: '/signals', icon: Zap,           live: true  },
   { label: 'Assistance', href: '/support', icon: HelpCircle,   live: false },
 ]
 

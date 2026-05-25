@@ -14,7 +14,7 @@ import { useMemo } from 'react'
 const NAV = [
   { label: 'Assistant IA',      href: '/chat',    icon: MessageSquare, live: false },
   { label: 'Analyse Graphique', href: '/analyse', icon: ImageIcon,     live: false },
-  { label: 'Signaux',           href: '/signals', icon: Zap,           live: true  },
+  { label: 'Signaux Crypto',    href: '/signals', icon: Zap,           live: true  },
 ]
 
 interface SidebarProps {
