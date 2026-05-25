@@ -375,11 +375,12 @@ export default function SignalsPage() {
   const [catFilter,    setCatFilter]    = useState<string>('all')
   const [tfFilter,     setTfFilter]     = useState<string>('all')
   const [dirFilter,    setDirFilter]    = useState<string>('all')
-  const [generating,   setGenerating]   = useState(false)
-  const [genStatus,    setGenStatus]    = useState<string | null>(null)
-  const [monitoring,   setMonitoring]   = useState(false)
+  const [generating,    setGenerating]    = useState(false)
+  const [genStatus,     setGenStatus]     = useState<string | null>(null)
+  const [monitoring,    setMonitoring]    = useState(false)
   const [monitorStatus, setMonitorStatus] = useState<string | null>(null)
-  const [activeTab,    setActiveTab]    = useState<'console' | 'signals'>('signals')
+  const [activeTab,     setActiveTab]     = useState<'console' | 'signals'>('signals')
+  const [migrationMissing, setMigrationMissing] = useState(false)
 
   const sbRef        = useRef(createClient())
   const consoleEndRef = useRef<HTMLDivElement>(null)
@@ -399,12 +400,17 @@ export default function SignalsPage() {
   }, [])
 
   const loadAnalysisLog = useCallback(async () => {
-    const { data } = await sbRef.current
+    const { data, error } = await sbRef.current
       .from('analysis_log')
       .select('*')
       .order('created_at', { ascending: true })
       .limit(100)
-    if (data) setAnalysisLog(data as AnalysisEntry[])
+    if (error) {
+      setMigrationMissing(true)
+    } else {
+      setMigrationMissing(false)
+      if (data) setAnalysisLog(data as AnalysisEntry[])
+    }
   }, [])
 
   const generateNow = useCallback(async (tf: string, cat: string) => {
@@ -493,46 +499,49 @@ export default function SignalsPage() {
   // ─── Generate panel (shared) ──────────────────────────────────────────────
 
   const GeneratePanel = (
-    <div className="bg-[#0e0e0e] border border-[#1c1c1c] rounded-xl p-4">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
+    <div className="bg-[#0e0e0e] border border-[#D4AF37]/20 rounded-xl p-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <p className="text-xs font-semibold text-[#F2EDD7] mb-0.5">Lancer une analyse</p>
-          <p className="text-[10px] text-[#444]">Résultat visible dans le flux console en temps réel</p>
+          <p className="text-xs font-bold text-[#D4AF37] mb-0.5">Lancer une analyse maintenant</p>
+          <p className="text-[10px] text-[#444]">
+            Choisir un marché et un timeframe — les résultats apparaissent dans le flux console à gauche
+          </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {([
-            { tf: '1h',  cat: 'crypto',  label: 'Crypto 1h'  },
-            { tf: '1h',  cat: 'forex',   label: 'Forex 1h'   },
-            { tf: '1h',  cat: 'metals',  label: 'Métaux 1h'  },
-            { tf: '4h',  cat: 'all',     label: 'Tous 4h'    },
-            { tf: '1d',  cat: 'all',     label: 'Tous 1j'    },
+            { tf: '1h',  cat: 'crypto',  label: '🔵 Crypto 1h'  },
+            { tf: '1h',  cat: 'forex',   label: '💱 Forex 1h'   },
+            { tf: '1h',  cat: 'metals',  label: '🥇 Métaux 1h'  },
+            { tf: '4h',  cat: 'all',     label: '📊 Tous 4h'    },
+            { tf: '1d',  cat: 'all',     label: '📅 Tous 1j'    },
           ] as const).map(({ tf, cat, label }) => (
             <button key={`${tf}-${cat}`}
               onClick={() => generateNow(tf, cat)}
               disabled={generating}
-              className="px-3 py-1.5 text-xs font-semibold border border-[#D4AF37]/30 text-[#D4AF37] rounded-lg hover:bg-[#D4AF37]/10 disabled:opacity-40 transition-all">
+              className="px-3.5 py-2 text-xs font-semibold border border-[#D4AF37]/40 text-[#D4AF37] rounded-lg hover:bg-[#D4AF37]/12 disabled:opacity-40 transition-all">
               {label}
             </button>
           ))}
+          <div className="w-px h-6 bg-[#222]" />
           <button
             onClick={monitorNow}
             disabled={monitoring}
-            className="px-3 py-1.5 text-xs font-semibold border border-[#38bdf8]/30 text-[#38bdf8] rounded-lg hover:bg-[#38bdf8]/10 disabled:opacity-40 transition-all">
-            {monitoring ? '…' : 'Vérifier TP/SL'}
+            className="px-3.5 py-2 text-xs font-semibold border border-[#38bdf8]/40 text-[#38bdf8] rounded-lg hover:bg-[#38bdf8]/10 disabled:opacity-40 transition-all">
+            {monitoring ? '…' : '🔍 Vérifier TP/SL'}
           </button>
         </div>
       </div>
       {generating && (
-        <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-[#1c1c1c]">
-          <Loader2 className="w-3 h-3 text-[#D4AF37] animate-spin" />
-          <p className="text-xs text-[#555]">Récupération OHLCV + calcul indicateurs + analyse IA…</p>
+        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#1c1c1c]">
+          <Loader2 className="w-3.5 h-3.5 text-[#D4AF37] animate-spin" />
+          <p className="text-xs text-[#888]">Analyse en cours — récupération des données OHLCV + calcul des 8 indicateurs…</p>
         </div>
       )}
       {genStatus && !generating && (
-        <p className="text-xs text-[#22c55e] mt-2.5 pt-2.5 border-t border-[#1c1c1c]">{genStatus}</p>
+        <p className="text-xs text-[#22c55e] mt-3 pt-3 border-t border-[#1c1c1c]">{genStatus}</p>
       )}
       {monitorStatus && !monitoring && (
-        <p className="text-xs text-[#38bdf8] mt-2.5 pt-2.5 border-t border-[#1c1c1c]">{monitorStatus}</p>
+        <p className="text-xs text-[#38bdf8] mt-3 pt-3 border-t border-[#1c1c1c]">{monitorStatus}</p>
       )}
     </div>
   )
@@ -554,11 +563,43 @@ export default function SignalsPage() {
         <span className="text-[10px] text-[#333]">{analysisLog.length} entrées</span>
       </div>
 
+      {/* Migration missing warning */}
+      {migrationMissing && (
+        <div className="px-3 py-2.5 border-b border-[#2a1010] bg-[#1a0a0a] flex-shrink-0">
+          <p className="text-[10px] text-[#ef4444] font-semibold mb-0.5">Migration Supabase manquante</p>
+          <p className="text-[10px] text-[#555] leading-relaxed">
+            Applique <span className="text-[#888] font-mono">009_analysis_log.sql</span> dans le SQL Editor de Supabase pour activer le flux console.
+          </p>
+        </div>
+      )}
+
       {/* Console body */}
       <div className="flex-1 overflow-y-auto font-mono py-1 min-h-0">
-        {analysisLog.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-[11px] text-[#2a2a2a]">En attente d'analyse…<br />Cliquez sur un bouton ci-dessus.</p>
+        {analysisLog.length === 0 && !migrationMissing ? (
+          <div className="flex flex-col items-center justify-center h-full gap-4 px-4 text-center">
+            <div>
+              <p className="text-[11px] text-[#333] mb-1 font-semibold">Aucune analyse en cours</p>
+              <p className="text-[10px] text-[#2a2a2a] leading-relaxed">
+                Lance une analyse en cliquant sur un bouton :<br />
+                <span className="text-[#D4AF37]/60">Crypto 1h</span> pour les cryptomonnaies,{' '}
+                <span className="text-[#D4AF37]/60">Forex 1h</span> pour les devises,{' '}
+                <span className="text-[#D4AF37]/60">Tous 4h</span> pour tous les actifs.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2 w-full max-w-[220px]">
+              {([
+                { tf: '1h', cat: 'crypto', label: 'Analyser Crypto 1h' },
+                { tf: '1h', cat: 'forex',  label: 'Analyser Forex 1h'  },
+                { tf: '4h', cat: 'all',    label: 'Analyser Tous 4h'   },
+              ] as const).map(({ tf, cat, label }) => (
+                <button key={`${tf}-${cat}`}
+                  onClick={() => generateNow(tf, cat)}
+                  disabled={generating}
+                  className="w-full px-3 py-2 text-[11px] font-semibold border border-[#D4AF37]/25 text-[#D4AF37]/70 rounded-lg hover:bg-[#D4AF37]/08 disabled:opacity-40 transition-all">
+                  {generating ? <span className="flex items-center justify-center gap-1.5"><Loader2 className="w-3 h-3 animate-spin" />Analyse…</span> : label}
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
           <>
