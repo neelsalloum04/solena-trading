@@ -1,7 +1,7 @@
 'use client'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
-import { ImageIcon, LogOut, MessageSquare, Settings, Zap } from 'lucide-react'
+import { ImageIcon, HelpCircle, LogOut, MessageSquare, Settings, Zap } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -70,7 +70,27 @@ export function Sidebar({ user }: SidebarProps) {
 
       {/* Bottom — user + settings */}
       <div className="px-3 py-3 border-t border-[#1a1a1a] space-y-1">
-        <Link href="/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#555] hover:text-[#F2EDD7] hover:bg-[#141414] transition-all">
+        <Link
+          href="/support"
+          className={cn(
+            'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all',
+            pathname === '/support'
+              ? 'bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/15'
+              : 'text-[#555] hover:text-[#F2EDD7] hover:bg-[#141414]'
+          )}
+        >
+          <HelpCircle className="w-4 h-4 flex-shrink-0" />
+          <span>Assistance IA</span>
+        </Link>
+        <Link
+          href="/settings"
+          className={cn(
+            'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all',
+            pathname === '/settings'
+              ? 'bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/15'
+              : 'text-[#555] hover:text-[#F2EDD7] hover:bg-[#141414]'
+          )}
+        >
           <Settings className="w-4 h-4 flex-shrink-0" />
           <span>Paramètres</span>
         </Link>

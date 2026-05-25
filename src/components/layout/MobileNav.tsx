@@ -1,14 +1,15 @@
 'use client'
 import { cn } from '@/lib/utils'
-import { ImageIcon, MessageSquare, Zap } from 'lucide-react'
+import { HelpCircle, ImageIcon, MessageSquare, Zap } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const NAV = [
-  { label: 'Chat IA', href: '/chat',    icon: MessageSquare, live: false },
-  { label: 'Analyse', href: '/analyse', icon: ImageIcon,     live: false },
-  { label: 'Signaux', href: '/signals', icon: Zap,           live: true  },
+  { label: 'Chat IA',   href: '/chat',    icon: MessageSquare, live: false },
+  { label: 'Analyse',   href: '/analyse', icon: ImageIcon,     live: false },
+  { label: 'Signaux',   href: '/signals', icon: Zap,           live: true  },
+  { label: 'Assistance', href: '/support', icon: HelpCircle,   live: false },
 ]
 
 export function MobileHeader() {
