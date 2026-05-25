@@ -419,7 +419,7 @@ export default function SignalsPage() {
       const res = await fetch(`/api/signals/generate?tf=${tf}&cat=${cat}`)
       const d   = await res.json()
       if (d.errors?.length) {
-        setGenStatus(`✓ ${d.generated ?? 0} généré(s), ${d.skipped ?? 0} ignoré(s) — ${d.errors.length} erreur(s)`)
+        setGenStatus(`⚠ ${d.errors.length} erreur(s) — ${d.errors[0]}`)
       } else {
         setGenStatus(`✓ ${d.generated ?? 0} signal(s) — ${d.skipped ?? 0} ignoré(s)`)
       }
@@ -428,7 +428,7 @@ export default function SignalsPage() {
       setGenStatus('Erreur lors de la génération')
     } finally {
       setGenerating(false)
-      setTimeout(() => setGenStatus(null), 6000)
+      setTimeout(() => setGenStatus(null), 15000)
     }
   }, [loadSignals])
 
@@ -538,7 +538,10 @@ export default function SignalsPage() {
         </div>
       )}
       {genStatus && !generating && (
-        <p className="text-xs text-[#22c55e] mt-3 pt-3 border-t border-[#1c1c1c]">{genStatus}</p>
+        <p className={cn('text-xs mt-3 pt-3 border-t border-[#1c1c1c]',
+          genStatus.startsWith('⚠') ? 'text-[#f97316]' : 'text-[#22c55e]')}>
+          {genStatus}
+        </p>
       )}
       {monitorStatus && !monitoring && (
         <p className="text-xs text-[#38bdf8] mt-3 pt-3 border-t border-[#1c1c1c]">{monitorStatus}</p>
