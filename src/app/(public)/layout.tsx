@@ -25,7 +25,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           <Link href="/legal/privacy" className="hover:text-[#666]">Confidentialité</Link>
           <Link href="/legal/mentions" className="hover:text-[#666]">Mentions légales</Link>
           <Link href="/legal/cgv" className="hover:text-[#666]">CGV</Link>
-          <span className="ml-auto">© {new Date().getFullYear()} PrimeX — Tous droits réservés</span>
+          <span className="ml-auto">© {new Date().getFullYear()} PrimeX. Tous droits réservés.</span>
         </div>
       </footer>
     </div>

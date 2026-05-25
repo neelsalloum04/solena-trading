@@ -46,7 +46,7 @@ export default function GlobalError({
           </h2>
           <p style={{ color: '#555', fontSize: 13, lineHeight: 1.7, margin: '0 0 28px' }}>
             La page a rencontré un problème inattendu.
-            Rafraîchis pour continuer — tes données sont sauvegardées.
+            Rafraîchis pour continuer, tes données sont sauvegardées.
           </p>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
             <button

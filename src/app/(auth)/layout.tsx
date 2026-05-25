@@ -34,7 +34,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             </h1>
             <p className="text-[#666] text-sm leading-relaxed mb-10">
               Signaux IA institutionnels, bots automatisés et<br />
-              analyse de marché — tout en une plateforme.
+              analyse de marché, tout en une plateforme.
             </p>
 
             <ul className="space-y-3 mb-12">

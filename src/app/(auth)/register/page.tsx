@@ -103,7 +103,7 @@ export default function RegisterPage() {
     <div className="w-full max-w-sm">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-[#F2EDD7] mb-1">Créez votre compte</h1>
-        <p className="text-[#666] text-sm">14 jours d&apos;essai gratuit — sans carte bancaire</p>
+        <p className="text-[#666] text-sm">5 000 tokens offerts, sans carte bancaire</p>
       </div>
 
       {/* Google */}
