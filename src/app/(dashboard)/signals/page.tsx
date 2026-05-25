@@ -3,7 +3,17 @@ import { RiskBanner } from '@/components/ui/risk-banner'
 import { cn } from '@/lib/utils'
 import { Loader2, RefreshCw, TrendingDown, TrendingUp, Zap } from 'lucide-react'
 import { useState } from 'react'
-import type { CryptoSignal } from '@/app/api/signals/crypto/route'
+
+interface CryptoSignal {
+  id: string; name: string; symbol: string
+  decision: 'ACHETER' | 'VENDRE'
+  price: number; entry: number
+  tp1: number; tp1Pct: number
+  tp2: number; tp2Pct: number
+  tp3: number; tp3Pct: number
+  sl: number;  slPct: number
+  chances: number; error?: string
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -109,6 +119,7 @@ export default function SignalsPage() {
   const [results,  setResults]  = useState<CryptoSignal[]>([])
   const [progress, setProgress] = useState(0)
   const [current,  setCurrent]  = useState('')
+  const [error,    setError]    = useState<string | null>(null)
 
   const ASSET_NAMES: Record<string, string> = {
     BTC:'Bitcoin', ETH:'Ethereum', SOL:'Solana', BNB:'BNB', XRP:'XRP',
@@ -122,10 +133,20 @@ export default function SignalsPage() {
     setResults([])
     setProgress(0)
     setCurrent('')
+    setError(null)
 
     try {
       const res = await fetch('/api/signals/crypto')
-      if (!res.ok || !res.body) { setState('idle'); return }
+      if (!res.ok) {
+        setError(`Erreur serveur : ${res.status} ${res.statusText}`)
+        setState('idle')
+        return
+      }
+      if (!res.body) {
+        setError('Pas de flux reçu du serveur.')
+        setState('idle')
+        return
+      }
 
       const reader  = res.body.getReader()
       const decoder = new TextDecoder()
@@ -152,14 +173,13 @@ export default function SignalsPage() {
           } catch {}
         }
       }
-    } catch {
+    } catch (err: any) {
+      setError(err?.message ?? 'Erreur inconnue')
       setState('idle')
-    } finally {
-      setState('done')
     }
   }
 
-  const reset = () => { setState('idle'); setResults([]); setProgress(0); setCurrent('') }
+  const reset = () => { setState('idle'); setResults([]); setProgress(0); setCurrent(''); setError(null) }
 
   const buyCount  = results.filter(r => r.decision === 'ACHETER').length
   const sellCount = results.filter(r => r.decision === 'VENDRE').length
@@ -196,6 +216,12 @@ export default function SignalsPage() {
               <Zap className="w-5 h-5" />
               Lancer l'analyse
             </button>
+
+            {error && (
+              <p className="text-xs text-[#ef4444] bg-[#ef4444]/10 border border-[#ef4444]/20 rounded-xl px-4 py-3 max-w-[400px] text-center">
+                {error}
+              </p>
+            )}
           </div>
         )}
 
