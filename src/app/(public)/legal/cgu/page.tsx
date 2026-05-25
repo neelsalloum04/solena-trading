@@ -24,10 +24,10 @@ export default function CGUPage() {
 
       <Section title="3. Description des forfaits">
         <p><strong className="text-[#D4AF37]">Gratuit :</strong> Accès au tableau de bord, actualités marchés et calendrier économique uniquement.</p>
-        <p><strong className="text-[#38bdf8]">Starter X (59€/mois ou 499€/an) :</strong> 60 analyses IA/mois, 60 messages IA/mois, signaux de trading illimités.</p>
-        <p><strong className="text-[#D4AF37]">Pro X (89€/mois ou 819€/an) :</strong> 200 analyses IA/mois, 200 messages IA/mois, signaux illimités, robot de trading.</p>
-        <p><strong className="text-[#a78bfa]">Expert X (139€/mois ou 1 399€/an) :</strong> 1 000 analyses IA/mois, 1 000 messages IA/mois, signaux illimités, robot de trading.</p>
-        <p><strong className="text-[#22c55e]">Prime X (509€/mois ou 5 699€/an) :</strong> Accès illimité à tous les modules actuels et futurs, robot de trading illimité.</p>
+        <p><strong className="text-[#38bdf8]">Starter X (39€/mois) :</strong> Tous les modules PrimeX, 1 million de tokens IA/mois, IA de dernière génération, mises à jour incluses.</p>
+        <p><strong className="text-[#D4AF37]">Pro X (99€/mois) :</strong> Tous les modules PrimeX, 3 millions de tokens IA/mois, IA de dernière génération, mises à jour incluses.</p>
+        <p><strong className="text-[#a78bfa]">Expert X (199€/mois) :</strong> Tous les modules PrimeX, 8 millions de tokens IA/mois, IA de dernière génération, mises à jour incluses.</p>
+        <p><strong className="text-[#22c55e]">PrimeX (699€/mois) :</strong> Tous les modules PrimeX, 50 millions de tokens IA/mois, IA de dernière génération, accès prioritaire aux nouveautés, mises à jour incluses.</p>
       </Section>
 
       <Section title="4. Gestion des abonnements">

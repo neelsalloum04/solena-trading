@@ -1,1 +1,6 @@
-{}
+{
+  "crons": [
+    { "path": "/api/signals/generate?tf=1d&cat=crypto",             "schedule": "0 7 * * *" },
+    { "path": "/api/signals/generate?tf=1d&cat=forex",              "schedule": "0 8 * * *" }
+  ]
+}

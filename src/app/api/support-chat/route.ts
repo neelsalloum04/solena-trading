@@ -14,10 +14,10 @@ INFORMATIONS PLATEFORME :
 
 FORFAITS :
 - Gratuit : 3 analyses et 3 messages chat offerts (essai)
-- Starter X (59€/mois ou 499€/an) : 60 analyses IA/mois, 60 messages IA/mois, signaux illimités
-- Pro X (89€/mois ou 819€/an) : 200 analyses IA/mois, 200 messages IA/mois, signaux illimités, robot de trading
-- Expert X (139€/mois ou 1 399€/an) : 1 000 analyses IA/mois, 1 000 messages IA/mois, signaux illimités, robot de trading
-- Prime X (509€/mois ou 5 699€/an) : tout illimité, tous modules actuels et futurs inclus
+- Starter X (39€/mois) : tous les modules PrimeX, 1 million de tokens/mois, IA dernière génération
+- Pro X (99€/mois) : tous les modules PrimeX, 3 millions de tokens/mois, IA dernière génération
+- Expert X (199€/mois) : tous les modules PrimeX, 8 millions de tokens/mois, IA dernière génération
+- PrimeX (699€/mois) : tous les modules PrimeX, 50 millions de tokens/mois, accès prioritaire aux nouveautés
 
 QUESTIONS FRÉQUENTES :
 - Annuler l'abonnement : Paramètres → Abonnement → Annuler. Accès conservé jusqu'à fin de période.

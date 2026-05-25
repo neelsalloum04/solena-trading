@@ -11,48 +11,63 @@ export const maxDuration = 60
 
 // ─── System prompt ────────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `Tu es un analyste trading institutionnel senior de hedge fund. Tu analyses les marchés avec précision, objectivité et conviction. Tu PRENDS des décisions — l'ambiguïté n'est pas une option professionnelle.
+const SYSTEM_PROMPT = `Tu es un analyste technique senior, objectif et sans biais directionnel. Tu analyses les marchés financiers avec rigueur et présentes PLUSIEURS SCÉNARIOS possibles avec leurs probabilités et conditions de déclenchement. Tu ne donnes jamais d'instruction directe d'achat ou de vente.
 
 RÈGLE ABSOLUE : Réponds UNIQUEMENT en JSON valide. Zéro texte avant ou après.
 
 ━━━ MÉTHODE D'ANALYSE (dans cet ordre) ━━━
-① Identifie la paire/marché et le timeframe visibles sur l'image
-② Si des INDICATEURS TECHNIQUES CALCULÉS sont fournis dans le contexte → utilise ces valeurs exactes (EMA, RSI, ATR, supports, résistances). Ne les ré-estime pas depuis l'image.
-③ Tendance globale : haussière / baissière / range / retournement — confirme avec les EMAs et biais fournis
-④ Structure de marché : BOS (Break of Structure) · CHoCH (Change of Character) · continuation · consolidation — identifie visuellement sur le graphique
-⑤ Zones clés : utilise les swing highs/lows calculés comme références. Identifie visuellement les imbalances / FVG / zones institutionnelles sur le graphique
-⑥ Signal de confirmation : rejet · pullback · cassure · englobante · momentum visible sur l'image
-⑦ Si contexte macro/news fourni → intègre-le dans l'analyse et la décision finale
+① Si plusieurs graphiques sont fournis (multi-timeframes ou multi-actifs) → analyse chaque graphique et croise les informations pour renforcer ou invalider les scénarios
+② Identifie la paire/marché et le(s) timeframe(s) visibles
+③ Si des INDICATEURS TECHNIQUES CALCULÉS sont fournis dans le contexte → utilise ces valeurs exactes (EMA, RSI, ATR, supports, résistances). Ne les ré-estime pas depuis l'image.
+④ Identifie les niveaux clés : supports, résistances, zones de liquidité, FVG/imbalances
+⑤ Construis 2 ou 3 scénarios objectifs (haussier, baissier, neutre) avec leurs probabilités et arguments factuels
+⑥ Les probabilités des 3 scénarios doivent totaliser exactement 100
+⑦ Si contexte macro/news fourni → intègre-le dans l'analyse des scénarios
 
-━━━ RÈGLES DE DÉCISION ━━━
-"BUY NOW"  → tendance haussière + zone support/demande + signal bullish déclenché
-"SELL NOW" → tendance baissière + zone résistance/offre + signal bearish déclenché
-"WAIT FOR CONFIRMATION" → setup visible, signal pas encore déclenché — donner quand même entrée/SL/TP potentiels + condition exacte
-"NO TRADE" → aucune structure lisible, range sans biais. CAS RARES — jamais par défaut.
-
-⚠ Setup suffisamment propre = BUY NOW ou SELL NOW. Pas de WAIT par prudence excessive.
-⚠ confiance : honnête — 80+ si très clair, 60-75 si correct, 40-55 si douteux.
-⚠ TP1 = premier objectif réaliste · TP2 = second niveau · TP3 = extension si tendance forte.
-⚠ SL et TP basés sur les niveaux calculés fournis (ATR, swings) — pas inventés.
+━━━ RÈGLES IMPORTANTES ━━━
+⚠ NE DIS PAS "achète", "vends", "BUY", "SELL" — présente les scénarios objectivement avec des conditions
+⚠ Chaque scénario actif (probabilite > 0) doit avoir un déclencheur précis et vérifiable
+⚠ Les niveaux SL/TP sont basés sur les données calculées fournies (ATR, swings) — pas inventés
+⚠ Si le scénario neutre n'est pas pertinent, mets probabilite: 0 et arguments: []
+⚠ confiance : honnête — 80+ si structure très claire, 60-75 si correct mais incertain, 40-55 si ambigu
 
 ━━━ JSON À RETOURNER ━━━
 {
-  "marche": "paire ex: BTC/USD, EUR/USD, XAU/USD, NASDAQ — Inconnu si illisible",
-  "timeframe": "ex: M15, H1, H4, D1 — Non visible si illisible",
-  "decision": "BUY NOW | SELL NOW | WAIT FOR CONFIRMATION | NO TRADE",
+  "marche": "paire ex: BTC/USD, EUR/USD, XAU/USD — Inconnu si illisible",
+  "timeframe": "ex: M15, H1, H4, D1 — ou 'multi-TF' si plusieurs graphiques — 'Non visible' si illisible",
+  "tendance": "HAUSSIÈRE | BAISSIÈRE | NEUTRE | CONSOLIDATION | RETOURNEMENT POSSIBLE",
   "confiance": <entier 0-100>,
-  "tendance": "HAUSSIÈRE | BAISSIÈRE | RANGE | CONSOLIDATION | RETOURNEMENT POSSIBLE",
-  "structure": "BOS / CHoCH / continuation / sweep / etc. — concis et précis",
-  "zones": "niveaux clés avec prix approx : support X, résistance Y, liquidité sous/au-dessus Z",
-  "entree": "zone d'entrée idéale | null si NO TRADE",
-  "stop_loss": "SL logique basé ATR/swing | null",
-  "take_profit": "TP1 | null",
-  "tp2": "TP2 | null",
-  "tp3": "TP3 si tendance forte, sinon null",
-  "invalidation": "condition d'invalidation | null",
-  "ratio_rr": "ex: 1:2.5 (sur TP1) | null",
-  "analyse": "3-4 phrases : tendance + structure + signal + logique + contexte macro si pertinent. Direct, professionnel.",
-  "manque": null | "info manquante : timeframe / qualité image / contexte HTF / etc."
+  "structure": "description concise de la structure de marché (BOS / CHoCH / continuation / sweep / range)",
+  "zones": "niveaux clés identifiés : supports et résistances avec prix approximatifs",
+  "scenario_haussier": {
+    "probabilite": <entier 0-100>,
+    "arguments": ["argument 1 citant des données réelles", "argument 2", "argument 3"],
+    "entree": "zone d'entrée longue ex: 42000-42500 | null si non pertinent",
+    "sl": "stop loss logique | null",
+    "tp1": "premier objectif | null",
+    "tp2": "deuxième objectif | null",
+    "tp3": "extension si forte impulsion | null",
+    "ratio_rr": "ex: 1:2.5 (sur TP1) | null",
+    "declencheur": "condition exacte et vérifiable pour valider ce scénario | null"
+  },
+  "scenario_baissier": {
+    "probabilite": <entier 0-100>,
+    "arguments": ["argument 1 citant des données réelles", "argument 2", "argument 3"],
+    "entree": "zone d'entrée courte | null si non pertinent",
+    "sl": "stop loss logique | null",
+    "tp1": "premier objectif | null",
+    "tp2": "deuxième objectif | null",
+    "tp3": "extension si forte impulsion | null",
+    "ratio_rr": "ex: 1:2.0 (sur TP1) | null",
+    "declencheur": "condition exacte et vérifiable pour valider ce scénario | null"
+  },
+  "scenario_neutre": {
+    "probabilite": <entier 0-100>,
+    "arguments": ["argument si pertinent — sinon tableau vide"],
+    "declencheur": "condition de résolution (cassure d'un côté ou de l'autre) | null"
+  },
+  "analyse": "3-4 phrases de synthèse objective : tendance actuelle, niveaux structurants, scénario dominant et sa condition de déclenchement. Référence les données calculées si fournies.",
+  "manque": null | "info manquante : timeframe illisible / image floue / contexte HTF absent / etc."
 }`
 
 // ─── Phase 1 : fast market identification ────────────────────────────────────
@@ -93,7 +108,6 @@ function buildPrompt(
 ): string {
   let extra = ''
 
-  // 1. Real-time price
   if (priceInfo) {
     const sign = priceInfo.isUp ? '+' : ''
     extra += `\n━━━ PRIX EN TEMPS RÉEL ━━━\n`
@@ -101,19 +115,17 @@ function buildPrompt(
     extra += `Source : ${priceInfo.source}\n`
   }
 
-  // 2. Calculated technical indicators (the key addition)
   if (indicatorBlock) {
     extra += `\n${indicatorBlock}\n`
   }
 
-  // 3. News / macro context
   if (newsItems.news.length > 0) {
     extra += `\n━━━ ACTUALITÉS RÉCENTES ━━━\n`
     newsItems.news.slice(0, 4).forEach((item, i) => {
       const sent = item.sentiment ? ` [${item.sentiment}]` : ''
       extra += `${i + 1}. ${item.source}${sent} : "${item.title}"\n`
     })
-    extra += `\nIntègre ces actualités dans ton analyse si pertinent.\n`
+    extra += `\nIntègre ces actualités dans tes scénarios si pertinent.\n`
   }
 
   return extra ? SYSTEM_PROMPT + extra : SYSTEM_PROMPT
@@ -122,16 +134,31 @@ function buildPrompt(
 // ─── JSON extraction ─────────────────────────────────────────────────────────
 
 function extractJSON(text: string): string {
-  const s = text.indexOf('{'), e = text.lastIndexOf('}')
-  if (s !== -1 && e !== -1 && e > s) return text.slice(s, e + 1)
-  return text.replace(/^```(?:json)?\s*/m, '').replace(/\s*```$/m, '').trim()
+  // Strip markdown code fences first
+  const stripped = text.replace(/^```(?:json)?\s*/m, '').replace(/\s*```\s*$/m, '').trim()
+
+  // Find the outermost { ... } by tracking brace depth
+  let depth = 0, start = -1, end = -1
+  for (let i = 0; i < stripped.length; i++) {
+    if (stripped[i] === '{') {
+      if (depth === 0) start = i
+      depth++
+    } else if (stripped[i] === '}') {
+      depth--
+      if (depth === 0 && start !== -1) { end = i; break }
+    }
+  }
+  if (start !== -1 && end !== -1) return stripped.slice(start, end + 1)
+
+  // Fallback: simple first/last brace
+  const s = stripped.indexOf('{'), e = stripped.lastIndexOf('}')
+  return s !== -1 && e > s ? stripped.slice(s, e + 1) : stripped
 }
 
 // ─── Route handler ────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
   try {
-    // ── Free trial quota check ─────────────────────────────────────
     const { user } = await getUserFromRequest(req)
     if (user) {
       const quota = await checkAndIncrementQuota(user.id, 'analyse')
@@ -142,49 +169,82 @@ export async function POST(req: NextRequest) {
 
     const ai = requireAnthropic()
     const body = await req.json()
-    const { imageBase64, mediaType = 'image/png' } = body
 
-    if (!imageBase64) return NextResponse.json({ error: 'Image manquante' }, { status: 400 })
+    // Support both multi-image array and legacy single image
+    const imageList: { imageBase64: string; mediaType: string }[] =
+      Array.isArray(body.images) && body.images.length > 0
+        ? body.images
+        : body.imageBase64
+          ? [{ imageBase64: body.imageBase64, mediaType: body.mediaType || 'image/png' }]
+          : []
 
-    const base64 = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64
-    const imgContent = [
-      { type: 'image' as const, source: { type: 'base64' as const, media_type: mediaType as any, data: base64 } },
-      { type: 'text' as const, text: 'Analyse ce graphique en utilisant les indicateurs calculés fournis dans le contexte.' },
-    ]
+    if (!imageList.length) return NextResponse.json({ error: 'Image manquante' }, { status: 400 })
+    if (imageList.length > 4) return NextResponse.json({ error: 'Maximum 4 graphiques.' }, { status: 400 })
 
-    // Phase 1 — identify market (fast, cheap, Haiku)
-    const detectedMarket = await identifyMarket(ai, base64, mediaType)
+    // Phase 1 — identify market using the first image
+    const first = imageList[0]
+    const firstBase64 = first.imageBase64.includes(',') ? first.imageBase64.split(',')[1] : first.imageBase64
+    const detectedMarket = await identifyMarket(ai, firstBase64, first.mediaType)
 
-    // Phase 2 — fetch price + news + OHLCV indicators in parallel
+    // Phase 2 — fetch price + news + indicators in parallel
     const [priceData, economicContext, indicatorBlock] = await Promise.all([
       fetchLivePrice(detectedMarket).catch(() => null),
       fetchEconomicContext(detectedMarket).catch(() => ({ news: [], source: 'Alpha Vantage' })),
       buildIndicatorBlock(detectedMarket).catch(() => null),
     ])
 
-    // Phase 3 — full analysis with all real data injected
+    // Phase 3 — build content blocks with all images
+    const imgContentBlocks: any[] = []
+    imageList.forEach((img, index) => {
+      const base64 = img.imageBase64.includes(',') ? img.imageBase64.split(',')[1] : img.imageBase64
+      if (imageList.length > 1) {
+        imgContentBlocks.push({ type: 'text', text: `Graphique ${index + 1} sur ${imageList.length} :` })
+      }
+      imgContentBlocks.push({ type: 'image', source: { type: 'base64', media_type: img.mediaType as any, data: base64 } })
+    })
+    imgContentBlocks.push({
+      type: 'text',
+      text: imageList.length > 1
+        ? `Analyse ces ${imageList.length} graphiques ensemble. Identifie les convergences et divergences entre timeframes pour construire tes scénarios multi-TF.`
+        : 'Analyse ce graphique en utilisant les indicateurs calculés fournis dans le contexte.',
+    })
+
     const enrichedPrompt = buildPrompt(detectedMarket, priceData, economicContext, indicatorBlock)
 
     const response = await ai.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 800,
+      max_tokens: 2048,
       system: enrichedPrompt,
-      messages: [{ role: 'user', content: imgContent }],
+      messages: [{ role: 'user', content: imgContentBlocks }],
     })
 
     const raw = response.content[0]?.type === 'text' ? response.content[0].text : ''
+    const stopReason = response.stop_reason
+
+    // If truncated by token limit the JSON will be incomplete — catch it explicitly
+    if (stopReason === 'max_tokens') {
+      console.error('[analyse] Response truncated (max_tokens). Raw length:', raw.length)
+      return NextResponse.json(
+        { error: 'La réponse a été tronquée. Réessaie — le modèle produira une analyse complète.' },
+        { status: 422 },
+      )
+    }
+
     const cleaned = extractJSON(raw)
 
     let analysis: Record<string, unknown>
     try {
       analysis = JSON.parse(cleaned)
     } catch {
-      console.error('[analyse] JSON parse failed. Raw:', raw.slice(0, 300))
-      return NextResponse.json({ error: 'Réponse invalide du modèle. Essaie avec un graphique plus net.' }, { status: 422 })
+      console.error('[analyse] JSON parse failed. stop_reason:', stopReason, '| Raw:', raw)
+      return NextResponse.json(
+        { error: 'Le modèle n\'a pas retourné un JSON valide. Réessaie — cela fonctionne généralement au second essai.' },
+        { status: 422 },
+      )
     }
 
     const hasIndicators = !!indicatorBlock
-    console.log(`[analyse] decision=${analysis.decision} confiance=${analysis.confiance} marche=${analysis.marche} indicators=${hasIndicators} price=${priceData?.priceFormatted ?? 'n/a'} news=${economicContext.news.length}`)
+    console.log(`[analyse] tendance=${analysis.tendance} confiance=${analysis.confiance} marche=${analysis.marche} imgs=${imageList.length} indicators=${hasIndicators}`)
 
     return NextResponse.json({ analysis, liveData: priceData, economicContext, hasIndicators })
 

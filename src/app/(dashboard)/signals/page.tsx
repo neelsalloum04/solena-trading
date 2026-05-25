@@ -1,382 +1,585 @@
 'use client'
-import { PlanGate } from '@/components/upgrade/PlanGate'
-import { cn } from '@/lib/utils'
+import { createClient } from '@/lib/supabase/client'
+import { LABEL_CONFIG, type SignalLabel, type SignalDirection, type AssetCategory } from '@/lib/signal-detector'
 import { RiskBanner } from '@/components/ui/risk-banner'
-import type { LiveSignal, MarketType } from '@/lib/signal-engine'
+import { cn } from '@/lib/utils'
 import {
-  AlertTriangle, ArrowDownRight, ArrowUpRight, Clock, Minus, RefreshCw, Shield, Target, TrendingDown, TrendingUp, Zap,
+  ArrowDownRight,
+  ArrowUpRight,
+  BarChart2,
+  Bell,
+  Bot,
+  ChevronDown,
+  Loader2,
+  Minus,
+  RefreshCw,
+  TrendingDown,
+  TrendingUp,
+  Zap,
 } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface Signal {
+  id:           string
+  created_at:   string
+  asset:        string
+  asset_name:   string
+  category:     AssetCategory
+  timeframe:    string
+  signal_label: SignalLabel
+  direction:    SignalDirection
+  score:        number
+  strength:     number
+  price:        number | null
+  // Indicators
+  rsi:          number | null
+  macd_hist:    number | null
+  ema20:        number | null
+  ema50:        number | null
+  ema200:       number | null
+  bb_upper:     number | null
+  bb_lower:     number | null
+  bb_mid:       number | null
+  stoch_k:      number | null
+  stoch_d:      number | null
+  atr:          number | null
+  vwap:         number | null
+  volume_ratio: number | null
+  // Levels
+  entry_low:    number | null
+  entry_high:   number | null
+  stop_loss:    number | null
+  tp1:          number | null
+  tp2:          number | null
+  tp3:          number | null
+  risk_reward:  number | null
+  // AI
+  ai_analysis:  string | null
+  details:      Record<string, unknown>
+}
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const MARKETS: { label: string; value: MarketType | 'all' }[] = [
-  { label: 'Tous',        value: 'all'         },
-  { label: 'Crypto',      value: 'crypto'      },
-  { label: 'Forex',       value: 'forex'       },
-  { label: 'Commodités',  value: 'commodities' },
-  { label: 'Indices',     value: 'indices'     },
-]
+const CAT_LABELS: Record<string, string> = {
+  crypto: 'Crypto', forex: 'Forex', stocks: 'Actions', indices: 'Indices', metals: 'Métaux',
+}
 
-const REFRESH_INTERVAL = 5 * 60 * 1000 // 5 min
+const CATEGORY_FILTERS = [
+  { value: 'all',     label: 'Tous'    },
+  { value: 'crypto',  label: 'Crypto'  },
+  { value: 'forex',   label: 'Forex'   },
+  { value: 'stocks',  label: 'Actions' },
+  { value: 'indices', label: 'Indices' },
+  { value: 'metals',  label: 'Métaux'  },
+] as const
+
+const TF_FILTERS = [
+  { value: 'all', label: 'Tous TF' },
+  { value: '15m', label: '15 min'  },
+  { value: '1h',  label: '1h'      },
+  { value: '4h',  label: '4h'      },
+  { value: '1d',  label: '1j'      },
+] as const
+
+const DIR_FILTERS = [
+  { value: 'all',     label: 'Tous'     },
+  { value: 'BULLISH', label: 'Achat'    },
+  { value: 'NEUTRAL', label: 'Neutre'   },
+  { value: 'BEARISH', label: 'Vente'    },
+] as const
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function timeAgo(iso: string): string {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
-  if (diff < 60)  return `il y a ${diff}s`
-  if (diff < 3600) return `il y a ${Math.floor(diff / 60)}min`
-  return `il y a ${Math.floor(diff / 3600)}h`
+  if (diff < 60)    return `${diff}s`
+  if (diff < 3600)  return `${Math.floor(diff / 60)}min`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h`
+  return `${Math.floor(diff / 86400)}j`
 }
 
-function tendanceIcon(t: string) {
-  const u = t.toUpperCase()
-  if (u === 'HAUSSIÈRE' || u === 'BULLISH') return <TrendingUp className="w-3 h-3 text-solena-success" />
-  if (u === 'BAISSIÈRE' || u === 'BEARISH') return <TrendingDown className="w-3 h-3 text-solena-danger" />
-  return <Minus className="w-3 h-3 text-solena-text-muted" />
+function formatPrice(price: number | null | undefined, decimals?: number): string {
+  if (price == null) return '—'
+  if (decimals != null) return price.toFixed(decimals)
+  if (price > 10000) return price.toLocaleString('en-US', { maximumFractionDigits: 0 })
+  if (price > 100)   return price.toFixed(2)
+  if (price > 1)     return price.toFixed(4)
+  return price.toFixed(6)
 }
 
-function confColor(c: number) {
-  if (c >= 75) return 'text-solena-success border-solena-success/20 bg-solena-success/5'
-  if (c >= 60) return 'text-solena-accent border-solena-accent/20 bg-solena-accent/5'
-  return 'text-solena-text-muted border-solena-border bg-solena-card'
+function pxDec(price: number | null): number {
+  if (!price) return 2
+  if (price > 10000) return 0
+  if (price > 100)   return 2
+  if (price > 1)     return 4
+  return 6
 }
 
-// ─── Signal card (BUY / SELL) ─────────────────────────────────────────────────
+// ─── Score bar ────────────────────────────────────────────────────────────────
 
-function ActiveSignalCard({ signal, isNew }: { signal: LiveSignal; isNew: boolean }) {
-  const isBuy = signal.type === 'BUY'
+function ScoreBar({ score }: { score: number }) {
+  const pct = Math.abs(score)
+  const bull = score >= 0
+  const color = score >= 60 ? '#22c55e' : score >= 25 ? '#4ade80' : score <= -60 ? '#ef4444' : score <= -25 ? '#f87171' : '#666'
 
   return (
-    <div className={cn(
-      'relative bg-solena-card rounded-2xl overflow-hidden shadow-card transition-all duration-500',
-      isNew && 'ring-1 ring-solena-primary/30 animate-slide-up',
-    )}>
-      <div className={cn('absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl', isBuy ? 'bg-solena-success' : 'bg-solena-danger')} />
+    <div className="flex items-center gap-2">
+      <div className="flex-1 h-1.5 bg-[#1a1a1a] rounded-full relative overflow-hidden">
+        <div className="absolute inset-y-0 left-1/2 w-px bg-[#2a2a2a]" />
+        {bull ? (
+          <div className="absolute top-0 bottom-0 left-1/2 rounded-full transition-all"
+            style={{ width: `${pct / 2}%`, backgroundColor: color }} />
+        ) : (
+          <div className="absolute top-0 bottom-0 right-1/2 rounded-full transition-all"
+            style={{ width: `${pct / 2}%`, backgroundColor: color }} />
+        )}
+      </div>
+      <span className="text-[10px] font-mono font-bold w-8 text-right" style={{ color }}>
+        {score > 0 ? '+' : ''}{score}
+      </span>
+    </div>
+  )
+}
 
-      <div className="pl-4 md:pl-6 pr-4 md:pr-5 py-4 md:py-5">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4 md:mb-5">
-          <div className="flex items-center gap-2.5 md:gap-3">
-            <div className={cn('w-9 h-9 md:w-11 md:h-11 rounded-xl flex items-center justify-center flex-shrink-0', isBuy ? 'bg-solena-success/10' : 'bg-solena-danger/10')}>
-              {isBuy ? <ArrowUpRight className="w-5 h-5 md:w-6 md:h-6 text-solena-success" /> : <ArrowDownRight className="w-5 h-5 md:w-6 md:h-6 text-solena-danger" />}
+// ─── Indicator dot ────────────────────────────────────────────────────────────
+
+function IndDot({ label, value, color }: { label: string; value: string; color?: string }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-[9px] text-[#3a3a3a] uppercase tracking-wider">{label}</span>
+      <span className="text-[10px] font-mono font-semibold" style={{ color: color ?? '#666' }}>{value}</span>
+    </div>
+  )
+}
+
+// ─── Signal card ──────────────────────────────────────────────────────────────
+
+function SignalCard({ signal, isNew }: { signal: Signal; isNew: boolean }) {
+  const [expanded, setExpanded] = useState(false)
+  const cfg   = LABEL_CONFIG[signal.signal_label]
+  const bull  = signal.direction === 'BULLISH'
+  const bear  = signal.direction === 'BEARISH'
+  const dec   = pxDec(signal.price)
+  const px    = (v: number | null) => formatPrice(v, v != null ? dec : undefined)
+
+  // RSI color
+  const rsiColor = signal.rsi == null ? '#555'
+    : signal.rsi < 30 ? '#22c55e'
+    : signal.rsi > 70 ? '#ef4444'
+    : '#888'
+
+  // Stoch color
+  const stochColor = signal.stoch_k == null ? '#555'
+    : signal.stoch_k < 20 ? '#22c55e'
+    : signal.stoch_k > 80 ? '#ef4444'
+    : '#888'
+
+  // MACD color
+  const macdColor = signal.macd_hist == null ? '#555'
+    : signal.macd_hist > 0 ? '#4ade80' : '#f87171'
+
+  const hasLevels = signal.entry_low != null
+
+  return (
+    <div
+      className={cn('relative rounded-xl border overflow-hidden transition-all duration-300', isNew && 'ring-1')}
+      style={{
+        background:   cfg.bg,
+        borderColor:  isNew ? cfg.color + '60' : cfg.border,
+        boxShadow:    isNew ? `0 0 0 1px ${cfg.color}25` : undefined,
+      }}
+    >
+      {/* Left accent bar */}
+      <div className="absolute left-0 top-0 bottom-0 w-0.5" style={{ backgroundColor: cfg.color }} />
+
+      <div className="pl-4 pr-4 pt-3.5 pb-3.5">
+
+        {/* ── Header ─────────────────────────────────────────────────── */}
+        <div className="flex items-start justify-between gap-2 mb-2.5">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{ background: cfg.color + '18', border: `1px solid ${cfg.color}35` }}>
+              {bull ? <TrendingUp  className="w-3.5 h-3.5" style={{ color: cfg.color }} />
+                : bear ? <TrendingDown className="w-3.5 h-3.5" style={{ color: cfg.color }} />
+                : <Minus className="w-3.5 h-3.5 text-[#666]" />}
             </div>
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="font-bold text-solena-text font-mono text-base md:text-lg tracking-tight">{signal.pair}</span>
-                <span className={cn(
-                  'inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border uppercase tracking-wide',
-                  isBuy ? 'bg-solena-success/10 text-solena-success border-solena-success/20'
-                        : 'bg-solena-danger/10 text-solena-danger border-solena-danger/20',
-                )}>
-                  {isBuy ? <ArrowUpRight className="w-2.5 h-2.5" /> : <ArrowDownRight className="w-2.5 h-2.5" />}
-                  {isBuy ? 'ACHAT' : 'VENTE'}
-                </span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-sm font-bold text-[#F2EDD7] font-mono">{signal.asset}</span>
                 {isNew && (
-                  <span className="text-[10px] font-bold text-solena-primary bg-solena-primary/10 border border-solena-primary/20 px-1.5 py-0.5 rounded-md animate-pulse">
-                    NOUVEAU
-                  </span>
+                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded animate-pulse"
+                    style={{ color: cfg.color, background: cfg.color + '22' }}>NOUVEAU</span>
                 )}
               </div>
-              <div className="flex items-center gap-1.5 text-xs text-solena-text-muted">
-                <Clock className="w-3 h-3" />
-                <span>{timeAgo(signal.generatedAt)}</span>
-                <span className="text-solena-border">·</span>
-                {tendanceIcon(signal.tendance)}
-                <span className="capitalize">{signal.tendance}</span>
-                <span className="text-solena-border">·</span>
-                <span className="uppercase text-[10px]">{signal.timeframe}</span>
-              </div>
+              <p className="text-[10px] text-[#444]">{signal.asset_name}</p>
             </div>
           </div>
 
-          {/* Confidence */}
-          <div className={cn('flex flex-col items-center px-3 py-2 md:px-4 md:py-2.5 rounded-xl border text-center flex-shrink-0', confColor(signal.confidence))}>
-            <div className="flex items-center gap-1 mb-0.5">
-              <Zap className="w-2.5 h-2.5 md:w-3 md:h-3" />
-              <span className="text-base md:text-lg font-bold font-mono">{signal.confidence}%</span>
+          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+            <span className="text-[11px] font-black px-2.5 py-1 rounded-lg tracking-wider"
+              style={{ color: cfg.color, background: cfg.color + '18', border: `1px solid ${cfg.color}35` }}>
+              {signal.signal_label}
+            </span>
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-[#444] border border-[#1e1e1e] px-1.5 py-0.5 rounded">{signal.timeframe}</span>
+              <span className="text-[10px] text-[#333] border border-[#1a1a1a] px-1.5 py-0.5 rounded">{CAT_LABELS[signal.category] ?? signal.category}</span>
             </div>
-            <span className="text-[9px] md:text-[10px] uppercase tracking-wide opacity-70">conf.</span>
           </div>
         </div>
 
-        {/* Current price */}
-        <div className="flex items-center gap-2 mb-4 px-4 py-3 rounded-xl bg-solena-bg border border-solena-border">
-          <span className="text-xs text-solena-text-muted">Prix actuel</span>
-          <span className="font-mono font-bold text-solena-text ml-auto">{signal.priceFormatted}</span>
-          <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded', signal.riskLevel === 'FAIBLE' ? 'bg-solena-success/10 text-solena-success' : signal.riskLevel === 'ÉLEVÉ' ? 'bg-solena-danger/10 text-solena-danger' : 'bg-solena-accent/10 text-solena-accent')}>
-            {signal.riskLevel}
-          </span>
-        </div>
-
-        {/* Price levels */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          <div className="bg-solena-bg rounded-xl p-3.5 text-center">
-            <p className="text-[10px] font-semibold text-solena-text-muted uppercase tracking-wider mb-1.5">Entrée</p>
-            <p className="font-mono font-bold text-solena-text text-sm">{signal.entry ?? '—'}</p>
-          </div>
-          <div className="bg-solena-danger/5 border border-solena-danger/15 rounded-xl p-3.5 text-center">
-            <div className="flex items-center justify-center gap-1 mb-1.5">
-              <Shield className="w-2.5 h-2.5 text-solena-danger" />
-              <p className="text-[10px] font-semibold text-solena-text-muted uppercase tracking-wider">Stop</p>
-            </div>
-            <p className="font-mono font-bold text-solena-danger text-sm">{signal.stopLoss ?? '—'}</p>
-          </div>
-          <div className="bg-solena-success/5 border border-solena-success/15 rounded-xl p-3.5 text-center">
-            <div className="flex items-center justify-center gap-1 mb-1.5">
-              <Target className="w-2.5 h-2.5 text-solena-success" />
-              <p className="text-[10px] font-semibold text-solena-text-muted uppercase tracking-wider">TP1</p>
-            </div>
-            <p className="font-mono font-bold text-solena-success text-sm">{signal.tp1 ?? '—'}</p>
+        {/* ── Price + Score bar ───────────────────────────────────────── */}
+        <div className="flex items-center gap-3 mb-3">
+          {signal.price != null && (
+            <span className="text-xs font-mono font-bold text-[#F2EDD7] flex-shrink-0">{px(signal.price)}</span>
+          )}
+          <div className="flex-1">
+            <ScoreBar score={signal.score} />
           </div>
         </div>
 
-        {/* TP2 + R/R */}
-        {(signal.tp2 || signal.rr) && (
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            {signal.tp2 && (
-              <div className="flex items-center justify-between px-4 py-3 rounded-xl border bg-solena-success/5 border-solena-success/15">
-                <span className="text-xs text-solena-text-muted">TP2</span>
-                <span className="font-mono font-bold text-solena-success text-sm">{signal.tp2}</span>
-              </div>
-            )}
-            {signal.rr && (
-              <div className="flex items-center justify-between px-4 py-3 rounded-xl border bg-solena-card border-solena-border">
-                <span className="text-xs text-solena-text-muted">R/R</span>
-                <span className="font-mono font-bold text-solena-text text-sm">{signal.rr}</span>
+        {/* ── Indicator dots ──────────────────────────────────────────── */}
+        <div className="flex items-start gap-4 flex-wrap mb-3">
+          {signal.rsi != null && (
+            <IndDot label="RSI" value={signal.rsi.toFixed(1)} color={rsiColor} />
+          )}
+          {signal.macd_hist != null && (
+            <IndDot label="MACD" value={(signal.macd_hist > 0 ? '+' : '') + signal.macd_hist.toFixed(6)} color={macdColor} />
+          )}
+          {signal.ema20 != null && signal.ema50 != null && (
+            <IndDot
+              label="EMA 20/50"
+              value={signal.ema20 > signal.ema50 ? '↑ Haussier' : '↓ Baissier'}
+              color={signal.ema20 > signal.ema50 ? '#4ade80' : '#f87171'}
+            />
+          )}
+          {signal.stoch_k != null && (
+            <IndDot label="StochRSI" value={signal.stoch_k.toFixed(1)} color={stochColor} />
+          )}
+          {signal.bb_lower != null && signal.price != null && (
+            <IndDot
+              label="BB"
+              value={signal.price < signal.bb_lower! ? '< Inf' : signal.price > (signal.bb_upper ?? Infinity) ? '> Sup' : 'Milieu'}
+              color={signal.price < signal.bb_lower! ? '#22c55e' : signal.price > (signal.bb_upper ?? Infinity) ? '#ef4444' : '#666'}
+            />
+          )}
+          {signal.volume_ratio != null && (
+            <IndDot
+              label="Volume"
+              value={`×${signal.volume_ratio.toFixed(1)}`}
+              color={signal.volume_ratio > 1.5 ? '#D4AF37' : '#444'}
+            />
+          )}
+        </div>
+
+        {/* ── Entry / SL / TP (expandable) ───────────────────────────── */}
+        {hasLevels && (
+          <div>
+            <button
+              onClick={() => setExpanded(e => !e)}
+              className="flex items-center gap-1.5 text-[10px] text-[#555] hover:text-[#888] transition-colors mb-2"
+            >
+              <ChevronDown className={cn('w-3 h-3 transition-transform', expanded && 'rotate-180')} />
+              Niveaux de trading
+            </button>
+
+            {expanded && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 rounded-lg bg-[#0a0a0a] border border-[#1a1a1a] mb-3">
+                <div>
+                  <p className="text-[9px] text-[#3a3a3a] uppercase tracking-wider mb-0.5">Entrée</p>
+                  <p className="text-[10px] font-mono text-[#888]">
+                    {px(signal.entry_low)} – {px(signal.entry_high)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[9px] text-[#3a3a3a] uppercase tracking-wider mb-0.5">Stop Loss</p>
+                  <p className="text-[10px] font-mono text-[#ef4444]">{px(signal.stop_loss)}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] text-[#3a3a3a] uppercase tracking-wider mb-0.5">TP1 / TP2</p>
+                  <p className="text-[10px] font-mono text-[#4ade80]">{px(signal.tp1)} / {px(signal.tp2)}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] text-[#3a3a3a] uppercase tracking-wider mb-0.5">R/R (TP1)</p>
+                  <p className="text-[10px] font-mono text-[#D4AF37]">
+                    {signal.risk_reward != null ? `1:${signal.risk_reward}` : '—'}
+                  </p>
+                </div>
               </div>
             )}
           </div>
         )}
 
-        {/* Justification */}
-        {signal.justification && (
-          <p className="text-xs text-solena-text-muted leading-relaxed border-t border-solena-border pt-4">
-            {signal.justification}
-          </p>
+        {/* ── AI analysis ─────────────────────────────────────────────── */}
+        {signal.ai_analysis && (
+          <div className="flex items-start gap-2 p-3 rounded-lg bg-[#0c0c0c] border border-[#1c1c1c]">
+            <Bot className="w-3 h-3 text-[#D4AF37] flex-shrink-0 mt-0.5" />
+            <p className="text-[10px] text-[#555] leading-relaxed">{signal.ai_analysis}</p>
+          </div>
         )}
-      </div>
-    </div>
-  )
-}
 
-// ─── Wait row (compact) ───────────────────────────────────────────────────────
-
-function WaitRow({ signal }: { signal: LiveSignal }) {
-  return (
-    <div className="flex items-center gap-4 px-5 py-4 bg-solena-card rounded-xl border border-solena-border">
-      <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-solena-border/30 flex-shrink-0">
-        <Clock className="w-4 h-4 text-solena-text-muted" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5">
-          <span className="font-mono font-bold text-solena-text text-sm">{signal.pair}</span>
-          <span className="text-[10px] font-semibold uppercase text-solena-text-muted bg-solena-bg border border-solena-border px-1.5 py-0.5 rounded">ATTENTE</span>
-        </div>
-        <p className="text-xs text-solena-text-muted truncate">{signal.justification || 'Pas de setup valide sur ce marché.'}</p>
-      </div>
-      <div className="flex items-center gap-3 flex-shrink-0">
-        <div className="text-right">
-          <p className="font-mono font-bold text-solena-text text-sm">{signal.priceFormatted}</p>
-          <p className="text-[10px] text-solena-text-muted capitalize">{signal.tendance}</p>
-        </div>
-        <div className={cn('text-xs font-bold px-2.5 py-1.5 rounded-lg border flex flex-col items-center', confColor(signal.confidence))}>
-          <span className="font-mono">{signal.confidence}%</span>
+        {/* ── Footer ──────────────────────────────────────────────────── */}
+        <div className="flex items-center justify-end mt-2.5">
+          <span className="text-[10px] text-[#2a2a2a]">il y a {timeAgo(signal.created_at)}</span>
         </div>
       </div>
     </div>
   )
 }
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
+// ─── Filter pill ──────────────────────────────────────────────────────────────
 
-function Skeleton() {
+function Pill({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
   return (
-    <div className="space-y-3">
-      {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="bg-solena-card rounded-2xl p-5 h-52 animate-pulse border border-solena-border">
-          <div className="flex gap-3 mb-4">
-            <div className="w-11 h-11 rounded-xl bg-solena-border" />
-            <div className="flex-1 space-y-2">
-              <div className="h-5 bg-solena-border rounded w-1/3" />
-              <div className="h-3 bg-solena-border rounded w-1/4" />
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            {[0,1,2].map(j => <div key={j} className="h-16 bg-solena-border rounded-xl" />)}
-          </div>
-        </div>
-      ))}
-    </div>
+    <button
+      onClick={onClick}
+      className={cn(
+        'px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all whitespace-nowrap',
+        active
+          ? 'bg-[#D4AF37]/15 border-[#D4AF37]/40 text-[#D4AF37]'
+          : 'bg-transparent border-[#222] text-[#555] hover:border-[#333] hover:text-[#888]',
+      )}
+    >
+      {label}
+    </button>
   )
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-function SignalsContent() {
-  const [signals, setSignals] = useState<LiveSignal[]>([])
-  const [activeMarket, setActiveMarket] = useState<MarketType | 'all'>('all')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [generatedAt, setGeneratedAt] = useState<string | null>(null)
-  const [newIds, setNewIds] = useState<Set<string>>(new Set())
-  const [isCached, setIsCached] = useState(false)
-  const [failedMarkets, setFailedMarkets] = useState<string[]>([])
-  const [analyzedMarkets, setAnalyzedMarkets] = useState(0)
+export default function SignalsPage() {
+  const [signals,    setSignals]    = useState<Signal[]>([])
+  const [loading,    setLoading]    = useState(true)
+  const [newIds,     setNewIds]     = useState<Set<string>>(new Set())
+  const [catFilter,  setCatFilter]  = useState<string>('all')
+  const [tfFilter,   setTfFilter]   = useState<string>('all')
+  const [dirFilter,  setDirFilter]  = useState<string>('all')
+  const [unread,     setUnread]     = useState(0)
+  const [generating, setGenerating] = useState(false)
+  const [genStatus,  setGenStatus]  = useState<string | null>(null)
+  const sbRef = useRef(createClient())
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await fetch('/api/signals')
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Erreur API')
-      const incoming: LiveSignal[] = data.signals ?? []
-      setSignals(prev => {
-        const prevIds = new Set(prev.map(s => s.id))
-        const freshIds = incoming.filter(s => !prevIds.has(s.id)).map(s => s.id)
-        if (freshIds.length > 0) {
-          setNewIds(new Set(freshIds))
-          setTimeout(() => setNewIds(new Set()), 5000)
-        }
-        return incoming
-      })
-      setGeneratedAt(data.generatedAt ?? null)
-      setIsCached(data.cached ?? false)
-      setFailedMarkets(data.failedMarkets ?? [])
-      setAnalyzedMarkets(data.analyzedMarkets ?? 0)
-    } catch (e: any) {
-      setError(e.message)
-    } finally {
-      setLoading(false)
-    }
+  const flashNew = useCallback((id: string) => {
+    setNewIds(prev => new Set(prev).add(id))
+    setTimeout(() => setNewIds(prev => { const s = new Set(prev); s.delete(id); return s }), 10000)
   }, [])
 
+  const loadSignals = useCallback(() => {
+    setLoading(true)
+    fetch('/api/signals?limit=200')
+      .then(r => r.json())
+      .then(d => setSignals(d.signals ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const generateNow = useCallback(async (tf: string, cat: string) => {
+    setGenerating(true); setGenStatus(null)
+    try {
+      const res = await fetch(`/api/signals/generate?tf=${tf}&cat=${cat}`)
+      const d   = await res.json()
+      if (d.errors?.length) {
+        setGenStatus(`✓ ${d.generated ?? 0} généré(s), ${d.skipped ?? 0} ignoré(s) — ${d.errors.length} erreur(s)`)
+      } else {
+        setGenStatus(`✓ ${d.generated ?? 0} signal(s) généré(s) — ${d.skipped ?? 0} ignoré(s) (doublons)`)
+      }
+      setTimeout(() => loadSignals(), 600)
+    } catch {
+      setGenStatus('Erreur lors de la génération')
+    } finally {
+      setGenerating(false)
+      setTimeout(() => setGenStatus(null), 6000)
+    }
+  }, [loadSignals])
+
+  useEffect(() => { loadSignals() }, [loadSignals])
+  useEffect(() => { setUnread(0) }, [])
+
+  // Supabase Realtime — new signals inserted by cron
   useEffect(() => {
-    load()
-    const iv = setInterval(load, REFRESH_INTERVAL)
-    return () => clearInterval(iv)
-  }, [load])
+    const sb = sbRef.current
+    const ch = sb
+      .channel('signals-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'signals' }, (payload: any) => {
+        const sig = payload.new as Signal
+        setSignals(prev => [sig, ...prev].slice(0, 200))
+        flashNew(sig.id)
+        setUnread(n => n + 1)
+      })
+      .subscribe()
+    return () => { sb.removeChannel(ch) }
+  }, [flashNew])
 
-  const filtered = activeMarket === 'all'
-    ? signals
-    : signals.filter(s => s.market === activeMarket)
+  const filtered = useMemo(() => signals.filter(s => {
+    if (catFilter !== 'all' && s.category  !== catFilter) return false
+    if (tfFilter  !== 'all' && s.timeframe !== tfFilter)  return false
+    if (dirFilter !== 'all' && s.direction !== dirFilter) return false
+    return true
+  }), [signals, catFilter, tfFilter, dirFilter])
 
-  const activeSignals = filtered.filter(s => s.type !== 'WAIT')
-  const waitSignals   = filtered.filter(s => s.type === 'WAIT')
+  const buyCount  = filtered.filter(s => s.direction === 'BULLISH').length
+  const sellCount = filtered.filter(s => s.direction === 'BEARISH').length
 
   return (
-    <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-4 md:space-y-5">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2 md:gap-3 mb-1">
-            <h1 className="text-xl md:text-2xl font-bold text-solena-text">Signaux en direct</h1>
-            <div className="flex items-center gap-1.5 bg-solena-success/5 border border-solena-success/20 px-2.5 py-1 rounded-lg">
-              <span className="w-2 h-2 bg-solena-success rounded-full animate-pulse" />
-              <span className="text-xs font-bold text-solena-success">LIVE</span>
+    <div className="min-h-full bg-[#080808] p-5 md:p-6">
+      <div className="max-w-[900px] mx-auto space-y-5">
+
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-[#D4AF37]/10 border border-[#D4AF37]/20 flex items-center justify-center">
+              <Zap className="w-4 h-4 text-[#D4AF37]" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-base font-bold text-[#F2EDD7]">Signaux Techniques</h1>
+                <span className="flex items-center gap-1 text-[9px] font-black bg-[#22c55e]/10 text-[#22c55e] border border-[#22c55e]/20 px-1.5 py-0.5 rounded tracking-widest">
+                  <span className="w-1 h-1 rounded-full bg-[#22c55e] animate-pulse" />
+                  LIVE
+                </span>
+                {unread > 0 && (
+                  <span className="flex items-center gap-1 text-[9px] font-bold bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30 px-1.5 py-0.5 rounded">
+                    <Bell className="w-2.5 h-2.5" />
+                    {unread} nouveau{unread > 1 ? 'x' : ''}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-[#555]">Score composite — RSI · MACD · EMA · BB · StochRSI · VWAP</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-solena-text-muted">
-            {generatedAt
-              ? <span>{isCached ? 'Cache · ' : 'Généré '}{timeAgo(generatedAt)} · actualisation toutes les 5min</span>
-              : <span>Chargement des données de marché…</span>
-            }
+          <div className="hidden sm:flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <ArrowUpRight className="w-3.5 h-3.5 text-[#22c55e]" />
+              <span className="text-xs font-bold text-[#22c55e]">{buyCount}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <ArrowDownRight className="w-3.5 h-3.5 text-[#ef4444]" />
+              <span className="text-xs font-bold text-[#ef4444]">{sellCount}</span>
+            </div>
           </div>
         </div>
-        <button
-          onClick={load}
-          disabled={loading}
-          className="flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 rounded-xl border border-solena-border text-solena-text-muted hover:text-solena-text hover:border-solena-border-light bg-solena-card transition-all text-xs md:text-sm disabled:opacity-50"
-        >
-          <RefreshCw className={cn('w-3 h-3 md:w-3.5 md:h-3.5', loading && 'animate-spin')} />
-          <span className="hidden sm:inline">Actualiser</span>
-        </button>
-      </div>
 
-      {/* Market filter */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-        {MARKETS.map(m => (
-          <button
-            key={m.value}
-            onClick={() => setActiveMarket(m.value)}
-            className={cn(
-              'px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 border',
-              activeMarket === m.value
-                ? 'bg-solena-primary/10 text-solena-primary border-solena-primary/20'
-                : 'text-solena-text-muted border-solena-border hover:text-solena-text hover:border-solena-border-light bg-solena-card',
-            )}
-          >
-            {m.label}
+        {/* Manual generation panel */}
+        <div className="bg-[#0e0e0e] border border-[#1c1c1c] rounded-xl p-4">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <p className="text-xs font-semibold text-[#F2EDD7] mb-0.5">Générer les signaux maintenant</p>
+              <p className="text-[10px] text-[#444]">Score composite — chaque actif produit toujours un signal</p>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {([
+                { tf: '1h',  cat: 'crypto',  label: 'Crypto 1h'  },
+                { tf: '1h',  cat: 'forex',   label: 'Forex 1h'   },
+                { tf: '1h',  cat: 'metals',  label: 'Métaux 1h'  },
+                { tf: '4h',  cat: 'all',     label: 'Tous 4h'    },
+                { tf: '1d',  cat: 'all',     label: 'Tous 1j'    },
+              ] as const).map(({ tf, cat, label }) => (
+                <button key={`${tf}-${cat}`}
+                  onClick={() => generateNow(tf, cat)}
+                  disabled={generating}
+                  className="px-3 py-1.5 text-xs font-semibold border border-[#D4AF37]/30 text-[#D4AF37] rounded-lg hover:bg-[#D4AF37]/10 disabled:opacity-40 transition-all">
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          {generating && (
+            <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-[#1c1c1c]">
+              <Loader2 className="w-3 h-3 text-[#D4AF37] animate-spin" />
+              <p className="text-xs text-[#555]">Récupération OHLCV + calcul 7 indicateurs + analyse IA…</p>
+            </div>
+          )}
+          {genStatus && !generating && (
+            <p className="text-xs text-[#22c55e] mt-2.5 pt-2.5 border-t border-[#1c1c1c]">{genStatus}</p>
+          )}
+        </div>
+
+        {/* Filters */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {CATEGORY_FILTERS.map(f => (
+              <Pill key={f.value} label={f.label} active={catFilter === f.value} onClick={() => setCatFilter(f.value)} />
+            ))}
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {TF_FILTERS.map(f => (
+              <Pill key={f.value} label={f.label} active={tfFilter === f.value} onClick={() => setTfFilter(f.value)} />
+            ))}
+            <div className="w-px h-4 bg-[#222] mx-1" />
+            {DIR_FILTERS.map(f => (
+              <Pill key={f.value} label={f.label} active={dirFilter === f.value} onClick={() => setDirFilter(f.value)} />
+            ))}
+          </div>
+        </div>
+
+        {/* Count + refresh */}
+        <div className="flex items-center justify-between text-xs text-[#444]">
+          <span>{filtered.length} signal{filtered.length !== 1 ? 's' : ''}</span>
+          <button onClick={loadSignals}
+            className="flex items-center gap-1.5 hover:text-[#D4AF37] transition-colors">
+            <RefreshCw className={cn('w-3 h-3', loading && 'animate-spin')} />
+            Actualiser
           </button>
-        ))}
-      </div>
+        </div>
 
-      {/* Failed markets warning */}
-      {!loading && failedMarkets.length > 0 && (
-        <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-solena-accent/5 border border-solena-accent/20">
-          <AlertTriangle className="w-4 h-4 text-solena-accent flex-shrink-0 mt-0.5" />
-          <div className="text-xs text-solena-text-muted">
-            <span className="font-semibold text-solena-accent">
-              {failedMarkets.length} marché{failedMarkets.length > 1 ? 's' : ''} indisponible{failedMarkets.length > 1 ? 's' : ''}
-            </span>
-            {' '}— données insuffisantes ou erreur de connexion :{' '}
-            <span className="font-mono text-solena-text">{failedMarkets.join(', ')}</span>.
-            {analyzedMarkets > 0 && ` ${analyzedMarkets - failedMarkets.length}/${analyzedMarkets} marchés analysés avec succès.`}
+        {/* Feed */}
+        {loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="rounded-xl border border-[#1c1c1c] bg-[#0e0e0e] h-[140px] animate-pulse" />
+            ))}
           </div>
-        </div>
-      )}
-
-      {/* Content */}
-      {loading ? (
-        <Skeleton />
-      ) : error ? (
-        <div className="text-center py-20 space-y-2">
-          <p className="text-solena-danger font-medium">{error}</p>
-          <button onClick={load} className="text-sm text-solena-primary underline">Réessayer</button>
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="text-center py-24 text-solena-text-muted">
-          <p className="text-lg mb-1">Aucun signal pour ce marché.</p>
-          <p className="text-sm">Les données sont mises à jour toutes les 5 minutes.</p>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {/* Active signals */}
-          {activeSignals.length > 0 && (
-            <div className="space-y-3">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-solena-text-muted px-1">
-                Signaux actifs · {activeSignals.length}
-              </h2>
-              {activeSignals.map(s => (
-                <ActiveSignalCard key={s.id} signal={s} isNew={newIds.has(s.id)} />
+        ) : filtered.length === 0 ? (
+          <div className="bg-[#0e0e0e] border border-[#1c1c1c] rounded-xl p-12 flex flex-col items-center gap-4 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-[#141414] border border-[#1c1c1c] flex items-center justify-center">
+              <BarChart2 className="w-6 h-6 text-[#222]" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-[#333] mb-1">Aucun signal pour ces filtres</p>
+              <p className="text-xs text-[#2a2a2a] max-w-[320px]">
+                Clique sur un bouton de génération ci-dessus pour calculer les signaux. Le score composite garantit qu'un signal est produit pour chaque actif.
+              </p>
+            </div>
+            {/* Score legend */}
+            <div className="grid grid-cols-5 gap-2 mt-2 w-full max-w-[480px]">
+              {(Object.entries(LABEL_CONFIG) as [SignalLabel, typeof LABEL_CONFIG[SignalLabel]][]).map(([label, c]) => (
+                <div key={label} className="rounded-lg border px-2 py-2 text-center"
+                  style={{ background: c.bg, borderColor: c.border }}>
+                  <p className="text-[8px] font-black" style={{ color: c.color }}>{label}</p>
+                </div>
               ))}
             </div>
-          )}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filtered.map(sig => (
+              <SignalCard key={sig.id} signal={sig} isNew={newIds.has(sig.id)} />
+            ))}
+          </div>
+        )}
 
-          {/* Wait signals */}
-          {waitSignals.length > 0 && (
-            <div className="space-y-2">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-solena-text-muted px-1">
-                En attente de confirmation · {waitSignals.length}
-              </h2>
-              {waitSignals.map(s => (
-                <WaitRow key={s.id} signal={s} />
+        {/* Score legend footer */}
+        {!loading && signals.length > 0 && (
+          <div className="bg-[#0e0e0e] border border-[#1c1c1c] rounded-xl p-4">
+            <p className="text-[10px] text-[#444] uppercase tracking-widest font-semibold mb-3">Score composite (-100 → +100)</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              {(Object.entries(LABEL_CONFIG) as [SignalLabel, typeof LABEL_CONFIG[SignalLabel]][]).map(([label, c]) => (
+                <div key={label} className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: c.color }} />
+                  <span className="text-[10px]" style={{ color: c.color }}>{label}</span>
+                </div>
               ))}
             </div>
-          )}
+            <p className="text-[10px] text-[#333] mt-3 pt-3 border-t border-[#1c1c1c]">
+              Indicateurs : RSI · MACD · EMA20/50/200 · Bollinger · StochRSI · VWAP · Volume · Support/Résistance
+              &nbsp;·&nbsp; Sources : Kraken (crypto) · Twelve Data (forex, actions, indices, métaux)
+            </p>
+          </div>
+        )}
 
-          <RiskBanner />
-        </div>
-      )}
+        <RiskBanner />
+      </div>
     </div>
-  )
-}
-
-export default function SignalsPage() {
-  return (
-    <PlanGate requiredPlan="pro">
-      <SignalsContent />
-    </PlanGate>
   )
 }

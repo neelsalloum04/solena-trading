@@ -106,7 +106,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url)
     }
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = '/analyse'
     return NextResponse.redirect(url)
   }
 

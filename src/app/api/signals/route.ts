@@ -1,46 +1,33 @@
-import { generateLiveSignals, type SignalResult } from '@/lib/signal-engine'
-import { NextResponse } from 'next/server'
+import { createAdminClient } from '@/lib/supabase/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
-export const maxDuration = 60
 
-// ─── 5-minute module-level cache ─────────────────────────────────────────────
-
-let cache: { result: SignalResult; ts: number } | null = null
-const CACHE_TTL = 5 * 60 * 1000
-
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const now = Date.now()
-    if (cache && now - cache.ts < CACHE_TTL) {
-      return NextResponse.json({
-        signals:          cache.result.signals,
-        failedMarkets:    cache.result.failedMarkets,
-        analyzedMarkets:  cache.result.analyzedMarkets,
-        cached:           true,
-        generatedAt:      new Date(cache.ts).toISOString(),
-      })
-    }
+    const { searchParams } = req.nextUrl
+    const category  = searchParams.get('category')  ?? 'all'
+    const timeframe = searchParams.get('timeframe')  ?? 'all'
+    const direction = searchParams.get('direction')  ?? 'all'
+    const limit     = Math.min(200, parseInt(searchParams.get('limit') ?? '100', 10))
 
-    const result = await generateLiveSignals()
-    cache = { result, ts: now }
+    const supabase = await createAdminClient()
+    let query = supabase
+      .from('signals')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit)
 
-    if (result.failedMarkets.length > 0) {
-      console.warn('[signals] Marchés en échec:', result.failedMarkets.join(', '))
-    }
+    if (category  !== 'all') query = query.eq('category', category)
+    if (timeframe !== 'all') query = query.eq('timeframe', timeframe)
+    if (direction !== 'all') query = query.eq('direction', direction)
 
-    return NextResponse.json({
-      signals:         result.signals,
-      failedMarkets:   result.failedMarkets,
-      analyzedMarkets: result.analyzedMarkets,
-      cached:          false,
-      generatedAt:     new Date(now).toISOString(),
-    })
-  } catch (error: any) {
-    console.error('[signals]', error?.message)
-    return NextResponse.json(
-      { error: 'Impossible de générer les signaux.', signals: [], failedMarkets: [], analyzedMarkets: 0 },
-      { status: 500 }
-    )
+    const { data, error } = await query
+    if (error) throw error
+
+    return NextResponse.json({ signals: data ?? [], total: data?.length ?? 0 })
+  } catch (err: any) {
+    console.error('[api/signals]', err?.message)
+    return NextResponse.json({ signals: [], total: 0, error: err?.message }, { status: 500 })
   }
 }

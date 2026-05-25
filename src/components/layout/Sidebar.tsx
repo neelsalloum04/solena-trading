@@ -1,7 +1,7 @@
 'use client'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
-import { BarChart2, ImageIcon, LogOut, MessageSquare, Settings, TrendingUp } from 'lucide-react'
+import { ImageIcon, LogOut, MessageSquare, Settings, Zap } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -12,9 +12,9 @@ import { useMemo } from 'react'
 // sont conservés dans le code mais masqués de la navigation.
 
 const NAV = [
-  { label: 'Marchés',           href: '/dashboard', icon: TrendingUp   },
-  { label: 'Assistant IA',      href: '/chat',      icon: MessageSquare },
-  { label: 'Analyse Graphique', href: '/analyse',   icon: ImageIcon    },
+  { label: 'Assistant IA',      href: '/chat',    icon: MessageSquare, live: false },
+  { label: 'Analyse Graphique', href: '/analyse', icon: ImageIcon,     live: false },
+  { label: 'Signaux',           href: '/signals', icon: Zap,           live: true  },
 ]
 
 interface SidebarProps {
@@ -59,6 +59,9 @@ export function Sidebar({ user }: SidebarProps) {
             >
               <item.icon className="w-4 h-4 flex-shrink-0" />
               <span>{item.label}</span>
+              {item.live && !active && (
+                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse" />
+              )}
               {active && <span className="ml-auto w-1.5 h-1.5 bg-[#D4AF37] rounded-full" />}
             </Link>
           )

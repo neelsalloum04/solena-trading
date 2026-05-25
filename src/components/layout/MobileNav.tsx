@@ -1,14 +1,14 @@
 'use client'
 import { cn } from '@/lib/utils'
-import { ImageIcon, MessageSquare, TrendingUp } from 'lucide-react'
+import { ImageIcon, MessageSquare, Zap } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const NAV = [
-  { label: 'Marchés',  href: '/dashboard', icon: TrendingUp   },
-  { label: 'Chat IA',  href: '/chat',      icon: MessageSquare },
-  { label: 'Analyse',  href: '/analyse',   icon: ImageIcon    },
+  { label: 'Chat IA', href: '/chat',    icon: MessageSquare, live: false },
+  { label: 'Analyse', href: '/analyse', icon: ImageIcon,     live: false },
+  { label: 'Signaux', href: '/signals', icon: Zap,           live: true  },
 ]
 
 export function MobileHeader() {
@@ -43,7 +43,12 @@ export function MobileBottomNav() {
                 active ? 'text-[#D4AF37]' : 'text-[#555]'
               )}
             >
-              <item.icon className={cn('w-5 h-5', active && 'drop-shadow-[0_0_6px_#D4AF37]')} />
+              <div className="relative">
+                <item.icon className={cn('w-5 h-5', active && 'drop-shadow-[0_0_6px_#D4AF37]')} />
+                {item.live && !active && (
+                  <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse" />
+                )}
+              </div>
               <span className={cn('text-[9px] font-semibold tracking-wide', active ? 'text-[#D4AF37]' : 'text-[#444]')}>
                 {item.label}
               </span>

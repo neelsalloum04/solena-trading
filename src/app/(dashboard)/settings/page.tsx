@@ -13,7 +13,6 @@ const TABS = ['Abonnement', 'Sécurité']
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('Abonnement')
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
-  const [billingYearly, setBillingYearly] = useState(false)
   const { plan } = useUserPlan()
   const planMeta = plan !== 'admin' ? PLAN_META[plan] : null
   const supabase = useMemo(() => createClient(), [])
@@ -115,7 +114,7 @@ export default function SettingsPage() {
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: targetPlan, billing: billingYearly ? 'yearly' : 'monthly' }),
+        body: JSON.stringify({ plan: targetPlan, billing: 'monthly' }),
       })
       const data = await res.json()
       if (data.url) window.location.href = data.url
@@ -189,45 +188,10 @@ export default function SettingsPage() {
             )}
           </div>
 
-          {/* Billing tabs */}
-          <div className="flex flex-col gap-2">
-            <div className="inline-flex bg-[#0c0c0c] border border-[#1e1e1e] rounded-2xl p-1 gap-1 w-fit">
-              <button
-                onClick={() => setBillingYearly(false)}
-                className={cn(
-                  'px-5 py-2 rounded-xl text-sm font-semibold transition-all',
-                  !billingYearly ? 'bg-white text-[#080808] shadow' : 'text-[#555] hover:text-[#999]'
-                )}
-              >
-                Mensuel
-              </button>
-              <button
-                onClick={() => setBillingYearly(true)}
-                className={cn(
-                  'px-5 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2',
-                  billingYearly ? 'bg-[#D4AF37] text-[#080808] shadow' : 'text-[#555] hover:text-[#999]'
-                )}
-              >
-                Annuel
-                <span className={cn(
-                  'text-[9px] font-black px-1.5 py-0.5 rounded-full',
-                  billingYearly ? 'bg-[#00000020] text-[#080808]' : 'bg-[#22c55e]/15 text-[#22c55e]'
-                )}>
-                  −409€
-                </span>
-              </button>
-            </div>
-            <p className={cn('text-[11px] text-[#444] pl-1 transition-opacity', billingYearly ? 'opacity-100' : 'opacity-0')}>
-              Facturé en une fois · Économie directe sur l&apos;année
-            </p>
-          </div>
-
           <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4" id="subscription">
             {Object.values(PLANS).map((p) => {
               const isCurrent = plan === p.plan
               const isLoading = loadingPlan === p.plan
-              const price    = billingYearly ? p.yearlyMonthly : String(p.monthlyPrice)
-              const sublabel = billingYearly ? `${p.yearlyTotal} € / an` : `ou ${p.yearlyMonthly} €/mois en annuel`
 
               return (
                 <div
@@ -253,19 +217,12 @@ export default function SettingsPage() {
                     )}
                   </div>
 
-                  {/* Price — DOM stable */}
+                  {/* Price */}
                   <div className="mb-4">
-                    <div className="flex items-end gap-1 leading-none mb-1">
-                      <span className="text-3xl font-black text-white leading-none">{price}</span>
+                    <div className="flex items-end gap-1 leading-none">
+                      <span className="text-3xl font-black text-white leading-none">{p.monthlyPrice}</span>
                       <span className="text-[#444] text-xs pb-0.5">€/mois</span>
                     </div>
-                    <p className="text-[10px] text-[#3a3a3a]">{sublabel}</p>
-                    <p className={cn(
-                      'text-[10px] font-semibold mt-0.5 transition-opacity',
-                      billingYearly ? 'text-[#22c55e] opacity-100' : 'opacity-0'
-                    )}>
-                      Économie de {p.yearlyDiscount} €
-                    </p>
                   </div>
 
                   {/* Features */}
