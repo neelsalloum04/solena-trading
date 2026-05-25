@@ -1,3 +1,4 @@
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
@@ -44,13 +45,8 @@ export async function createAdminClient() {
     return mockClient()
   }
 
-  const cookieStore = await cookies()
-  return createServerClient(supabaseUrl!, serviceRoleKey, {
-    cookies: {
-      getAll() { return cookieStore.getAll() },
-      setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
-        try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)) } catch {}
-      },
-    },
+  // Use the base supabase-js client for admin — no cookie management needed for service role
+  return createSupabaseClient(supabaseUrl!, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
   })
 }
