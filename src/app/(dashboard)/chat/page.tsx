@@ -25,6 +25,7 @@ interface Message {
   timestamp: string
   model?: string
   cached?: boolean
+  tokensUsed?: number
 }
 
 const STORAGE_KEY = 'solena-chat-v2'
@@ -174,6 +175,7 @@ function ChatContent() {
         timestamp: new Date().toISOString(),
         model: data.model,
         cached: data.cached,
+        tokensUsed: data.tokensUsed ?? undefined,
       }])
     } catch {
       setMessages(prev => [...prev, {
@@ -291,6 +293,11 @@ function ChatContent() {
                 {msg.model && !msg.cached && (
                   <span className="text-[10px] text-solena-text-muted opacity-50">
                     {msg.model.includes('haiku') ? '⚡ rapide' : '🧠 avancé'}
+                  </span>
+                )}
+                {msg.tokensUsed && !msg.cached && (
+                  <span className="text-[10px] text-solena-text-muted opacity-40 tabular-nums">
+                    {msg.tokensUsed.toLocaleString('fr-FR')} tokens
                   </span>
                 )}
               </div>
