@@ -5,9 +5,14 @@ import { createContext, useContext, useEffect, useState } from 'react'
 interface TokenCtx {
   tokenBalance: number
   tokenLimit: number
+  syncBalance: (newBalance: number) => void
 }
 
-const TokenContext = createContext<TokenCtx>({ tokenBalance: 5000, tokenLimit: 5000 })
+const TokenContext = createContext<TokenCtx>({
+  tokenBalance: 5000,
+  tokenLimit: 5000,
+  syncBalance: () => {},
+})
 
 export function TokenProvider({
   userId,
@@ -43,7 +48,7 @@ export function TokenProvider({
   }, [userId])
 
   return (
-    <TokenContext.Provider value={{ tokenBalance, tokenLimit }}>
+    <TokenContext.Provider value={{ tokenBalance, tokenLimit, syncBalance: setTokenBalance }}>
       {children}
     </TokenContext.Provider>
   )

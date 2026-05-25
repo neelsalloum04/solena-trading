@@ -1,4 +1,5 @@
 'use client'
+import { useTokens } from '@/contexts/TokenContext'
 import { cn } from '@/lib/utils'
 import { ChevronDown, ExternalLink, HelpCircle, Mail, MessageSquare, Send, Shield } from 'lucide-react'
 import Link from 'next/link'
@@ -92,6 +93,7 @@ const QUICK_QUESTIONS = [
 ]
 
 export default function SupportPage() {
+  const { syncBalance } = useTokens()
   const [open, setOpen] = useState<number | null>(null)
   const [activeCategory, setActiveCategory] = useState('Tous')
 
@@ -128,6 +130,7 @@ export default function SupportPage() {
         }),
       })
       const data = await res.json()
+      if (typeof data.newBalance === 'number') syncBalance(data.newBalance)
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: data.reply || data.error || 'Désolé, une erreur est survenue.',

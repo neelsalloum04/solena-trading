@@ -1,6 +1,7 @@
 'use client'
 import { FreeTrialBanner, FreeTrialUpgradeWall, type FreeQuota } from '@/components/FreeTrialBanner'
 import { Button } from '@/components/ui/button'
+import { useTokens } from '@/contexts/TokenContext'
 import { cn } from '@/lib/utils'
 import {
   ArrowUp,
@@ -83,6 +84,7 @@ function QuotaBar({ quota }: { quota: Quota | null }) {
 }
 
 function ChatContent() {
+  const { syncBalance } = useTokens()
   const [messages, setMessages] = useState<Message[]>([WELCOME])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -235,6 +237,8 @@ function ChatContent() {
         setLoading(false)
         return
       }
+
+      if (typeof data.newBalance === 'number') syncBalance(data.newBalance)
 
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),

@@ -105,13 +105,14 @@ export async function POST(req: NextRequest) {
     const reply = response.content[0]?.type === 'text' ? response.content[0].text : ''
 
     // ── Token deduction ───────────────────────────────────────────
+    let newBalance: number | null = null
     if (user) {
-      const usage      = response.usage
-      const tokensUsed = usage.input_tokens + usage.output_tokens
-      await adminDb.rpc('deduct_tokens', { p_user_id: user.id, p_amount: tokensUsed })
+      const tokensUsed = response.usage.input_tokens + response.usage.output_tokens
+      const { data } = await adminDb.rpc('deduct_tokens', { p_user_id: user.id, p_amount: tokensUsed })
+      if (typeof data === 'number') newBalance = data
     }
 
-    return NextResponse.json({ reply })
+    return NextResponse.json({ reply, newBalance })
   } catch (err) {
     console.error('[support-chat]', err)
     return NextResponse.json(

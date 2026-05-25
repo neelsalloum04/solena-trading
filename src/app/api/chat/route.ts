@@ -138,14 +138,16 @@ export async function POST(req: NextRequest) {
     const tokensUsed  = usage.input_tokens + usage.output_tokens
     console.log(`[chat] model=${model} in=${usage.input_tokens} out=${usage.output_tokens} tier=${tier}`)
 
+    let newBalance: number | null = null
     if (user) {
-      await adminDb.rpc('deduct_tokens', { p_user_id: user.id, p_amount: tokensUsed })
+      const { data } = await adminDb.rpc('deduct_tokens', { p_user_id: user.id, p_amount: tokensUsed })
+      if (typeof data === 'number') newBalance = data
     }
 
     // ── Cache response ──────────────────────────────────────────────
     if (cacheable) setCached(message, content, model)
 
-    return NextResponse.json({ content, model, quota: rateLimit })
+    return NextResponse.json({ content, model, quota: rateLimit, newBalance, tokensUsed })
   } catch (error: any) {
     const isConfig = error.message?.includes('non configuré')
     const errMsg = error?.error?.error?.message || error?.message || 'Erreur inconnue'
