@@ -8,6 +8,7 @@ import {
   type CompositeSignal,
 } from '@/lib/signal-detector'
 import { createAdminClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const runtime   = 'nodejs'
@@ -16,10 +17,18 @@ export const maxDuration = 60
 const VALID_TIMEFRAMES = ['15m', '1h', '4h', '1d'] as const
 const VALID_CATEGORIES = ['crypto', 'forex', 'stocks', 'indices', 'metals', 'all'] as const
 
-function isAuthorized(req: NextRequest): boolean {
+// Autorisé si : cron secret valide OU utilisateur connecté
+async function isAuthorized(req: NextRequest): Promise<boolean> {
   const secret = process.env.CRON_SECRET
   if (!secret) return true
-  return req.headers.get('authorization') === `Bearer ${secret}`
+  if (req.headers.get('authorization') === `Bearer ${secret}`) return true
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    return !!user
+  } catch {
+    return false
+  }
 }
 
 // ─── Deduplication: skip if same asset+timeframe+label within cooldown ────────
@@ -82,7 +91,7 @@ async function generateAIAnalysis(
 // ─── Route handler ────────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
-  if (!isAuthorized(req)) {
+  if (!await isAuthorized(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
