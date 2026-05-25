@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils'
 import { RiskBanner } from '@/components/ui/risk-banner'
-import { Check, Loader2, RefreshCw, TrendingDown, TrendingUp, Zap } from 'lucide-react'
+import { AlertCircle, Check, Loader2, RefreshCw, TrendingDown, TrendingUp, X, Zap } from 'lucide-react'
 import { useState } from 'react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -136,6 +136,7 @@ export default function SignalsPage() {
   const [phase,     setPhase]     = useState<Phase>('idle')
   const [currentId, setCurrentId] = useState<string | null>(null)
   const [doneIds,   setDoneIds]   = useState<Set<string>>(new Set())
+  const [errorIds,  setErrorIds]  = useState<Set<string>>(new Set())
   const [results,   setResults]   = useState<CryptoSignal[]>([])
   const [error,     setError]     = useState<string | null>(null)
 
@@ -143,6 +144,7 @@ export default function SignalsPage() {
     setPhase('analyzing')
     setCurrentId(null)
     setDoneIds(new Set())
+    setErrorIds(new Set())
     setResults([])
     setError(null)
 
@@ -182,6 +184,7 @@ export default function SignalsPage() {
               setDoneIds(prev => { const s = new Set(prev); s.add(ev.signal.id); return s })
             } else if (ev.type === 'error') {
               setDoneIds(prev => { const s = new Set(prev); s.add(ev.id); return s })
+              setErrorIds(prev => { const s = new Set(prev); s.add(ev.id); return s })
             } else if (ev.type === 'done') {
               setCurrentId(null)
               setPhase('done')
@@ -199,6 +202,7 @@ export default function SignalsPage() {
     setPhase('idle')
     setCurrentId(null)
     setDoneIds(new Set())
+    setErrorIds(new Set())
     setResults([])
     setError(null)
   }
@@ -263,12 +267,15 @@ export default function SignalsPage() {
                 {ASSETS.map(asset => {
                   const isAnalyzing = asset.id === currentId
                   const isDone      = doneIds.has(asset.id)
+                  const isError     = errorIds.has(asset.id)
 
                   return (
                     <div key={asset.id} className="flex items-center gap-3">
                       {/* Icon */}
                       <div className="w-5 flex-shrink-0 flex items-center justify-center">
-                        {isDone ? (
+                        {isError ? (
+                          <X className="w-4 h-4 text-[#ef4444]" />
+                        ) : isDone ? (
                           <Check className="w-4 h-4 text-[#22c55e]" />
                         ) : isAnalyzing ? (
                           <Loader2 className="w-4 h-4 text-[#D4AF37] animate-spin" />
@@ -279,8 +286,9 @@ export default function SignalsPage() {
                       {/* Label */}
                       <span className={cn(
                         'text-sm font-mono transition-colors duration-150',
-                        isDone      ? 'text-[#22c55e]' :
-                        isAnalyzing ? 'text-[#D4AF37]' :
+                        isError     ? 'text-[#ef4444]/60' :
+                        isDone      ? 'text-[#22c55e]'    :
+                        isAnalyzing ? 'text-[#D4AF37]'    :
                                       'text-[#2a2a2a]',
                       )}>
                         {isAnalyzing
@@ -324,12 +332,25 @@ export default function SignalsPage() {
               </button>
             </div>
 
-            {/* Signal cards */}
-            <div className="space-y-3">
-              {results.map((sig, i) => (
-                <SignalCard key={sig.id} sig={sig} index={i} />
-              ))}
-            </div>
+            {/* Signal cards or error state */}
+            {results.length > 0 ? (
+              <div className="space-y-3">
+                {results.map((sig, i) => (
+                  <SignalCard key={sig.id} sig={sig} index={i} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-3 py-16 text-center">
+                <AlertCircle className="w-8 h-8 text-[#ef4444]/60" />
+                <p className="text-sm font-semibold text-[#ef4444]/80">
+                  Impossible de récupérer les données de marché
+                </p>
+                <p className="text-xs text-[#444] max-w-[320px] leading-relaxed">
+                  L'API Binance est momentanément inaccessible depuis les serveurs.
+                  Réessaie dans quelques instants.
+                </p>
+              </div>
+            )}
 
             <RiskBanner />
           </div>

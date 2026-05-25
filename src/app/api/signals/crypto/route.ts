@@ -24,26 +24,61 @@ const CRYPTO_ASSETS = [
   { id: 'NEAR',  name: 'NEAR Protocol',  pair: 'NEARUSDT' },
 ] as const
 
-// ─── Binance OHLCV ────────────────────────────────────────────────────────────
+// ─── OHLCV (Binance → Kraken fallback) ───────────────────────────────────────
 
 interface Candle {
   open: number; high: number; low: number; close: number; volume: number
 }
 
-async function fetchCandles(pair: string, interval = '4h', limit = 220): Promise<Candle[]> {
+// Kraken equivalent pairs for assets that trade there (BNB and TRX are Binance-only)
+const KRAKEN_PAIR: Partial<Record<string, string>> = {
+  BTC: 'XBTUSD', ETH: 'ETHUSD', SOL: 'SOLUSD', XRP: 'XRPUSD',
+  ADA: 'ADAUSD', DOGE: 'DOGEUSD', AVAX: 'AVAXUSD', LINK: 'LINKUSD',
+  MATIC: 'MATICUSD', DOT: 'DOTUSD', LTC: 'LTCUSD', BCH: 'BCHUSD', NEAR: 'NEARUSD',
+}
+
+async function fetchCandlesKraken(krakenPair: string, limit = 220): Promise<Candle[]> {
   const res = await fetch(
-    `https://api.binance.com/api/v3/klines?symbol=${pair}&interval=${interval}&limit=${limit}`,
-    { signal: AbortSignal.timeout(10_000) },
+    `https://api.kraken.com/0/public/OHLC?pair=${krakenPair}&interval=240`,
+    { signal: AbortSignal.timeout(12_000) },
   )
-  if (!res.ok) throw new Error(`Binance HTTP ${res.status}`)
-  const raw = await res.json() as any[][]
-  return raw.map(k => ({
+  if (!res.ok) throw new Error(`Kraken HTTP ${res.status}`)
+  const data = await res.json() as { result: Record<string, any[][]>; error: string[] }
+  if (data.error?.length) throw new Error(`Kraken: ${data.error[0]}`)
+  const key = Object.keys(data.result ?? {}).find(k => k !== 'last')
+  if (!key) throw new Error('Kraken: aucune donnée')
+  return data.result[key].slice(-limit).map((k: any[]) => ({
     open:   parseFloat(k[1]),
     high:   parseFloat(k[2]),
     low:    parseFloat(k[3]),
     close:  parseFloat(k[4]),
-    volume: parseFloat(k[5]),
+    volume: parseFloat(k[6]),
   }))
+}
+
+async function fetchCandles(id: string, binancePair: string, limit = 220): Promise<Candle[]> {
+  // Try Binance first
+  try {
+    const res = await fetch(
+      `https://api.binance.com/api/v3/klines?symbol=${binancePair}&interval=4h&limit=${limit}`,
+      { signal: AbortSignal.timeout(8_000) },
+    )
+    if (!res.ok) throw new Error(`Binance HTTP ${res.status}`)
+    const raw = await res.json() as any[][]
+    if (!Array.isArray(raw) || raw.length === 0) throw new Error('Binance: réponse vide')
+    return raw.map(k => ({
+      open:   parseFloat(k[1]),
+      high:   parseFloat(k[2]),
+      low:    parseFloat(k[3]),
+      close:  parseFloat(k[4]),
+      volume: parseFloat(k[5]),
+    }))
+  } catch {
+    // Fallback: Kraken OHLC (4h = interval 240 min)
+    const krakenPair = KRAKEN_PAIR[id]
+    if (!krakenPair) throw new Error(`Binance inaccessible, pas de fallback pour ${id}`)
+    return fetchCandlesKraken(krakenPair, limit)
+  }
 }
 
 // ─── Indicators ───────────────────────────────────────────────────────────────
@@ -246,7 +281,7 @@ export async function GET(req: NextRequest) {
         send({ type: 'progress', id: asset.id, name: asset.name, index: i + 1, total })
 
         try {
-          const candles = await fetchCandles(asset.pair, '4h', 220)
+          const candles = await fetchCandles(asset.id, asset.pair, 220)
           if (candles.length < 60) throw new Error('Données insuffisantes')
           const signal = analyze(candles, asset.id, asset.name)
           send({ type: 'result', signal })
