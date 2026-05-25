@@ -7,8 +7,7 @@ import {
   type AssetCategory,
   type CompositeSignal,
 } from '@/lib/signal-detector'
-import { createAdminClient } from '@/lib/supabase/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const runtime   = 'nodejs'
@@ -49,6 +48,25 @@ async function isDuplicate(
     .gte('created_at', new Date(Date.now() - minutes * 60 * 1000).toISOString())
     .limit(1)
   return !!(data && data.length > 0)
+}
+
+// ─── Build reason string for analysis_log ────────────────────────────────────
+
+function buildReason(sig: CompositeSignal, isDup: boolean): string {
+  const parts: string[] = []
+  if (sig.rsi != null) {
+    const note = sig.rsi < 30 ? ' survendu' : sig.rsi > 70 ? ' suracheté' : ''
+    parts.push(`RSI ${sig.rsi.toFixed(0)}${note}`)
+  }
+  if (sig.macd_hist != null)
+    parts.push(`MACD ${sig.macd_hist > 0 ? '↑' : '↓'}`)
+  if (sig.ema20 != null && sig.ema50 != null)
+    parts.push(`EMA ${sig.ema20 > sig.ema50 ? 'haussier' : 'baissier'}`)
+  if (sig.stoch_k != null && (sig.stoch_k < 20 || sig.stoch_k > 80))
+    parts.push(`Stoch ${sig.stoch_k.toFixed(0)}${sig.stoch_k < 20 ? ' bas' : ' haut'}`)
+  const scoreStr = `${sig.score > 0 ? '+' : ''}${sig.score}`
+  const dupNote  = isDup ? ' [doublon]' : ''
+  return `Score ${scoreStr} → ${sig.signal_label}${dupNote}${parts.length ? ' | ' + parts.join(' · ') : ''}`
 }
 
 // ─── AI analysis: 2-sentence explanation from Claude Haiku ───────────────────
@@ -124,9 +142,25 @@ export async function GET(req: NextRequest) {
       }
 
       const sig = analyzeAsset(candles)
-
-      // Dedup: skip if same label already exists within cooldown window
       const dup = await isDuplicate(supabase, asset, tf, sig.signal_label)
+
+      // Log every analysis — even duplicates and neutrals
+      await supabase.from('analysis_log').insert({
+        asset,
+        asset_name:   cfg.name,
+        category:     cfg.category,
+        timeframe:    tf,
+        status:       sig.direction !== 'NEUTRAL' ? 'SIGNAL' : 'NEUTRE',
+        score:        sig.score,
+        signal_label: sig.signal_label,
+        rsi:          sig.rsi ?? null,
+        ema_trend:    sig.ema20 != null && sig.ema50 != null
+          ? (sig.ema20 > sig.ema50 ? 'HAUSSIER' : 'BAISSIER')
+          : null,
+        reason:       buildReason(sig, dup),
+      }).then(() => {}, () => {}) // non-blocking — don't fail main flow
+
+      // Dedup: skip signal insert if same label already exists within cooldown window
       if (dup) { skipped++; continue }
 
       // AI analysis for actionable signals only
