@@ -6,7 +6,7 @@ export const maxDuration = 60
 
 // ─── Assets ───────────────────────────────────────────────────────────────────
 
-export const CRYPTO_ASSETS = [
+const CRYPTO_ASSETS = [
   { id: 'BTC',   name: 'Bitcoin',        pair: 'BTCUSDT'  },
   { id: 'ETH',   name: 'Ethereum',       pair: 'ETHUSDT'  },
   { id: 'SOL',   name: 'Solana',         pair: 'SOLUSDT'  },
