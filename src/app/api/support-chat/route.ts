@@ -1,4 +1,6 @@
 import { requireAnthropic } from '@/lib/anthropic/client'
+import { getUserFromRequest } from '@/lib/supabase/auth-api'
+import { createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
@@ -70,6 +72,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Message vide' }, { status: 400 })
     }
 
+    // ── Token balance check ───────────────────────────────────────
+    const { user } = await getUserFromRequest(req)
+    const adminDb  = await createAdminClient()
+
+    if (user) {
+      const { data: profile } = await adminDb
+        .from('profiles')
+        .select('token_balance')
+        .eq('id', user.id)
+        .single()
+
+      if (profile && profile.token_balance <= 0) {
+        return NextResponse.json({ error: 'token_balance_empty' }, { status: 402 })
+      }
+    }
+
     const anthropic = requireAnthropic()
 
     const messages = [
@@ -85,6 +103,13 @@ export async function POST(req: NextRequest) {
     })
 
     const reply = response.content[0]?.type === 'text' ? response.content[0].text : ''
+
+    // ── Token deduction ───────────────────────────────────────────
+    if (user) {
+      const usage      = response.usage
+      const tokensUsed = usage.input_tokens + usage.output_tokens
+      await adminDb.rpc('deduct_tokens', { p_user_id: user.id, p_amount: tokensUsed })
+    }
 
     return NextResponse.json({ reply })
   } catch (err) {

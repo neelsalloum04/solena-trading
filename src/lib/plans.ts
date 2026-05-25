@@ -1,6 +1,6 @@
 // ─── Plan system — single source of truth ─────────────────────────────────────
 
-export const DEV_UNLOCK_ALL = true
+export const DEV_UNLOCK_ALL = false
 
 export type PlanId = 'free' | 'starter' | 'pro' | 'expert' | 'premium' | 'admin'
 
@@ -22,6 +22,23 @@ export function normalizePlan(dbPlan: string | null | undefined): PlanId {
   if (dbPlan === 'elite') return 'premium'
   if (PLAN_ORDER.includes(dbPlan as PlanId)) return dbPlan as PlanId
   return 'free'
+}
+
+// ─── Token limits per plan ────────────────────────────────────────────────────
+// free    → 5 000 tokens à vie (pas de reset mensuel)
+// starter → 1 M  tokens / mois
+// pro     → 3 M  tokens / mois
+// expert  → 8 M  tokens / mois
+// premium → 50 M tokens / mois
+// admin   → pratiquement illimité
+
+export const PLAN_TOKEN_LIMITS: Record<PlanId, number> = {
+  free:    5_000,
+  starter: 1_000_000,
+  pro:     3_000_000,
+  expert:  8_000_000,
+  premium: 50_000_000,
+  admin:   999_999_999,
 }
 
 // ─── Monthly quotas per plan ──────────────────────────────────────────────────

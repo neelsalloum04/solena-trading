@@ -1,7 +1,7 @@
 import { sendEmail } from '@/lib/email/resend'
 import { cancellationEmail, subscriptionEmail } from '@/lib/email/templates'
 import { requireStripe } from '@/lib/stripe/client'
-import { normalizePlan } from '@/lib/plans'
+import { normalizePlan, PLAN_TOKEN_LIMITS } from '@/lib/plans'
 import { createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
@@ -79,9 +79,17 @@ export async function POST(req: NextRequest) {
 
         if (subError) console.error('[webhook] subscriptions upsert error:', subError)
 
+        const normalizedPlan = normalizePlan(plan)
+        const tokenLimit     = PLAN_TOKEN_LIMITS[normalizedPlan]
         const { error: profileError } = await supabase
           .from('profiles')
-          .update({ plan, updated_at: new Date().toISOString() })
+          .update({
+            plan,
+            token_balance:       tokenLimit,
+            token_monthly_limit: tokenLimit,
+            token_reset_at:      periodEnd,
+            updated_at:          new Date().toISOString(),
+          })
           .eq('id', userId)
 
         if (profileError) console.error('[webhook] profiles update error:', profileError)
@@ -126,7 +134,15 @@ export async function POST(req: NextRequest) {
         }).eq('stripe_subscription_id', sub.id)
 
         if (status === 'active') {
-          await supabase.from('profiles').update({ plan, updated_at: new Date().toISOString() }).eq('id', userId)
+          const updatedPlan  = normalizePlan(plan)
+          const newLimit     = PLAN_TOKEN_LIMITS[updatedPlan]
+          await supabase.from('profiles').update({
+            plan,
+            token_balance:       newLimit,
+            token_monthly_limit: newLimit,
+            token_reset_at:      periodEnd,
+            updated_at:          new Date().toISOString(),
+          }).eq('id', userId)
         }
 
         console.log(`[webhook] subscription.updated: user=${userId} plan=${plan} status=${status}`)
@@ -151,7 +167,11 @@ export async function POST(req: NextRequest) {
         // Downgrade to free when subscription is deleted
         const { data: deletedProfile } = await supabase.from('profiles').select('full_name, plan').eq('id', userId).single()
         await supabase.from('profiles').update({
-          plan: 'free', updated_at: new Date().toISOString(),
+          plan:                'free',
+          token_balance:       PLAN_TOKEN_LIMITS.free,
+          token_monthly_limit: PLAN_TOKEN_LIMITS.free,
+          token_reset_at:      null,
+          updated_at:          new Date().toISOString(),
         }).eq('id', userId)
 
         // Send cancellation email

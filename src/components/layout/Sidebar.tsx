@@ -1,7 +1,8 @@
 'use client'
 import { createClient } from '@/lib/supabase/client'
+import { useUserPlan } from '@/contexts/UserPlanContext'
 import { cn } from '@/lib/utils'
-import { ImageIcon, HelpCircle, LogOut, MessageSquare, Settings, Zap } from 'lucide-react'
+import { ImageIcon, HelpCircle, Lock, LogOut, MessageSquare, Settings, Zap } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -22,9 +23,10 @@ interface SidebarProps {
 }
 
 export function Sidebar({ user }: SidebarProps) {
-  const pathname = usePathname()
-  const router = useRouter()
-  const supabase = useMemo(() => createClient(), [])
+  const pathname   = usePathname()
+  const router     = useRouter()
+  const supabase   = useMemo(() => createClient(), [])
+  const { canAccess } = useUserPlan()
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -45,7 +47,8 @@ export function Sidebar({ user }: SidebarProps) {
       {/* Main nav */}
       <nav className="flex-1 px-3 py-4 space-y-1">
         {NAV.map((item) => {
-          const active = pathname === item.href || pathname.startsWith(item.href + '/')
+          const active  = pathname === item.href || pathname.startsWith(item.href + '/')
+          const locked  = item.href === '/signals' && !canAccess('starter')
           return (
             <Link
               key={item.href}
@@ -54,15 +57,18 @@ export function Sidebar({ user }: SidebarProps) {
                 'flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-150',
                 active
                   ? 'bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/15'
-                  : 'text-[#666] hover:text-[#F2EDD7] hover:bg-[#141414]'
+                  : locked
+                    ? 'text-[#444] opacity-50 cursor-default'
+                    : 'text-[#666] hover:text-[#F2EDD7] hover:bg-[#141414]'
               )}
             >
               <item.icon className="w-4 h-4 flex-shrink-0" />
               <span>{item.label}</span>
-              {item.live && !active && (
+              {locked && <Lock className="ml-auto w-3 h-3 text-[#555]" />}
+              {!locked && item.live && !active && (
                 <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse" />
               )}
-              {active && <span className="ml-auto w-1.5 h-1.5 bg-[#D4AF37] rounded-full" />}
+              {!locked && active && <span className="ml-auto w-1.5 h-1.5 bg-[#D4AF37] rounded-full" />}
             </Link>
           )
         })}

@@ -2,6 +2,8 @@
 
 import { cn } from '@/lib/utils'
 import { RiskBanner } from '@/components/ui/risk-banner'
+import { UpgradeOverlay } from '@/components/upgrade/UpgradeOverlay'
+import { useUserPlan } from '@/contexts/UserPlanContext'
 import { AlertCircle, Check, Loader2, RefreshCw, TrendingDown, TrendingUp, X, Zap } from 'lucide-react'
 import { useState } from 'react'
 
@@ -133,6 +135,8 @@ function SignalCard({ sig, index }: { sig: CryptoSignal; index: number }) {
 type Phase = 'idle' | 'analyzing' | 'done'
 
 export default function SignalsPage() {
+  const { canAccess }              = useUserPlan()
+  const isLocked                   = !canAccess('starter')
   const [phase,     setPhase]     = useState<Phase>('idle')
   const [currentId, setCurrentId] = useState<string | null>(null)
   const [doneIds,   setDoneIds]   = useState<Set<string>>(new Set())
@@ -219,7 +223,15 @@ export default function SignalsPage() {
         }
       `}</style>
 
-      <div className="min-h-full bg-[#080808]">
+      <div className="relative min-h-full bg-[#080808]">
+
+        {/* Upgrade overlay — blocks free users */}
+        {isLocked && (
+          <UpgradeOverlay
+            title="Signaux Crypto réservés aux abonnés"
+            subtitle="Accédez aux signaux en temps réel sur 15 cryptomonnaies avec un forfait Starter ou supérieur."
+          />
+        )}
 
         {/* ── IDLE ── */}
         {phase === 'idle' && (
