@@ -124,7 +124,7 @@ export function Sidebar({ user }: SidebarProps) {
 
               <div className="p-1.5 space-y-0.5">
                 <Link
-                  href="/settings"
+                  href="/settings?tab=profil"
                   onClick={() => setMenuOpen(false)}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#999] hover:text-[#F2EDD7] hover:bg-[#181818] transition-all"
                 >
@@ -132,7 +132,7 @@ export function Sidebar({ user }: SidebarProps) {
                   <span>Mon profil</span>
                 </Link>
                 <Link
-                  href="/settings"
+                  href="/settings?tab=securite"
                   onClick={() => setMenuOpen(false)}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-[#999] hover:text-[#F2EDD7] hover:bg-[#181818] transition-all"
                 >
