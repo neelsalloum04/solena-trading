@@ -225,7 +225,7 @@ export default function SignalsPage() {
 
       <div className="relative min-h-full bg-[#080808] overflow-hidden">
 
-        {/* Upgrade overlay on top — plan cards visible, content blurred behind */}
+        {/* Locked: show upgrade page, no blur behind */}
         {isLocked && (
           <UpgradeOverlay
             title="Signaux Crypto réservés aux abonnés"
@@ -233,8 +233,8 @@ export default function SignalsPage() {
           />
         )}
 
-        {/* Content wrapper — blurred when locked */}
-        <div style={isLocked ? { filter: 'blur(6px)', pointerEvents: 'none', userSelect: 'none', transform: 'scale(1.03)' } : {}}>
+        {/* Content — only shown when unlocked */}
+        <div style={isLocked ? { display: 'none' } : {}}>
 
         {/* ── IDLE ── */}
         {phase === 'idle' && (
