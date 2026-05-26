@@ -25,16 +25,19 @@ export default function SignupPage() {
     if (password.length < 8) { toast.error('Mot de passe : 8 caractères minimum.'); return }
     setLoading(true)
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: {
-          data: { full_name: name.trim() },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
+      const res  = await fetch('/api/auth/signup', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ name: name.trim(), email: email.trim(), password }),
       })
-      if (error) { toast.error(error.message); return }
-      if (data.user && !data.session) {
+      const data = await res.json()
+
+      if (!res.ok) {
+        toast.error(data.error || 'Une erreur est survenue.')
+        return
+      }
+
+      if (data.requiresEmailConfirmation) {
         setEmailSent(true)
         fetch('/api/email/welcome', {
           method: 'POST',
