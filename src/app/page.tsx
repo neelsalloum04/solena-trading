@@ -24,13 +24,18 @@ const SIGNALS = [
   { id: 'XRP', decision: null,      conf: 0                },
 ]
 
-const MODULES = [
-  { id: 'signals', label: 'Signaux Crypto', Icon: Zap,           color: '#D4AF37' },
-  { id: 'chat',    label: 'Assistant IA',   Icon: MessageSquare, color: '#818cf8' },
-  { id: 'analyse', label: 'Analyse IA',     Icon: ImageIcon,     color: '#22c55e' },
+const CANDLES = [
+  { h: 48, bull: true  }, { h: 38, bull: false }, { h: 55, bull: true  },
+  { h: 42, bull: false }, { h: 62, bull: true  }, { h: 53, bull: true  },
+  { h: 70, bull: true  }, { h: 59, bull: false }, { h: 76, bull: true  },
+  { h: 83, bull: true  }, { h: 67, bull: false }, { h: 90, bull: true  },
 ]
 
-const BARS = [28, 42, 35, 54, 40, 62, 50, 70, 58, 76]
+const MODULES = [
+  { id: 'signals', label: 'Signaux Crypto',    Icon: Zap,           color: '#D4AF37' },
+  { id: 'chat',    label: 'Assistant IA',       Icon: MessageSquare, color: '#818cf8' },
+  { id: 'analyse', label: 'Analyse Graphique',  Icon: ImageIcon,     color: '#22c55e' },
+]
 
 export default function LandingPage() {
   const [active, setActive] = useState(0)
@@ -40,7 +45,7 @@ export default function LandingPage() {
     const id = setInterval(() => {
       setActive(prev => (prev + 1) % 3)
       setTick(t => t + 1)
-    }, 3000)
+    }, 7000)
     return () => clearInterval(id)
   }, [])
 
@@ -51,10 +56,17 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#080808] text-[#F2EDD7] overflow-x-hidden">
 
       <style>{`
-        @keyframes tab-fill { from { width: 0 } to { width: 100% } }
-        @keyframes fade-up  { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: translateY(0) } }
-        @keyframes scan     { 0% { top: -2px } 80% { top: calc(100% + 2px) } 100% { top: calc(100% + 2px) } }
-        @keyframes bar-grow { from { transform: scaleY(0) } to { transform: scaleY(1) } }
+        @keyframes tab-fill   { from { width: 0 }                               to   { width: 100% } }
+        @keyframes fade-up    { from { opacity: 0; transform: translateY(6px) } to   { opacity: 1; transform: translateY(0) } }
+        @keyframes scan       { 0%   { top: -2px }                              100% { top: calc(100% + 2px) } }
+        @keyframes bar-grow   { from { transform: scaleY(0) }                   to   { transform: scaleY(1) } }
+        @keyframes dot-bounce { 0%, 60%, 100% { transform: translateY(0) } 30% { transform: translateY(-3px) } }
+        @keyframes typing-hide {
+          0%   { opacity: 0; transform: translateY(4px) }
+          12%  { opacity: 1; transform: translateY(0) }
+          72%  { opacity: 1 }
+          100% { opacity: 0 }
+        }
       `}</style>
 
       {/* ── Nav ── */}
@@ -111,14 +123,12 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Right — rotating module preview */}
+          {/* Right — rotating module showcase */}
           <div className="relative">
-            {/* Ambient glow that changes color with active module */}
             <div
               className="absolute inset-0 rounded-3xl blur-3xl scale-95 transition-all duration-700"
-              style={{ background: `${mod.color}08` }}
+              style={{ background: `${mod.color}09` }}
             />
-
             <div className="relative bg-[#0b0b0b] border border-[#1e1e1e] rounded-2xl overflow-hidden shadow-2xl">
 
               {/* Module tabs */}
@@ -128,39 +138,35 @@ export default function LandingPage() {
                     key={m.id}
                     onClick={() => switchTo(i)}
                     className={cn(
-                      'flex-1 py-3.5 flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-wider transition-colors relative overflow-hidden',
+                      'flex-1 py-3.5 flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-wider transition-all relative overflow-hidden',
                       active === i ? 'text-[#F2EDD7]' : 'text-[#2a2a2a] hover:text-[#444]',
                     )}
                   >
-                    <m.Icon className="w-3 h-3 flex-shrink-0 transition-colors duration-300" style={{ color: active === i ? m.color : 'currentColor' }} />
+                    <m.Icon className="w-3 h-3 flex-shrink-0 transition-colors duration-500"
+                      style={{ color: active === i ? m.color : 'currentColor' }} />
                     <span className="hidden sm:inline">{m.label}</span>
-                    {/* Animated progress bar under active tab */}
-                    {active === i && (
-                      <div
-                        key={tick}
-                        className="absolute bottom-0 left-0 h-[2px] rounded-t-full"
-                        style={{ backgroundColor: m.color, animation: 'tab-fill 3s linear forwards' }}
-                      />
-                    )}
-                    {active !== i && (
-                      <div className="absolute bottom-0 left-0 right-0 h-px bg-[#181818]" />
-                    )}
+                    {active === i
+                      ? <div key={tick} className="absolute bottom-0 left-0 h-[2px] rounded-t-full"
+                          style={{ backgroundColor: m.color, animation: 'tab-fill 7s linear forwards' }} />
+                      : <div className="absolute bottom-0 left-0 right-0 h-px bg-[#181818]" />
+                    }
                   </button>
                 ))}
               </div>
 
-              {/* Panels — all stacked in same grid cell, fade in/out */}
+              {/* ── Stacked panels (CSS grid trick) ── */}
               <div style={{ display: 'grid' }}>
 
-                {/* ── Panel 0: Signaux Crypto ── */}
+                {/* Panel 0 — Signaux Crypto */}
                 <div style={{ gridArea: '1/1', opacity: active === 0 ? 1 : 0, transition: 'opacity 0.4s ease', pointerEvents: active === 0 ? 'auto' : 'none' }}>
                   <div className="p-4 space-y-1.5">
+
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 bg-[#22c55e] rounded-full animate-pulse" />
-                        <span className="text-[10px] text-[#22c55e] font-medium">Analyse en cours</span>
+                        <span className="text-[10px] text-[#22c55e] font-medium">Analyse en cours · 4 / 15</span>
                       </div>
-                      <span className="text-[10px] text-[#333] font-mono bg-[#111] px-2 py-1 rounded-md">4 / 15</span>
+                      <span className="text-[10px] text-[#333] font-mono bg-[#111] px-2 py-1 rounded-md">Claude · Live</span>
                     </div>
 
                     {SIGNALS.map((sig) => {
@@ -168,13 +174,10 @@ export default function LandingPage() {
                       const color    = bull ? '#22c55e' : '#ef4444'
                       const isActive = !!(sig as { active?: boolean }).active
                       return (
-                        <div
-                          key={sig.id}
-                          className={cn(
-                            'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm',
-                            sig.done ? 'bg-[#111]' : isActive ? 'bg-[#D4AF37]/5 border border-[#D4AF37]/10' : 'opacity-20',
-                          )}
-                        >
+                        <div key={sig.id} className={cn(
+                          'flex items-center gap-3 px-3 py-2.5 rounded-xl',
+                          sig.done ? 'bg-[#111]' : isActive ? 'bg-[#D4AF37]/5 border border-[#D4AF37]/10' : 'opacity-20',
+                        )}>
                           <div className="w-4 flex-shrink-0 flex items-center justify-center">
                             {sig.done
                               ? <Check className="w-3.5 h-3.5 text-[#22c55e]" />
@@ -183,7 +186,6 @@ export default function LandingPage() {
                                 : <span className="w-1.5 h-1.5 rounded-full bg-[#2a2a2a] block" />}
                           </div>
                           <span className="font-mono text-[11px] font-bold text-[#F2EDD7] w-14 flex-shrink-0">{sig.id}/USD</span>
-
                           {sig.done && sig.decision && (
                             <>
                               <span className="flex items-center gap-1 text-[10px] font-black tracking-widest px-2 py-0.5 rounded-md flex-shrink-0"
@@ -206,131 +208,259 @@ export default function LandingPage() {
                       )
                     })}
 
-                    <div className="pt-2">
+                    <div className="pt-2 pb-1">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <p className="text-[10px] text-[#333] font-mono">3 / 15 analysés</p>
+                        <p className="text-[10px] text-[#333]">ETH · SOL · BNB · XRP · ADA en attente</p>
+                      </div>
                       <div className="h-0.5 bg-[#181818] rounded-full overflow-hidden">
                         <div className="h-full bg-gradient-to-r from-[#D4AF37]/60 to-[#D4AF37]/20 rounded-full" style={{ width: '26%' }} />
                       </div>
-                      <p className="text-[10px] text-[#333] mt-1.5 font-mono">3 / 15 analysés</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* ── Panel 1: Assistant IA ── */}
-                <div style={{ gridArea: '1/1', opacity: active === 1 ? 1 : 0, transition: 'opacity 0.4s ease', pointerEvents: active === 1 ? 'auto' : 'none' }}>
-                  <div className="p-5 flex flex-col gap-3">
-
-                    {/* Status */}
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 bg-[#818cf8] rounded-full animate-pulse" />
-                      <span className="text-[10px] text-[#818cf8]">Connecté aux marchés · Claude</span>
                     </div>
 
-                    {/* User message */}
-                    <div className="flex justify-end" key={`user-${tick}`}
-                      style={{ animation: 'fade-up 0.3s ease 0.05s both' }}>
-                      <div className="bg-[#1a1a1a] rounded-2xl rounded-br-sm px-4 py-2.5 max-w-[78%]">
-                        <p className="text-xs text-[#F2EDD7]">Analyse le BTC maintenant</p>
-                      </div>
-                    </div>
-
-                    {/* AI response — staggered lines */}
-                    <div
-                      key={`ai-${tick}`}
-                      className="bg-[#818cf8]/8 border border-[#818cf8]/15 rounded-2xl rounded-bl-sm px-4 py-3 space-y-2"
-                    >
-                      <p className="text-[10px] text-[#818cf8] font-bold">Assistant IA</p>
-
+                    {/* Extra stats */}
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[#141414]">
                       {[
-                        { delay: '0.2s',  content: <><span className="text-[#F2EDD7] font-semibold">BTC/USD : 67 432 $</span><span className="text-[#22c55e] text-[10px] ml-2">+2.3%</span></> },
-                        { delay: '0.5s',  content: <span className="text-[#888]">RSI 14 : 61 · Zone haussière confirmée</span> },
-                        { delay: '0.85s', content: <span className="text-[#aaa] font-medium">Entrée 67 200 $ · TP 70 000 $ · SL 65 800 $</span> },
-                      ].map(({ delay, content }, i) => (
-                        <div key={i} className="text-xs" style={{ animation: `fade-up 0.35s ease ${delay} both` }}>
-                          {content}
+                        { label: 'Haussiers', val: '2', color: '#22c55e' },
+                        { label: 'Baissiers', val: '1', color: '#ef4444' },
+                        { label: 'Win Rate',  val: '73%', color: '#D4AF37' },
+                      ].map(s => (
+                        <div key={s.label} className="text-center">
+                          <p className="text-sm font-black" style={{ color: s.color }}>{s.val}</p>
+                          <p className="text-[9px] text-[#444]">{s.label}</p>
                         </div>
                       ))}
                     </div>
 
-                    {/* Token count */}
-                    <p className="text-[10px] text-[#2a2a2a] text-right" style={{ animation: 'fade-up 0.3s ease 1.3s both' }}>
-                      847 tokens utilisés
-                    </p>
                   </div>
                 </div>
 
-                {/* ── Panel 2: Analyse Graphique ── */}
-                <div style={{ gridArea: '1/1', opacity: active === 2 ? 1 : 0, transition: 'opacity 0.4s ease', pointerEvents: active === 2 ? 'auto' : 'none' }}>
-                  <div className="p-5" key={`analyse-${tick}`}>
+                {/* Panel 1 — Assistant IA */}
+                <div style={{ gridArea: '1/1', opacity: active === 1 ? 1 : 0, transition: 'opacity 0.4s ease', pointerEvents: active === 1 ? 'auto' : 'none' }}>
+                  <div key={`chat-${tick}`} className="p-4 flex flex-col gap-2.5">
 
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-4" style={{ animation: 'fade-up 0.3s ease 0.05s both' }}>
-                      <div className="flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 bg-[#22c55e] rounded-full animate-pulse" />
-                        <span className="text-[10px] text-[#22c55e]">Analyse terminée · BTC/USD H4</span>
-                      </div>
-                      <span className="text-[10px] font-black px-2.5 py-1 rounded-lg"
-                        style={{ background: '#22c55e18', color: '#22c55e' }}>
-                        ACHETER
-                      </span>
+                    {/* Status */}
+                    <div className="flex items-center gap-2" style={{ animation: 'fade-up 0.3s ease 0.1s both' }}>
+                      <span className="w-1.5 h-1.5 bg-[#818cf8] rounded-full animate-pulse" />
+                      <span className="text-[10px] text-[#818cf8]">Assistant IA connecté · Claude · Temps réel</span>
                     </div>
 
-                    {/* Chart + result */}
-                    <div className="flex gap-4">
+                    {/* User message */}
+                    <div className="flex justify-end" style={{ animation: 'fade-up 0.35s ease 0.3s both' }}>
+                      <div className="bg-[#1a1a1a] rounded-2xl rounded-br-sm px-3.5 py-2.5 max-w-[82%]">
+                        <p className="text-[11px] text-[#F2EDD7] leading-relaxed">
+                          Quels seraient les meilleurs placements aujourd'hui sur le Bitcoin ?
+                        </p>
+                      </div>
+                    </div>
 
-                      {/* Fake mini candlestick chart */}
-                      <div className="relative flex-shrink-0 rounded-xl overflow-hidden bg-[#080808] border border-[#1a1a1a] w-[100px] h-[90px] flex items-end gap-[3px] px-1.5 pb-1.5">
-                        {BARS.map((h, i) => (
-                          <div
-                            key={i}
-                            className="flex-1 rounded-sm origin-bottom"
-                            style={{
-                              height: `${h}%`,
-                              backgroundColor: i >= 7 ? '#22c55e' : '#2a2a2a',
-                              animation: `bar-grow 0.25s ease ${(i * 0.04).toFixed(2)}s both`,
-                            }}
-                          />
-                        ))}
-                        {/* Scanning line */}
-                        <div
-                          className="absolute left-0 right-0 h-px"
-                          style={{ background: 'linear-gradient(90deg, transparent, #22c55e60, transparent)', animation: 'scan 1.8s ease-in-out 0.4s' }}
-                        />
-                        {/* Grid lines */}
-                        <div className="absolute inset-0 flex flex-col justify-between pointer-events-none py-1.5 px-1.5">
-                          {[0, 1, 2].map(i => (
-                            <div key={i} className="w-full h-px bg-[#1a1a1a]" />
-                          ))}
-                        </div>
+                    {/* Typing indicator */}
+                    <div className="flex items-center gap-1.5 pl-1"
+                      style={{ animation: 'typing-hide 1.2s ease 0.6s forwards' }}>
+                      {[0, 0.14, 0.28].map((d, i) => (
+                        <span key={i} className="w-1.5 h-1.5 bg-[#818cf8]/50 rounded-full block"
+                          style={{ animation: `dot-bounce 0.5s ease ${d}s infinite` }} />
+                      ))}
+                    </div>
+
+                    {/* AI response card */}
+                    <div className="bg-[#818cf8]/8 border border-[#818cf8]/15 rounded-2xl rounded-bl-sm px-3.5 py-3 space-y-2">
+
+                      <div className="flex items-center justify-between" style={{ animation: 'fade-up 0.3s ease 1.7s both' }}>
+                        <p className="text-[10px] text-[#818cf8] font-bold uppercase tracking-wider">Analyse BTC/USD · Claude</p>
+                        <span className="text-[9px] font-mono text-[#333]">H4 · Live data</span>
                       </div>
 
-                      {/* Analysis result rows */}
-                      <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-3" style={{ animation: 'fade-up 0.3s ease 2.0s both' }}>
+                        <span className="text-xs font-bold text-[#F2EDD7]">BTC : 67 432 $</span>
+                        <span className="text-[10px] text-[#22c55e] font-semibold">+2.3% / 24h</span>
+                        <span className="text-[9px] text-[#444]">RSI 61 · MACD haussier</span>
+                      </div>
+
+                      <div className="h-px bg-[#818cf8]/10" style={{ animation: 'fade-up 0.2s ease 2.3s both' }} />
+
+                      <div style={{ animation: 'fade-up 0.3s ease 2.5s both' }}>
+                        <p className="text-[9px] text-[#555] uppercase tracking-widest mb-1.5">Position recommandée</p>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-[#22c55e]/15 text-[#22c55e]">LONG PROGRESSIF</span>
+                          <span className="text-[10px] text-[#666]">Entrée : 66 800 – 67 200 $</span>
+                        </div>
+                        <p className="text-[9px] text-[#444] leading-relaxed">Rebond sur EMA50 + zone de demande H4 confirmée</p>
+                      </div>
+
+                      <div className="space-y-1" style={{ animation: 'fade-up 0.3s ease 3.0s both' }}>
+                        <p className="text-[9px] text-[#555] uppercase tracking-widest">Objectifs de profit</p>
                         {[
-                          { label: 'Entrée', value: '67 200 $', color: '#F2EDD7', delay: '0.25s' },
-                          { label: 'TP1',    value: '68 800 $', color: '#22c55e', delay: '0.4s'  },
-                          { label: 'TP2',    value: '70 100 $', color: '#22c55e', delay: '0.55s' },
-                          { label: 'SL',     value: '65 500 $', color: '#ef4444', delay: '0.7s'  },
-                        ].map(({ label, value, color, delay }) => (
-                          <div key={label} className="flex items-center justify-between text-[11px]"
-                            style={{ animation: `fade-up 0.35s ease ${delay} both` }}>
-                            <span className="text-[#444]">{label}</span>
-                            <span className="font-mono font-bold" style={{ color }}>{value}</span>
+                          { label: 'TP1', val: '68 800 $', pct: '+2.4%', delay: '3.2s' },
+                          { label: 'TP2', val: '70 100 $', pct: '+4.2%', delay: '3.55s' },
+                          { label: 'TP3', val: '72 500 $', pct: '+7.7%', delay: '3.9s' },
+                        ].map(({ label, val, pct, delay }) => (
+                          <div key={label} className="flex items-center gap-2"
+                            style={{ animation: `fade-up 0.3s ease ${delay} both` }}>
+                            <span className="text-[9px] text-[#444] w-6 font-mono">{label}</span>
+                            <span className="text-[10px] font-mono font-bold text-[#22c55e]">{val}</span>
+                            <span className="text-[9px] text-[#22c55e]/60">{pct}</span>
                           </div>
                         ))}
                       </div>
+
+                      <div className="h-px bg-[#818cf8]/10" style={{ animation: 'fade-up 0.2s ease 4.2s both' }} />
+
+                      <div className="flex items-start gap-5" style={{ animation: 'fade-up 0.3s ease 4.4s both' }}>
+                        <div>
+                          <p className="text-[9px] text-[#555] mb-0.5">Stop Loss</p>
+                          <p className="text-[10px] font-mono font-bold text-[#ef4444]">
+                            65 500 $ <span className="font-normal text-[#ef4444]/60 text-[9px]">-2.5%</span>
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-[#555] mb-0.5">Risque / Rendement</p>
+                          <p className="text-[10px] font-bold text-[#F2EDD7]">R/R 1:3 minimum</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-[#555] mb-0.5">Taille position</p>
+                          <p className="text-[10px] font-bold text-[#F2EDD7]">2% du capital max</p>
+                        </div>
+                      </div>
+
+                      <div style={{ animation: 'fade-up 0.35s ease 5.2s both' }}>
+                        <div className="h-px bg-[#818cf8]/10 mb-2" />
+                        <p className="text-[9px] text-[#555] uppercase tracking-widest mb-1">Scénario</p>
+                        <p className="text-[10px] text-[#666] leading-relaxed">
+                          Structure haussière intacte depuis le support 63 200$. Volume croissant sur les bougies vertes. Attendre confirmation d'une cassure propre de la résistance H4 avant d'entrer.
+                        </p>
+                      </div>
+
                     </div>
 
-                    {/* Confidence bar */}
-                    <div className="mt-4" style={{ animation: 'fade-up 0.4s ease 0.9s both' }}>
-                      <div className="flex items-center justify-between text-[10px] mb-1.5">
-                        <span className="text-[#444]">Confiance IA</span>
-                        <span className="text-[#22c55e] font-bold">82%</span>
+                    <p className="text-[9px] text-[#2a2a2a] text-right"
+                      style={{ animation: 'fade-up 0.3s ease 6.4s both' }}>
+                      1 847 tokens utilisés
+                    </p>
+
+                  </div>
+                </div>
+
+                {/* Panel 2 — Analyse Graphique */}
+                <div style={{ gridArea: '1/1', opacity: active === 2 ? 1 : 0, transition: 'opacity 0.4s ease', pointerEvents: active === 2 ? 'auto' : 'none' }}>
+                  <div key={`analyse-${tick}`} className="p-4">
+
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-3"
+                      style={{ animation: 'fade-up 0.3s ease 0.15s both' }}>
+                      <div className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-[#22c55e] rounded-full animate-pulse" />
+                        <span className="text-[10px] text-[#22c55e]">BTC/USD · H4 · Analyse graphique terminée</span>
+                      </div>
+                      <span className="text-[10px] font-black px-2.5 py-0.5 rounded-lg bg-[#22c55e]/15 text-[#22c55e]">HAUSSIER</span>
+                    </div>
+
+                    {/* Chart + trend */}
+                    <div className="flex gap-3 mb-3">
+
+                      {/* Mini chart */}
+                      <div className="relative flex-shrink-0 rounded-xl overflow-hidden bg-[#080808] border border-[#1a1a1a] w-[108px] h-[100px]">
+                        {/* Grid lines */}
+                        {[25, 50, 75].map(p => (
+                          <div key={p} className="absolute left-0 right-0 h-px bg-[#141414]" style={{ top: `${p}%` }} />
+                        ))}
+                        {/* Support dashed line */}
+                        <div className="absolute left-0 right-0 h-px border-t border-dashed border-[#22c55e]/50"
+                          style={{ bottom: '24%' }} />
+                        {/* Resistance dashed line */}
+                        <div className="absolute left-0 right-0 h-px border-t border-dashed border-[#ef4444]/40"
+                          style={{ top: '12%' }} />
+                        {/* Label R */}
+                        <span className="absolute right-1 top-[4px] text-[7px] text-[#ef4444]/60 font-mono">R1</span>
+                        {/* Label S */}
+                        <span className="absolute right-1 text-[7px] text-[#22c55e]/60 font-mono" style={{ bottom: 'calc(24% + 2px)' }}>S1</span>
+                        {/* Candles */}
+                        <div className="absolute bottom-0 left-0 right-0 flex items-end gap-[2px] px-1.5 pb-1.5">
+                          {CANDLES.map((c, i) => (
+                            <div key={i} className="flex-1 rounded-sm origin-bottom"
+                              style={{
+                                height: `${c.h}%`,
+                                backgroundColor: c.bull ? '#22c55e' : '#ef4444',
+                                opacity: 0.45 + (i / CANDLES.length) * 0.55,
+                                animation: `bar-grow 0.2s ease ${(i * 0.045).toFixed(3)}s both`,
+                              }}
+                            />
+                          ))}
+                        </div>
+                        {/* Flag zone overlay */}
+                        <div className="absolute rounded-sm"
+                          style={{ left: '50%', right: '8%', top: '16%', bottom: '32%', background: '#D4AF3710', border: '1px solid #D4AF3728' }} />
+                        {/* Breakout arrow indicator */}
+                        <div className="absolute right-2 text-[8px] text-[#D4AF37]"
+                          style={{ top: '8%', animation: 'fade-up 0.4s ease 1.5s both' }}>↗</div>
+                        {/* Scan line */}
+                        <div className="absolute left-0 right-0 h-px"
+                          style={{ background: 'linear-gradient(90deg, transparent, #22c55e45, transparent)', animation: 'scan 2.2s ease-in-out 0.6s', top: 0 }} />
+                      </div>
+
+                      {/* Trend + structure + figure */}
+                      <div className="flex-1 space-y-2.5">
+                        <div style={{ animation: 'fade-up 0.3s ease 1.3s both' }}>
+                          <p className="text-[8px] text-[#444] uppercase tracking-widest mb-0.5">Tendance générale</p>
+                          <p className="text-[11px] font-black text-[#22c55e]">HAUSSIERE</p>
+                        </div>
+                        <div style={{ animation: 'fade-up 0.3s ease 1.7s both' }}>
+                          <p className="text-[8px] text-[#444] uppercase tracking-widest mb-0.5">Structure de prix</p>
+                          <p className="text-[10px] font-bold text-[#F2EDD7]">Higher Highs · Higher Lows</p>
+                        </div>
+                        <div style={{ animation: 'fade-up 0.3s ease 2.1s both' }}>
+                          <p className="text-[8px] text-[#444] uppercase tracking-widest mb-0.5">Figure chartiste</p>
+                          <p className="text-[10px] font-bold text-[#D4AF37]">Flag haussier (H4)</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Supports / Resistances grid */}
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 mb-3 pb-3 border-b border-[#141414]">
+                      {[
+                        { label: 'Support S1',    val: '66 200 $', color: '#22c55e', note: 'testé 3x · niveau majeur',         delay: '2.5s' },
+                        { label: 'Résistance R1', val: '68 900 $', color: '#ef4444', note: 'résistance H4 clé',                delay: '2.8s' },
+                        { label: 'Support S2',    val: '64 800 $', color: '#22c55e', note: 'zone institutionnelle',            delay: '3.1s' },
+                        { label: 'Résistance R2', val: '70 100 $', color: '#ef4444', note: 'ATH local + accumulation liq.',    delay: '3.4s' },
+                      ].map(({ label, val, color, note, delay }) => (
+                        <div key={label} style={{ animation: `fade-up 0.3s ease ${delay} both` }}>
+                          <p className="text-[8px] text-[#444] mb-0.5">{label}</p>
+                          <p className="text-[10px] font-mono font-bold" style={{ color }}>{val}</p>
+                          <p className="text-[8px] text-[#2e2e2e] leading-tight">{note}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Liquidity + signal */}
+                    <div className="space-y-1.5 mb-3">
+                      <div className="flex items-center justify-between"
+                        style={{ animation: 'fade-up 0.3s ease 3.9s both' }}>
+                        <span className="text-[9px] text-[#555]">Zone de liquidité</span>
+                        <span className="text-[10px] font-mono font-bold text-[#D4AF37]">67 800 – 68 100 $</span>
+                      </div>
+                      <div className="flex items-center justify-between"
+                        style={{ animation: 'fade-up 0.3s ease 4.4s both' }}>
+                        <span className="text-[9px] text-[#555]">Cassure potentielle</span>
+                        <span className="text-[10px] font-bold text-[#D4AF37]">
+                          Au-dessus de 68 100 $
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between"
+                        style={{ animation: 'fade-up 0.3s ease 4.9s both' }}>
+                        <span className="text-[9px] text-[#555]">Signal</span>
+                        <span className="text-[10px] font-bold text-[#22c55e] animate-pulse">Cassure imminente</span>
+                      </div>
+                    </div>
+
+                    {/* Confidence */}
+                    <div style={{ animation: 'fade-up 0.4s ease 5.5s both' }}>
+                      <div className="flex items-center justify-between text-[9px] mb-1.5">
+                        <span className="text-[#444]">Confiance de l'analyse</span>
+                        <span className="text-[#22c55e] font-bold">78%</span>
                       </div>
                       <div className="h-1 bg-[#181818] rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-[#22c55e] rounded-full"
-                          style={{ width: '82%', animation: 'tab-fill 0.6s ease 1s both' }}
-                        />
+                        <div className="h-full bg-[#22c55e] rounded-full"
+                          style={{ width: '78%', animation: 'tab-fill 0.9s ease 5.9s both' }} />
                       </div>
                     </div>
 
@@ -339,18 +469,12 @@ export default function LandingPage() {
 
               </div>
 
-              {/* Dots indicator */}
+              {/* Dots navigation */}
               <div className="flex gap-2 justify-center py-3 border-t border-[#111]">
                 {MODULES.map((m, i) => (
-                  <button
-                    key={m.id}
-                    onClick={() => switchTo(i)}
+                  <button key={m.id} onClick={() => switchTo(i)}
                     className="h-[3px] rounded-full transition-all duration-500"
-                    style={{
-                      width:           active === i ? 20 : 6,
-                      backgroundColor: active === i ? m.color : '#1e1e1e',
-                    }}
-                  />
+                    style={{ width: active === i ? 20 : 6, backgroundColor: active === i ? m.color : '#1e1e1e' }} />
                 ))}
               </div>
 
@@ -416,7 +540,8 @@ export default function LandingPage() {
                   ].map(r => (
                     <div key={r.sym} className="flex items-center gap-3 bg-[#0f0f0f] border border-[#1a1a1a] rounded-xl px-3 py-2.5">
                       <span className="font-mono text-[11px] font-bold text-[#F2EDD7] w-10">{r.sym}</span>
-                      <span className="text-[10px] font-black px-2 py-0.5 rounded-md" style={{ color: r.bull ? '#22c55e' : '#ef4444', background: (r.bull ? '#22c55e' : '#ef4444') + '18' }}>
+                      <span className="text-[10px] font-black px-2 py-0.5 rounded-md"
+                        style={{ color: r.bull ? '#22c55e' : '#ef4444', background: (r.bull ? '#22c55e' : '#ef4444') + '18' }}>
                         {r.dir}
                       </span>
                       <div className="flex-1 h-1 bg-[#1a1a1a] rounded-full overflow-hidden">
@@ -455,7 +580,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-black text-[#F2EDD7] mb-2">Analyse Graphique</h3>
               <p className="text-[#555] text-sm leading-relaxed mb-6">
-                Envoie une capture d'écran de n'importe quel graphique. L'IA l'analyse et te donne une stratégie complète en quelques secondes.
+                Envoie une capture d'écran de n'importe quel graphique. L'IA identifie les tendances, supports, résistances et figures chartistes, puis te donne une stratégie complète.
               </p>
               <div className="border-2 border-dashed border-[#1a1a1a] rounded-xl p-5 text-center bg-[#080808]">
                 <ImageIcon className="w-6 h-6 text-[#333] mx-auto mb-2" />
@@ -480,9 +605,9 @@ export default function LandingPage() {
         </div>
         <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-6">
           {[
-            { n: '1', title: 'Créez votre compte',    desc: 'Inscription gratuite en 30 secondes. Aucune carte bancaire requise.' },
-            { n: '2', title: 'Choisissez un module',  desc: 'Signaux Crypto, Assistant IA ou Analyse Graphique. Tout est disponible depuis le tableau de bord.' },
-            { n: '3', title: 'Prenez vos décisions',  desc: "L'IA analyse et vous fournit des signaux clairs. A vous d'agir." },
+            { n: '1', title: 'Créez votre compte',   desc: 'Inscription gratuite en 30 secondes. Aucune carte bancaire requise.' },
+            { n: '2', title: 'Choisissez un module', desc: 'Signaux Crypto, Assistant IA ou Analyse Graphique. Tout est disponible depuis le tableau de bord.' },
+            { n: '3', title: 'Prenez vos décisions', desc: "L'IA analyse et vous fournit des signaux clairs. A vous d'agir." },
           ].map((step) => (
             <div key={step.n} className="relative text-center p-6">
               <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/25 flex items-center justify-center mx-auto mb-4">
@@ -499,10 +624,10 @@ export default function LandingPage() {
       <div className="border-t border-[#151515] py-8 px-5">
         <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-center gap-8 text-center">
           {[
-            { icon: <ShieldCheck className="w-4 h-4" />, label: 'Paiements sécurisés', sub: 'Stripe'                  },
-            { icon: <BarChart2   className="w-4 h-4" />, label: 'Données temps réel',  sub: 'Binance, Kraken'         },
+            { icon: <ShieldCheck className="w-4 h-4" />, label: 'Paiements sécurisés', sub: 'Stripe'                   },
+            { icon: <BarChart2   className="w-4 h-4" />, label: 'Données temps réel',  sub: 'Binance, Kraken'          },
             { icon: <Check       className="w-4 h-4" />, label: 'Sans engagement',      sub: 'Résiliable à tout moment' },
-            { icon: <Zap         className="w-4 h-4" />, label: 'IA de pointe',         sub: 'Claude par Anthropic'    },
+            { icon: <Zap         className="w-4 h-4" />, label: 'IA de pointe',         sub: 'Claude par Anthropic'     },
           ].map((t) => (
             <div key={t.label} className="flex items-center gap-2.5 text-left">
               <div className="text-[#D4AF37]/60">{t.icon}</div>
