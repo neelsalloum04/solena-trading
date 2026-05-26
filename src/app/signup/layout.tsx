@@ -43,18 +43,6 @@ export default function SignupLayout({ children }: { children: React.ReactNode }
               ))}
             </ul>
 
-            <div className="flex items-center gap-6 pt-8 border-t border-[#1a1a1a]">
-              {[
-                { v: 'Gratuit',    l: 'Pour commencer' },
-                { v: 'IA',         l: 'Analyse & Chat' },
-                { v: '100%',       l: 'Sans engagement' },
-              ].map((s, i) => (
-                <div key={s.l} className={i > 0 ? 'border-l border-[#1a1a1a] pl-6' : ''}>
-                  <p className="text-lg font-bold text-[#D4AF37]">{s.v}</p>
-                  <p className="text-[11px] text-[#555]">{s.l}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>
