@@ -187,7 +187,7 @@ export const PLAN_META: Record<Exclude<PlanId, 'admin'>, PlanMeta> = {
       'Mises à jour incluses',
     ],
     highlighted: false,
-    badge: 'Tout inclus',
+    badge: undefined,
     stripePriceKey: 'STRIPE_PRICE_PRIME',
   },
 }

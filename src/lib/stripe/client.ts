@@ -87,6 +87,6 @@ export const PLANS = {
       'Mises à jour incluses',
     ],
     highlighted: false,
-    badge: 'Tout inclus' as string | undefined,
+    badge: undefined,
   },
 }
