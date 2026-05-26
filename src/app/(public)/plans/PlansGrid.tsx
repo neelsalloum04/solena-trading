@@ -16,7 +16,7 @@ export function PlansGrid() {
       const { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {
-        window.location.href = '/register'
+        window.location.href = '/signup'
         return
       }
 

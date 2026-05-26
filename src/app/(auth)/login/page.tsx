@@ -251,7 +251,7 @@ function LoginForm() {
 
       <p className="text-center text-sm text-[#555] mt-6">
         Pas encore de compte ?{' '}
-        <Link href="/register" className="text-[#D4AF37] font-medium hover:underline">
+        <Link href="/signup" className="text-[#D4AF37] font-medium hover:underline">
           Essai gratuit
         </Link>
       </p>

@@ -48,7 +48,7 @@ export default function PlansPage() {
           <span className="text-[#F2EDD7] font-semibold">Plan Gratuit également disponible</span> —
           Accès au tableau de bord et au calendrier économique. Pas de carte bancaire requise.
         </p>
-        <Link href="/register" className="inline-flex items-center gap-1 text-xs text-[#D4AF37] mt-2 hover:underline">
+        <Link href="/signup" className="inline-flex items-center gap-1 text-xs text-[#D4AF37] mt-2 hover:underline">
           <Zap className="w-3 h-3" /> Créer un compte gratuit
         </Link>
       </div>

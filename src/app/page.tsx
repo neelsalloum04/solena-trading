@@ -181,7 +181,7 @@ export default function LandingPage() {
         </Link>
         <div className="flex items-center gap-2">
           <Link href="/login"    className="btn-outline text-sm px-4 py-2 rounded-xl">Connexion</Link>
-          <Link href="/register" className="btn-gold    text-sm px-4 py-2 rounded-xl">Commencer</Link>
+          <Link href="/signup" className="btn-gold    text-sm px-4 py-2 rounded-xl">Commencer</Link>
         </div>
       </nav>
 
@@ -211,7 +211,7 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 mb-8">
-              <Link href="/register" className="btn-gold inline-flex items-center justify-center gap-2 text-base px-8 py-3.5 rounded-xl font-bold">
+              <Link href="/signup" className="btn-gold inline-flex items-center justify-center gap-2 text-base px-8 py-3.5 rounded-xl font-bold">
                 Créer mon compte <ArrowRight className="w-4 h-4" />
               </Link>
               <Link href="/login" className="btn-outline inline-flex items-center justify-center gap-2 text-base px-8 py-3.5 rounded-xl">
@@ -902,7 +902,7 @@ export default function LandingPage() {
                 Prêt à trader<br /><span className="text-[#D4AF37]">plus intelligemment ?</span>
               </h2>
               <p className="text-[#555] text-sm mb-8">5 000 tokens offerts. Aucune carte bancaire.</p>
-              <Link href="/register" className="btn-gold inline-flex items-center justify-center gap-2 text-base px-10 py-4 rounded-xl font-black">
+              <Link href="/signup" className="btn-gold inline-flex items-center justify-center gap-2 text-base px-10 py-4 rounded-xl font-black">
                 Démarrer gratuitement <ArrowRight className="w-4 h-4" />
               </Link>
               <p className="text-[10px] text-[#333] mt-4">Contenu éducatif uniquement. Le trading comporte un risque de perte en capital.</p>
