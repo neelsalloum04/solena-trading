@@ -22,6 +22,9 @@ const AUTH_PAGES = ['/login', '/register']
 // These routes must NEVER be blocked
 const ALWAYS_PUBLIC = ['/auth/', '/forgot-password', '/reset-password', '/api/', '/legal/']
 
+// Authenticated but unverified users can access these routes
+const SKIP_EMAIL_CHECK = ['/verify-email', '/mfa']
+
 // Simple in-memory rate limiting (reset on cold start)
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>()
 
@@ -86,6 +89,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // Authenticated but unverified user → verify-email page
+  const skipEmailCheck = SKIP_EMAIL_CHECK.some(p => pathname === p || pathname.startsWith(p + '/'))
+  if (isProtected && user && !user.email_confirmed_at && !skipEmailCheck) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/verify-email'
+    return NextResponse.redirect(url)
+  }
+
   // Authenticated user on a protected route: check MFA (AAL2) if needed
   if (isProtected && user && !SKIP_AAL_CHECK.some(p => pathname === p || pathname.startsWith(p + '/'))) {
     const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
@@ -94,6 +105,13 @@ export async function middleware(request: NextRequest) {
       url.pathname = '/mfa'
       return NextResponse.redirect(url)
     }
+  }
+
+  // Verified user on verify-email page → dashboard
+  if (pathname === '/verify-email' && user?.email_confirmed_at) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/analyse'
+    return NextResponse.redirect(url)
   }
 
   // Authenticated user on login/register → dashboard
