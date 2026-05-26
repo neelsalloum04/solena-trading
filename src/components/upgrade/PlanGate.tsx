@@ -2,34 +2,57 @@
 import { useUserPlan } from '@/contexts/UserPlanContext'
 import { PLANS_DISPLAY, type PlanId } from '@/lib/plans'
 import { cn } from '@/lib/utils'
-import { Check, Lock, Zap } from 'lucide-react'
+import { Check, Lock, Loader2, Zap } from 'lucide-react'
 import Link from 'next/link'
+import { useState } from 'react'
+import toast from 'react-hot-toast'
 
 interface PlanGateProps {
   requiredPlan: PlanId
   children: React.ReactNode
-  /** If true, render children wrapped (for partial page sections) */
   inline?: boolean
 }
 
 export function PlanGate({ requiredPlan, children, inline = false }: PlanGateProps) {
   const { canAccess } = useUserPlan()
-
   if (canAccess(requiredPlan)) return <>{children}</>
-
   if (inline) return <InlineUpgrade requiredPlan={requiredPlan} />
   return <FullPageUpgrade requiredPlan={requiredPlan} />
+}
+
+// ─── Helper ───────────────────────────────────────────────────────────────────
+
+async function checkoutPlan(planId: string, setLoading: (v: string | null) => void) {
+  setLoading(planId)
+  try {
+    const res  = await fetch('/api/stripe/checkout', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ plan: planId, billing: 'monthly' }),
+    })
+    const data = await res.json()
+    if (data.url) {
+      window.location.href = data.url
+    } else {
+      toast.error(data.error || 'Erreur lors du paiement.')
+      setLoading(null)
+    }
+  } catch {
+    toast.error('Erreur réseau. Réessayez.')
+    setLoading(null)
+  }
 }
 
 // ─── Full page upgrade gate ───────────────────────────────────────────────────
 
 function FullPageUpgrade({ requiredPlan }: { requiredPlan: PlanId }) {
-  const plans = PLANS_DISPLAY.filter(p => p.id === requiredPlan || p.id === 'pro' || p.id === 'premium')
   const target = PLANS_DISPLAY.find(p => p.id === requiredPlan)
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-4 md:p-8">
       <div className="max-w-4xl w-full">
+
         {/* Header */}
         <div className="text-center mb-10">
           <div className="w-16 h-16 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -78,27 +101,28 @@ function FullPageUpgrade({ requiredPlan }: { requiredPlan: PlanId }) {
                     </li>
                   ))}
                 </ul>
-                <Link href="/settings#subscription">
-                  <button className={cn(
-                    'w-full py-2.5 rounded-xl text-xs font-bold transition-all',
+                <button
+                  onClick={() => checkoutPlan(plan.id, setLoadingPlan)}
+                  disabled={!!loadingPlan}
+                  className={cn(
+                    'w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2',
                     plan.highlighted
                       ? 'bg-[#D4AF37] text-[#080808] hover:opacity-90'
-                      : 'bg-[#0f0f0f] border border-[#2a2a2a] text-white hover:border-[#D4AF37]/40'
-                  )}>
-                    Choisir {plan.label}
-                  </button>
-                </Link>
+                      : 'bg-[#0f0f0f] border border-[#2a2a2a] text-white hover:border-[#D4AF37]/40',
+                    !!loadingPlan && loadingPlan !== plan.id && 'opacity-40'
+                  )}
+                >
+                  {loadingPlan === plan.id
+                    ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    : `Choisir ${plan.label}`}
+                </button>
               </div>
             )
           })}
         </div>
 
         <div className="text-center">
-          <Link href="/settings#subscription" className="inline-flex items-center gap-2 bg-[#D4AF37] text-[#080808] font-bold px-8 py-3 rounded-xl hover:opacity-90 transition-opacity">
-            <Zap className="w-4 h-4" />
-            Passer à une offre supérieure
-          </Link>
-          <p className="text-[11px] text-[#444] mt-3">Annulation possible à tout moment · Sans engagement</p>
+          <p className="text-[11px] text-[#444]">Annulation possible à tout moment · Sans engagement</p>
         </div>
       </div>
     </div>
@@ -114,10 +138,11 @@ function InlineUpgrade({ requiredPlan }: { requiredPlan: PlanId }) {
       <Lock className="w-6 h-6 text-[#D4AF37] mx-auto mb-2" />
       <p className="text-sm font-bold text-white mb-1">Fonctionnalité {target?.label ?? 'Premium'}</p>
       <p className="text-xs text-[#555] mb-4">Disponible dès le forfait {target?.label ?? 'Premium'}</p>
-      <Link href="/settings#subscription">
-        <button className="text-xs font-bold bg-[#D4AF37] text-[#080808] px-4 py-2 rounded-xl hover:opacity-90 transition-opacity">
-          Mettre à niveau
-        </button>
+      <Link
+        href="/plans"
+        className="inline-block text-xs font-bold bg-[#D4AF37] text-[#080808] px-4 py-2 rounded-xl hover:opacity-90 transition-opacity"
+      >
+        Voir les forfaits
       </Link>
     </div>
   )
