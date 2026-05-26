@@ -21,19 +21,19 @@ export default function SignupLayout({ children }: { children: React.ReactNode }
 
           <div className="flex-1 flex flex-col justify-center">
             <h1 className="text-3xl font-bold text-[#F2EDD7] leading-snug mb-3">
-              Rejoignez<br />
-              <span className="text-[#D4AF37]">18 000+ Traders</span>
+              Tradez mieux<br />
+              <span className="text-[#D4AF37]">grâce à l'IA</span>
             </h1>
             <p className="text-[#666] text-sm leading-relaxed mb-10">
-              Accédez aux signaux IA institutionnels,<br />
-              bots automatisés et analyses de marché.
+              Analyse de graphiques, signaux et assistant IA<br />
+              pour vous aider dans vos décisions de trading.
             </p>
 
             <ul className="space-y-3 mb-12">
               {[
                 '5 000 tokens offerts dès l\'inscription',
                 '3 analyses graphiques gratuites',
-                'Signaux IA en temps réel',
+                'Assistant IA disponible immédiatement',
                 'Sans carte bancaire requise',
               ].map((item) => (
                 <li key={item} className="flex items-center gap-2.5 text-sm text-[#888]">
@@ -45,9 +45,9 @@ export default function SignupLayout({ children }: { children: React.ReactNode }
 
             <div className="flex items-center gap-6 pt-8 border-t border-[#1a1a1a]">
               {[
-                { v: '2,4 Md€+', l: 'Volume' },
-                { v: '18 000+', l: 'Traders' },
-                { v: '73.2%',   l: 'Win Rate' },
+                { v: 'Gratuit',    l: 'Pour commencer' },
+                { v: 'IA',         l: 'Analyse & Chat' },
+                { v: '100%',       l: 'Sans engagement' },
               ].map((s, i) => (
                 <div key={s.l} className={i > 0 ? 'border-l border-[#1a1a1a] pl-6' : ''}>
                   <p className="text-lg font-bold text-[#D4AF37]">{s.v}</p>
