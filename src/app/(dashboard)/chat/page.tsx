@@ -206,10 +206,10 @@ function ChatContent() {
         />
       )}
 
-      {/* Content — blurred when tokens exhausted */}
+      {/* Content — hidden when tokens exhausted */}
       <div
         className="flex flex-col h-full"
-        style={tokenExhausted ? { filter: 'blur(6px)', pointerEvents: 'none', userSelect: 'none' } : {}}
+        style={tokenExhausted ? { display: 'none' } : {}}
       >
 
       {/* Missing key banner */}

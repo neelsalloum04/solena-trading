@@ -1,5 +1,6 @@
 'use client'
-import { FreeTrialBanner, FreeTrialUpgradeWall, type FreeQuota } from '@/components/FreeTrialBanner'
+import { FreeTrialBanner, type FreeQuota } from '@/components/FreeTrialBanner'
+import { UpgradeOverlay } from '@/components/upgrade/UpgradeOverlay'
 import { FinancialDisclaimer } from '@/components/FinancialDisclaimer'
 import { cn } from '@/lib/utils'
 import { RiskBanner } from '@/components/ui/risk-banner'
@@ -358,7 +359,10 @@ function AnalyseContent() {
   if (freeQuota && !freeQuota.allowed) {
     return (
       <div className="min-h-full bg-[#080808] flex flex-col">
-        <FreeTrialUpgradeWall type="analyse" />
+        <UpgradeOverlay
+          title="Analyse Graphique réservée aux abonnés"
+          subtitle="Tu as utilisé tes 3 analyses gratuites. Choisis un forfait pour continuer sans limite."
+        />
       </div>
     )
   }
