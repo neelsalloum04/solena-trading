@@ -171,7 +171,7 @@ export const PLAN_META: Record<Exclude<PlanId, 'admin'>, PlanMeta> = {
   },
   premium: {
     id: 'premium',
-    label: 'PrimeX',
+    label: 'Prime X',
     price: '699€',
     yearlyPrice: '582,50€',
     yearlyTotal: '6 990€',

@@ -70,7 +70,7 @@ export const PLANS = {
     badge: undefined as string | undefined,
   },
   premium: {
-    name: 'PrimeX',
+    name: 'Prime X',
     monthlyPrice: 699,
     yearlyTotal: 6990,
     yearlyMonthly: '582,50',
