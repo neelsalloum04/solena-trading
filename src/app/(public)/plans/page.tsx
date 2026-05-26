@@ -5,7 +5,7 @@ import { PlansGrid } from './PlansGrid'
 
 export const metadata: Metadata = {
   title: 'Tarifs — PrimeX',
-  description: 'Starter X, Pro X, Expert X ou Prime X. Mensuel ou annuel, sans engagement.',
+  description: 'Starter X, Pro X, Expert X ou Prime X. Sans engagement, résiliable à tout moment.',
 }
 
 const FAQ = [
@@ -15,7 +15,7 @@ const FAQ = [
   },
   {
     q: "Y a-t-il un engagement ?",
-    a: "Aucun. Les abonnements mensuels ou annuels sont sans durée minimale supplémentaire.",
+    a: "Aucun. Les abonnements mensuels sont sans durée minimale supplémentaire.",
   },
   {
     q: "Les paiements sont-ils sécurisés ?",

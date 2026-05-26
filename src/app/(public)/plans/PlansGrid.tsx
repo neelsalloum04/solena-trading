@@ -1,10 +1,43 @@
 'use client'
 import { PLANS } from '@/lib/stripe/client'
-import { Check, ChevronRight } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
-import Link from 'next/link'
+import { Check, ChevronRight, Loader2 } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import toast from 'react-hot-toast'
 
 export function PlansGrid() {
+  const supabase = useMemo(() => createClient(), [])
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
+
+  const handleChoose = async (planId: string) => {
+    setLoadingPlan(planId)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (!user) {
+        window.location.href = '/register'
+        return
+      }
+
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: planId, billing: 'monthly' }),
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        toast.error(data.error || 'Erreur lors du paiement.')
+        setLoadingPlan(null)
+      }
+    } catch {
+      toast.error('Erreur réseau. Réessayez.')
+      setLoadingPlan(null)
+    }
+  }
+
   return (
     <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
       {Object.values(PLANS).map((p) => (
@@ -36,7 +69,7 @@ export function PlansGrid() {
             {p.name}
           </p>
 
-          {/* Price */}
+          {/* Price — monthly only */}
           <div className="mb-4">
             <div className="flex items-end gap-1 leading-none">
               <span className="text-[2.6rem] font-black text-white leading-none">{p.monthlyPrice}</span>
@@ -44,7 +77,6 @@ export function PlansGrid() {
             </div>
           </div>
 
-          {/* Divider */}
           <div className="h-px bg-[#191919] mb-5" />
 
           {/* Features */}
@@ -63,17 +95,21 @@ export function PlansGrid() {
           </ul>
 
           {/* CTA */}
-          <Link
-            href="/register"
+          <button
+            onClick={() => handleChoose(p.plan)}
+            disabled={!!loadingPlan}
             className={cn(
               'flex items-center justify-center gap-1.5 w-full py-3 rounded-xl text-sm font-bold transition-all',
               p.highlighted
                 ? 'bg-[#D4AF37] text-[#080808] hover:brightness-110'
-                : 'border border-[#242424] text-[#ccc] hover:text-white hover:border-[#383838] hover:bg-[#111]'
+                : 'border border-[#242424] text-[#ccc] hover:text-white hover:border-[#383838] hover:bg-[#111]',
+              !!loadingPlan && loadingPlan !== p.plan && 'opacity-40'
             )}
           >
-            Commencer <ChevronRight className="w-4 h-4" />
-          </Link>
+            {loadingPlan === p.plan
+              ? <Loader2 className="w-4 h-4 animate-spin" />
+              : <><span>Commencer</span><ChevronRight className="w-4 h-4" /></>}
+          </button>
         </div>
       ))}
     </div>

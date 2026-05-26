@@ -104,7 +104,6 @@ export function FreeTrialUpgradeWall({ type }: { type: 'analyse' | 'chat' }) {
                 <p className="text-xl font-black text-white">
                   {plan.price}<span className="text-sm font-normal text-[#555]">/mois</span>
                 </p>
-                <p className="text-[11px] text-[#444] mt-0.5">ou {plan.yearlyPrice}/mois en annuel</p>
               </div>
               <ul className="space-y-2 mb-5">
                 {plan.features.map((f) => (
