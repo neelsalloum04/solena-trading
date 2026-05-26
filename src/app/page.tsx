@@ -14,18 +14,48 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
-const PREVIEW_SIGNALS = [
-  { id: 'BTC', decision: 'ACHETER', conf: 87, done: true  },
-  { id: 'ETH', decision: 'ACHETER', conf: 79, done: true  },
-  { id: 'SOL', decision: 'VENDRE',  conf: 71, done: true  },
+const SIGNALS = [
+  { id: 'BTC', decision: 'ACHETER', conf: 87, done: true   },
+  { id: 'ETH', decision: 'ACHETER', conf: 79, done: true   },
+  { id: 'SOL', decision: 'VENDRE',  conf: 71, done: true   },
   { id: 'BNB', decision: null,      conf: 0,  active: true },
-  { id: 'XRP', decision: null,      conf: 0   },
+  { id: 'XRP', decision: null,      conf: 0                },
 ]
 
+const MODULES = [
+  { id: 'signals', label: 'Signaux Crypto', Icon: Zap,           color: '#D4AF37' },
+  { id: 'chat',    label: 'Assistant IA',   Icon: MessageSquare, color: '#818cf8' },
+  { id: 'analyse', label: 'Analyse IA',     Icon: ImageIcon,     color: '#22c55e' },
+]
+
+const BARS = [28, 42, 35, 54, 40, 62, 50, 70, 58, 76]
+
 export default function LandingPage() {
+  const [active, setActive] = useState(0)
+  const [tick,   setTick]   = useState(0)
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setActive(prev => (prev + 1) % 3)
+      setTick(t => t + 1)
+    }, 3000)
+    return () => clearInterval(id)
+  }, [])
+
+  const switchTo = (i: number) => { setActive(i); setTick(t => t + 1) }
+  const mod = MODULES[active]
+
   return (
     <div className="min-h-screen bg-[#080808] text-[#F2EDD7] overflow-x-hidden">
+
+      <style>{`
+        @keyframes tab-fill { from { width: 0 } to { width: 100% } }
+        @keyframes fade-up  { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: translateY(0) } }
+        @keyframes scan     { 0% { top: -2px } 80% { top: calc(100% + 2px) } 100% { top: calc(100% + 2px) } }
+        @keyframes bar-grow { from { transform: scaleY(0) } to { transform: scaleY(1) } }
+      `}</style>
 
       {/* ── Nav ── */}
       <nav className="sticky top-0 z-50 bg-[#080808]/95 backdrop-blur-md border-b border-[#1a1a1a] px-5 h-16 flex items-center justify-between">
@@ -81,83 +111,249 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Right — terminal preview */}
+          {/* Right — rotating module preview */}
           <div className="relative">
-            <div className="absolute inset-0 bg-[#D4AF37]/5 rounded-3xl blur-3xl scale-95" />
-            <div className="relative bg-[#0b0b0b] border border-[#202020] rounded-2xl overflow-hidden shadow-2xl">
+            {/* Ambient glow that changes color with active module */}
+            <div
+              className="absolute inset-0 rounded-3xl blur-3xl scale-95 transition-all duration-700"
+              style={{ background: `${mod.color}08` }}
+            />
 
-              <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#181818] bg-[#080808]">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#D4AF37]/15 border border-[#D4AF37]/20 flex items-center justify-center">
-                    <Zap className="w-4 h-4 text-[#D4AF37]" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-[#F2EDD7]">Signaux Crypto</p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="w-1 h-1 bg-[#22c55e] rounded-full animate-pulse" />
-                      <span className="text-[10px] text-[#22c55e]">Analyse en cours</span>
+            <div className="relative bg-[#0b0b0b] border border-[#1e1e1e] rounded-2xl overflow-hidden shadow-2xl">
+
+              {/* Module tabs */}
+              <div className="flex bg-[#080808]">
+                {MODULES.map((m, i) => (
+                  <button
+                    key={m.id}
+                    onClick={() => switchTo(i)}
+                    className={cn(
+                      'flex-1 py-3.5 flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-wider transition-colors relative overflow-hidden',
+                      active === i ? 'text-[#F2EDD7]' : 'text-[#2a2a2a] hover:text-[#444]',
+                    )}
+                  >
+                    <m.Icon className="w-3 h-3 flex-shrink-0 transition-colors duration-300" style={{ color: active === i ? m.color : 'currentColor' }} />
+                    <span className="hidden sm:inline">{m.label}</span>
+                    {/* Animated progress bar under active tab */}
+                    {active === i && (
+                      <div
+                        key={tick}
+                        className="absolute bottom-0 left-0 h-[2px] rounded-t-full"
+                        style={{ backgroundColor: m.color, animation: 'tab-fill 3s linear forwards' }}
+                      />
+                    )}
+                    {active !== i && (
+                      <div className="absolute bottom-0 left-0 right-0 h-px bg-[#181818]" />
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* Panels — all stacked in same grid cell, fade in/out */}
+              <div style={{ display: 'grid' }}>
+
+                {/* ── Panel 0: Signaux Crypto ── */}
+                <div style={{ gridArea: '1/1', opacity: active === 0 ? 1 : 0, transition: 'opacity 0.4s ease', pointerEvents: active === 0 ? 'auto' : 'none' }}>
+                  <div className="p-4 space-y-1.5">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 bg-[#22c55e] rounded-full animate-pulse" />
+                        <span className="text-[10px] text-[#22c55e] font-medium">Analyse en cours</span>
+                      </div>
+                      <span className="text-[10px] text-[#333] font-mono bg-[#111] px-2 py-1 rounded-md">4 / 15</span>
+                    </div>
+
+                    {SIGNALS.map((sig) => {
+                      const bull     = sig.decision === 'ACHETER'
+                      const color    = bull ? '#22c55e' : '#ef4444'
+                      const isActive = !!(sig as { active?: boolean }).active
+                      return (
+                        <div
+                          key={sig.id}
+                          className={cn(
+                            'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm',
+                            sig.done ? 'bg-[#111]' : isActive ? 'bg-[#D4AF37]/5 border border-[#D4AF37]/10' : 'opacity-20',
+                          )}
+                        >
+                          <div className="w-4 flex-shrink-0 flex items-center justify-center">
+                            {sig.done
+                              ? <Check className="w-3.5 h-3.5 text-[#22c55e]" />
+                              : isActive
+                                ? <span className="w-3 h-3 rounded-full border-2 border-[#D4AF37] border-t-transparent animate-spin block" />
+                                : <span className="w-1.5 h-1.5 rounded-full bg-[#2a2a2a] block" />}
+                          </div>
+                          <span className="font-mono text-[11px] font-bold text-[#F2EDD7] w-14 flex-shrink-0">{sig.id}/USD</span>
+
+                          {sig.done && sig.decision && (
+                            <>
+                              <span className="flex items-center gap-1 text-[10px] font-black tracking-widest px-2 py-0.5 rounded-md flex-shrink-0"
+                                style={{ background: color + '18', color }}>
+                                {bull ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+                                {sig.decision}
+                              </span>
+                              <div className="flex-1 flex items-center gap-2 justify-end">
+                                <div className="w-14 h-1 bg-[#1a1a1a] rounded-full overflow-hidden">
+                                  <div className="h-full rounded-full" style={{ width: `${sig.conf}%`, backgroundColor: color }} />
+                                </div>
+                                <span className="text-[10px] font-mono font-bold w-8 text-right" style={{ color }}>{sig.conf}%</span>
+                              </div>
+                            </>
+                          )}
+                          {isActive && (
+                            <span className="text-[11px] text-[#D4AF37] ml-1 animate-pulse">Analyse de {sig.id}/USD…</span>
+                          )}
+                        </div>
+                      )
+                    })}
+
+                    <div className="pt-2">
+                      <div className="h-0.5 bg-[#181818] rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-[#D4AF37]/60 to-[#D4AF37]/20 rounded-full" style={{ width: '26%' }} />
+                      </div>
+                      <p className="text-[10px] text-[#333] mt-1.5 font-mono">3 / 15 analysés</p>
                     </div>
                   </div>
                 </div>
-                <span className="text-[10px] text-[#333] font-mono bg-[#111] px-2 py-1 rounded-md">4 / 15</span>
-              </div>
 
-              <div className="p-4 space-y-1.5">
-                {PREVIEW_SIGNALS.map((sig) => {
-                  const bull     = sig.decision === 'ACHETER'
-                  const color    = bull ? '#22c55e' : '#ef4444'
-                  const isActive = !!(sig as any).active
+                {/* ── Panel 1: Assistant IA ── */}
+                <div style={{ gridArea: '1/1', opacity: active === 1 ? 1 : 0, transition: 'opacity 0.4s ease', pointerEvents: active === 1 ? 'auto' : 'none' }}>
+                  <div className="p-5 flex flex-col gap-3">
 
-                  return (
+                    {/* Status */}
+                    <div className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-[#818cf8] rounded-full animate-pulse" />
+                      <span className="text-[10px] text-[#818cf8]">Connecté aux marchés · Claude</span>
+                    </div>
+
+                    {/* User message */}
+                    <div className="flex justify-end" key={`user-${tick}`}
+                      style={{ animation: 'fade-up 0.3s ease 0.05s both' }}>
+                      <div className="bg-[#1a1a1a] rounded-2xl rounded-br-sm px-4 py-2.5 max-w-[78%]">
+                        <p className="text-xs text-[#F2EDD7]">Analyse le BTC maintenant</p>
+                      </div>
+                    </div>
+
+                    {/* AI response — staggered lines */}
                     <div
-                      key={sig.id}
-                      className={cn(
-                        'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors',
-                        sig.done ? 'bg-[#111]' : isActive ? 'bg-[#D4AF37]/5 border border-[#D4AF37]/10' : 'opacity-25',
-                      )}
+                      key={`ai-${tick}`}
+                      className="bg-[#818cf8]/8 border border-[#818cf8]/15 rounded-2xl rounded-bl-sm px-4 py-3 space-y-2"
                     >
-                      <div className="w-4 flex-shrink-0 flex items-center justify-center">
-                        {sig.done
-                          ? <Check   className="w-3.5 h-3.5 text-[#22c55e]" />
-                          : isActive
-                            ? <span className="w-3 h-3 rounded-full border-2 border-[#D4AF37] border-t-transparent animate-spin block" />
-                            : <span className="w-1.5 h-1.5 rounded-full bg-[#2a2a2a] block" />}
+                      <p className="text-[10px] text-[#818cf8] font-bold">Assistant IA</p>
+
+                      {[
+                        { delay: '0.2s',  content: <><span className="text-[#F2EDD7] font-semibold">BTC/USD : 67 432 $</span><span className="text-[#22c55e] text-[10px] ml-2">+2.3%</span></> },
+                        { delay: '0.5s',  content: <span className="text-[#888]">RSI 14 : 61 · Zone haussière confirmée</span> },
+                        { delay: '0.85s', content: <span className="text-[#aaa] font-medium">Entrée 67 200 $ · TP 70 000 $ · SL 65 800 $</span> },
+                      ].map(({ delay, content }, i) => (
+                        <div key={i} className="text-xs" style={{ animation: `fade-up 0.35s ease ${delay} both` }}>
+                          {content}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Token count */}
+                    <p className="text-[10px] text-[#2a2a2a] text-right" style={{ animation: 'fade-up 0.3s ease 1.3s both' }}>
+                      847 tokens utilisés
+                    </p>
+                  </div>
+                </div>
+
+                {/* ── Panel 2: Analyse Graphique ── */}
+                <div style={{ gridArea: '1/1', opacity: active === 2 ? 1 : 0, transition: 'opacity 0.4s ease', pointerEvents: active === 2 ? 'auto' : 'none' }}>
+                  <div className="p-5" key={`analyse-${tick}`}>
+
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-4" style={{ animation: 'fade-up 0.3s ease 0.05s both' }}>
+                      <div className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-[#22c55e] rounded-full animate-pulse" />
+                        <span className="text-[10px] text-[#22c55e]">Analyse terminée · BTC/USD H4</span>
+                      </div>
+                      <span className="text-[10px] font-black px-2.5 py-1 rounded-lg"
+                        style={{ background: '#22c55e18', color: '#22c55e' }}>
+                        ACHETER
+                      </span>
+                    </div>
+
+                    {/* Chart + result */}
+                    <div className="flex gap-4">
+
+                      {/* Fake mini candlestick chart */}
+                      <div className="relative flex-shrink-0 rounded-xl overflow-hidden bg-[#080808] border border-[#1a1a1a] w-[100px] h-[90px] flex items-end gap-[3px] px-1.5 pb-1.5">
+                        {BARS.map((h, i) => (
+                          <div
+                            key={i}
+                            className="flex-1 rounded-sm origin-bottom"
+                            style={{
+                              height: `${h}%`,
+                              backgroundColor: i >= 7 ? '#22c55e' : '#2a2a2a',
+                              animation: `bar-grow 0.25s ease ${(i * 0.04).toFixed(2)}s both`,
+                            }}
+                          />
+                        ))}
+                        {/* Scanning line */}
+                        <div
+                          className="absolute left-0 right-0 h-px"
+                          style={{ background: 'linear-gradient(90deg, transparent, #22c55e60, transparent)', animation: 'scan 1.8s ease-in-out 0.4s' }}
+                        />
+                        {/* Grid lines */}
+                        <div className="absolute inset-0 flex flex-col justify-between pointer-events-none py-1.5 px-1.5">
+                          {[0, 1, 2].map(i => (
+                            <div key={i} className="w-full h-px bg-[#1a1a1a]" />
+                          ))}
+                        </div>
                       </div>
 
-                      <span className="font-mono text-[11px] font-bold text-[#F2EDD7] w-14 flex-shrink-0">
-                        {sig.id}/USD
-                      </span>
-
-                      {sig.done && sig.decision && (
-                        <>
-                          <span className="flex items-center gap-1 text-[10px] font-black tracking-widest px-2 py-0.5 rounded-md flex-shrink-0"
-                            style={{ background: color + '18', color }}>
-                            {bull ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
-                            {sig.decision}
-                          </span>
-                          <div className="flex-1 flex items-center gap-2 justify-end">
-                            <div className="w-14 h-1 bg-[#1a1a1a] rounded-full overflow-hidden">
-                              <div className="h-full rounded-full" style={{ width: `${sig.conf}%`, backgroundColor: color }} />
-                            </div>
-                            <span className="text-[10px] font-mono font-bold w-8 text-right" style={{ color }}>{sig.conf}%</span>
+                      {/* Analysis result rows */}
+                      <div className="flex-1 space-y-2">
+                        {[
+                          { label: 'Entrée', value: '67 200 $', color: '#F2EDD7', delay: '0.25s' },
+                          { label: 'TP1',    value: '68 800 $', color: '#22c55e', delay: '0.4s'  },
+                          { label: 'TP2',    value: '70 100 $', color: '#22c55e', delay: '0.55s' },
+                          { label: 'SL',     value: '65 500 $', color: '#ef4444', delay: '0.7s'  },
+                        ].map(({ label, value, color, delay }) => (
+                          <div key={label} className="flex items-center justify-between text-[11px]"
+                            style={{ animation: `fade-up 0.35s ease ${delay} both` }}>
+                            <span className="text-[#444]">{label}</span>
+                            <span className="font-mono font-bold" style={{ color }}>{value}</span>
                           </div>
-                        </>
-                      )}
-
-                      {isActive && (
-                        <span className="text-[11px] text-[#D4AF37] ml-1">Analyse de {sig.id}/USD en cours…</span>
-                      )}
+                        ))}
+                      </div>
                     </div>
-                  )
-                })}
+
+                    {/* Confidence bar */}
+                    <div className="mt-4" style={{ animation: 'fade-up 0.4s ease 0.9s both' }}>
+                      <div className="flex items-center justify-between text-[10px] mb-1.5">
+                        <span className="text-[#444]">Confiance IA</span>
+                        <span className="text-[#22c55e] font-bold">82%</span>
+                      </div>
+                      <div className="h-1 bg-[#181818] rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-[#22c55e] rounded-full"
+                          style={{ width: '82%', animation: 'tab-fill 0.6s ease 1s both' }}
+                        />
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
               </div>
 
-              <div className="px-4 pb-4">
-                <div className="h-0.5 bg-[#181818] rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-[#D4AF37]/60 to-[#D4AF37]/20 rounded-full" style={{ width: '26%' }} />
-                </div>
-                <p className="text-[10px] text-[#333] mt-1.5 font-mono">3 / 15 analysés</p>
+              {/* Dots indicator */}
+              <div className="flex gap-2 justify-center py-3 border-t border-[#111]">
+                {MODULES.map((m, i) => (
+                  <button
+                    key={m.id}
+                    onClick={() => switchTo(i)}
+                    className="h-[3px] rounded-full transition-all duration-500"
+                    style={{
+                      width:           active === i ? 20 : 6,
+                      backgroundColor: active === i ? m.color : '#1e1e1e',
+                    }}
+                  />
+                ))}
               </div>
+
             </div>
           </div>
 
@@ -168,10 +364,10 @@ export default function LandingPage() {
       <div className="border-y border-[#151515] bg-[#060606] py-8">
         <div className="max-w-4xl mx-auto px-5 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {[
-            { n: '15',    label: 'Cryptos analysées'  },
-            { n: '3',     label: 'Modules IA'          },
-            { n: '24/7',  label: 'Disponible'          },
-            { n: 'Claude',label: 'Modèle IA'           },
+            { n: '15',    label: 'Cryptos analysées' },
+            { n: '3',     label: 'Modules IA'         },
+            { n: '24/7',  label: 'Disponible'         },
+            { n: 'Claude',label: 'Modèle IA'          },
           ].map((s) => (
             <div key={s.label}>
               <p className="text-2xl font-black text-[#D4AF37]">{s.n}</p>
@@ -276,7 +472,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Comment ça marche ── */}
+      {/* ── Comment ca marche ── */}
       <section className="py-20 px-5 border-t border-[#151515]">
         <div className="max-w-3xl mx-auto text-center mb-12">
           <p className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-[4px] mb-4">Démarrage</p>
@@ -284,9 +480,9 @@ export default function LandingPage() {
         </div>
         <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-6">
           {[
-            { n: '1', title: 'Créez votre compte', desc: 'Inscription gratuite en 30 secondes. Aucune carte bancaire requise.' },
-            { n: '2', title: 'Choisissez un module', desc: 'Signaux Crypto, Assistant IA ou Analyse Graphique. Tout est disponible depuis le tableau de bord.' },
-            { n: '3', title: 'Prenez vos décisions', desc: "L'IA analyse et vous fournit des signaux clairs. A vous d'agir." },
+            { n: '1', title: 'Créez votre compte',    desc: 'Inscription gratuite en 30 secondes. Aucune carte bancaire requise.' },
+            { n: '2', title: 'Choisissez un module',  desc: 'Signaux Crypto, Assistant IA ou Analyse Graphique. Tout est disponible depuis le tableau de bord.' },
+            { n: '3', title: 'Prenez vos décisions',  desc: "L'IA analyse et vous fournit des signaux clairs. A vous d'agir." },
           ].map((step) => (
             <div key={step.n} className="relative text-center p-6">
               <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/25 flex items-center justify-center mx-auto mb-4">
@@ -303,10 +499,10 @@ export default function LandingPage() {
       <div className="border-t border-[#151515] py-8 px-5">
         <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-center gap-8 text-center">
           {[
-            { icon: <ShieldCheck className="w-4 h-4" />, label: 'Paiements sécurisés', sub: 'Stripe' },
-            { icon: <BarChart2   className="w-4 h-4" />, label: 'Données temps réel',  sub: 'Binance, Kraken' },
+            { icon: <ShieldCheck className="w-4 h-4" />, label: 'Paiements sécurisés', sub: 'Stripe'                  },
+            { icon: <BarChart2   className="w-4 h-4" />, label: 'Données temps réel',  sub: 'Binance, Kraken'         },
             { icon: <Check       className="w-4 h-4" />, label: 'Sans engagement',      sub: 'Résiliable à tout moment' },
-            { icon: <Zap         className="w-4 h-4" />, label: 'IA de pointe',         sub: 'Claude par Anthropic' },
+            { icon: <Zap         className="w-4 h-4" />, label: 'IA de pointe',         sub: 'Claude par Anthropic'    },
           ].map((t) => (
             <div key={t.label} className="flex items-center gap-2.5 text-left">
               <div className="text-[#D4AF37]/60">{t.icon}</div>
