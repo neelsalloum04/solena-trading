@@ -2,7 +2,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { Eye, EyeOff, Lock, Mail, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 
@@ -20,7 +20,6 @@ function LoginForm() {
   const [mfaCode, setMfaCode] = useState('')
   const [mfaLoading, setMfaLoading] = useState(false)
 
-  const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = useMemo(() => createClient(), [])
 
@@ -62,9 +61,7 @@ function LoginForm() {
         }
       }
 
-      toast.success('Bienvenue !')
-      router.push('/dashboard')
-      router.refresh()
+      window.location.href = '/analyse'
     } catch {
       toast.error('Une erreur est survenue. Réessayez.')
     } finally {
@@ -87,9 +84,7 @@ function LoginForm() {
         setMfaCode('')
         return
       }
-      toast.success('Bienvenue !')
-      router.push('/dashboard')
-      router.refresh()
+      window.location.href = '/analyse'
     } catch {
       toast.error('Erreur. Réessayez.')
     } finally {
