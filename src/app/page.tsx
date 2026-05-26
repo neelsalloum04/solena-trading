@@ -68,7 +68,7 @@ export default function LandingPage() {
           100% { opacity: 0 }
         }
         @keyframes scale-in { from { opacity: 0; transform: scale(0.94) } to { opacity: 1; transform: scale(1) } }
-        @keyframes scan-x   { from { left: -100% } to { left: 100% } }
+        @keyframes scan-x   { 0% { left: -22% } 100% { left: 110% } }
       `}</style>
 
       {/* ── Nav ── */}
@@ -350,128 +350,139 @@ export default function LandingPage() {
                     {/* Status */}
                     <div className="flex items-center gap-2" style={{ animation: 'fade-up 0.3s ease 0.1s both' }}>
                       <span className="w-1.5 h-1.5 bg-[#22c55e] rounded-full animate-pulse" />
-                      <span className="text-[10px] text-[#22c55e]">Graphique reçu · BTC/USD H1 · Analyse en cours</span>
+                      <span className="text-[10px] text-[#22c55e]">BTC/USD · H1 · Graphique reçu</span>
                     </div>
 
-                    {/* ── Phase 1 : chart thumbnail ── */}
+                    {/* ── Phase 1 : graphique ── */}
                     <div style={{ animation: 'scale-in 0.45s ease 0.25s both' }}>
-                      <div className="relative rounded-xl overflow-hidden border border-[#e2e2e2]" style={{ background: '#fff' }}>
+                      <div className="rounded-xl overflow-hidden border border-[#ddd] shadow-sm" style={{ background: '#fff' }}>
 
-                        {/* Mini header bar */}
-                        <div className="flex items-center justify-between px-2 py-1 border-b border-[#f0f0f0]" style={{ background: '#fafafa' }}>
-                          <span className="text-[7px] text-[#999] font-mono tracking-tight">BTC/USD · H1 · TradingView</span>
-                          <span className="text-[8px] font-bold text-[#ef4444] font-mono">76 814 $</span>
+                        {/* Header style TradingView */}
+                        <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-[#efefef]" style={{ background: '#f7f7f7' }}>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[7.5px] font-bold text-[#222]">BTC/USD</span>
+                            <span className="text-[7px] text-[#ccc]">·</span>
+                            <span className="text-[7px] text-[#888]">1H</span>
+                            <span className="text-[7px] text-[#ccc]">·</span>
+                            <span className="text-[7px] text-[#bbb]">26 mai 2026</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-[7px] text-[#999]">Clôture préc.</span>
+                            <span className="text-[7.5px] bg-[#ef4444] text-white font-bold px-1.5 py-0.5 rounded font-mono">76 814</span>
+                          </div>
                         </div>
 
-                        {/* SVG chart — reproduction fidèle du graphique BTC/USD H1 */}
-                        <svg viewBox="0 0 200 60" className="w-full" style={{ height: 72 }} preserveAspectRatio="none">
-                          <defs>
-                            <linearGradient id="btcFill" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="#ef4444" stopOpacity="0.22" />
-                              <stop offset="100%" stopColor="#ef4444" stopOpacity="0.02" />
-                            </linearGradient>
-                          </defs>
-                          {/* Horizontal grid lines */}
-                          {[15, 30, 45].map(y => (
-                            <line key={y} x1="0" y1={y} x2="200" y2={y} stroke="#f0f0f0" strokeWidth="0.5" />
-                          ))}
-                          {/* Price area fill */}
-                          <polygon
-                            points="0,4 5,10 11,22 17,34 22,40 26,49 33,54 37,50 42,51 47,53 50,55 58,52 67,51 72,53 75,54 83,55 90,53 95,55 100,55 103,57 106,59 109,55 117,51 125,48 133,45 140,42 150,40 160,38 167,37 172,31 178,25 183,27 188,29 192,30 196,30 200,30 200,60 0,60"
-                            fill="url(#btcFill)"
-                          />
-                          {/* Price line */}
-                          <polyline
-                            points="0,4 5,10 11,22 17,34 22,40 26,49 33,54 37,50 42,51 47,53 50,55 58,52 67,51 72,53 75,54 83,55 90,53 95,55 100,55 103,57 106,59 109,55 117,51 125,48 133,45 140,42 150,40 160,38 167,37 172,31 178,25 183,27 188,29 192,30 196,30 200,30"
-                            fill="none"
-                            stroke="#ef4444"
-                            strokeWidth="1.2"
-                            strokeLinejoin="round"
-                          />
-                          {/* Support line dashed */}
-                          <line x1="0" y1="57" x2="200" y2="57" stroke="#22c55e" strokeWidth="0.7" strokeDasharray="3,3" />
-                          {/* Resistance line dashed */}
-                          <line x1="0" y1="4" x2="60" y2="4" stroke="#ef4444" strokeWidth="0.7" strokeDasharray="3,3" />
-                          {/* Time labels */}
-                          <text x="1"   y="59" fontSize="3.5" fill="#bbb" fontFamily="monospace">02:00</text>
-                          <text x="63"  y="59" fontSize="3.5" fill="#bbb" fontFamily="monospace">04:00</text>
-                          <text x="127" y="59" fontSize="3.5" fill="#bbb" fontFamily="monospace">06:00</text>
-                          <text x="183" y="59" fontSize="3.5" fill="#bbb" fontFamily="monospace">08:00</text>
-                          {/* Price label at end */}
-                          <rect x="181" y="26" width="19" height="8" fill="#ef4444" rx="1" />
-                          <text x="183" y="32" fontSize="3.5" fill="white" fontFamily="monospace" fontWeight="bold">76 814</text>
-                        </svg>
+                        {/* SVG — width 100% height auto = aucune déformation */}
+                        <div className="relative">
+                          <svg
+                            viewBox="0 0 200 50"
+                            style={{ width: '100%', height: 'auto', display: 'block' }}
+                          >
+                            <defs>
+                              <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%"   stopColor="#ef4444" stopOpacity="0.18" />
+                                <stop offset="100%" stopColor="#ef4444" stopOpacity="0.01" />
+                              </linearGradient>
+                            </defs>
+                            {/* Grid */}
+                            {[12, 25, 38].map(y => (
+                              <line key={y} x1="0" y1={y} x2="200" y2={y} stroke="#f2f2f2" strokeWidth="0.5" />
+                            ))}
+                            {/* Support dashed vert */}
+                            <line x1="0" y1="48" x2="200" y2="48" stroke="#22c55e" strokeWidth="0.7" strokeDasharray="3,2" />
+                            {/* Résistance dashed rouge (portion gauche seulement) */}
+                            <line x1="0" y1="3.5" x2="70" y2="3.5" stroke="#ef4444" strokeWidth="0.7" strokeDasharray="3,2" opacity="0.5" />
+                            {/* Fill rose */}
+                            <polygon
+                              points="0,3.5 5,8 11,18 17,28 22,33 26,42 33,46 37,42 42,43 47,45 50,46 58,43 67,42 72,44 75,45 83,46 90,44 95,46 100,46 103,48 106,49 109,45 117,41 125,38 133,35 140,33 150,31 160,29 167,28 172,23 178,18 183,20 188,22 192,23 196,23 200,23 200,50 0,50"
+                              fill="url(#fillGrad)"
+                            />
+                            {/* Ligne rouge */}
+                            <polyline
+                              points="0,3.5 5,8 11,18 17,28 22,33 26,42 33,46 37,42 42,43 47,45 50,46 58,43 67,42 72,44 75,45 83,46 90,44 95,46 100,46 103,48 106,49 109,45 117,41 125,38 133,35 140,33 150,31 160,29 167,28 172,23 178,18 183,20 188,22 192,23 196,23 200,23"
+                              fill="none"
+                              stroke="#ef4444"
+                              strokeWidth="1.1"
+                              strokeLinejoin="round"
+                              strokeLinecap="round"
+                            />
+                          </svg>
 
-                        {/* Horizontal scan beam animation */}
-                        <div className="absolute top-7 left-0 right-0 h-full overflow-hidden pointer-events-none">
-                          <div className="absolute top-0 bottom-0 w-8"
-                            style={{
-                              background: 'linear-gradient(90deg, transparent, rgba(34,197,94,0.18), transparent)',
-                              animation: 'scan-x 1.6s ease-in-out 0.5s',
-                              left: '-100%',
-                            }} />
+                          {/* Scan beam horizontal */}
+                          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                            <div
+                              className="absolute top-0 bottom-0"
+                              style={{
+                                width: '22%',
+                                background: 'linear-gradient(90deg, transparent, rgba(34,197,94,0.2), transparent)',
+                                animation: 'scan-x 2.2s ease-in-out 0.5s',
+                                left: 0,
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Labels d'heure en HTML — pas de déformation, rendu net */}
+                        <div className="flex justify-between px-2 py-1 border-t border-[#f0f0f0]" style={{ background: '#fafafa' }}>
+                          {['02:00', '04:00', '06:00', '08:00'].map(t => (
+                            <span key={t} className="text-[7px] text-[#bbb] font-mono">{t}</span>
+                          ))}
                         </div>
 
                       </div>
                     </div>
 
-                    {/* ── Phase 2 : thinking indicator ── */}
+                    {/* ── Phase 2 : thinking ── */}
                     <div className="flex items-center gap-2"
                       style={{ animation: 'typing-hide 1.3s ease 1.1s forwards' }}>
-                      <div className="flex gap-1">
-                        {[0, 0.13, 0.26].map((d, i) => (
-                          <span key={i} className="w-1.5 h-1.5 bg-[#22c55e]/60 rounded-full block"
-                            style={{ animation: `dot-bounce 0.5s ease ${d}s infinite` }} />
-                        ))}
-                      </div>
-                      <span className="text-[10px] text-[#22c55e]">Identification des niveaux clés en cours…</span>
+                      {[0, 0.13, 0.26].map((d, i) => (
+                        <span key={i} className="w-1.5 h-1.5 bg-[#22c55e]/60 rounded-full block"
+                          style={{ animation: `dot-bounce 0.5s ease ${d}s infinite` }} />
+                      ))}
+                      <span className="text-[10px] text-[#555]">Identification des niveaux clés…</span>
                     </div>
 
                     {/* ── Phase 3 : résultats ── */}
-
-                    {/* Signal + tendance */}
-                    <div className="flex items-center justify-between" style={{ animation: 'fade-up 0.3s ease 2.6s both' }}>
+                    <div className="flex items-center justify-between"
+                      style={{ animation: 'fade-up 0.3s ease 2.6s both' }}>
                       <div>
-                        <p className="text-[8px] text-[#555] uppercase tracking-widest mb-0.5">Tendance H1</p>
+                        <p className="text-[8px] text-[#555] uppercase tracking-widest">Tendance H1</p>
                         <p className="text-[11px] font-black text-[#ef4444]">BAISSIERE</p>
-                        <p className="text-[9px] text-[#555]">Lower Highs · Lower Lows · Rebond en cours</p>
+                        <p className="text-[9px] text-[#444]">Lower Highs · Lower Lows · Rebond technique</p>
                       </div>
                       <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-[#ef4444]/15 text-[#ef4444]">VENDRE</span>
                     </div>
 
-                    {/* Key levels */}
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 pb-2 border-b border-[#141414]">
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 pb-2.5 border-b border-[#141414]">
                       {[
-                        { label: 'Support majeur',  val: '76 380 $', color: '#22c55e', note: 'creux du 26 mai · V-bottom',    delay: '3.0s' },
-                        { label: 'Résistance clé',  val: '77 200 $', color: '#ef4444', note: 'ouverture 02:00 · rejet fort',  delay: '3.3s' },
-                        { label: 'Zone de rebond',  val: '76 700 $', color: '#D4AF37', note: '– 76 900 $ (actuel)',           delay: '3.6s' },
-                        { label: 'Figure chartiste', val: 'Corr. V',  color: '#D4AF37', note: 'correction + rebond technique', delay: '3.9s' },
+                        { label: 'Support majeur',   val: '76 380 $', color: '#22c55e', note: 'creux 26 mai · V-bottom',   delay: '3.0s'  },
+                        { label: 'Résistance clé',   val: '77 200 $', color: '#ef4444', note: 'rejet 02:00 · niveau fort', delay: '3.35s' },
+                        { label: 'Zone de rebond',   val: '76 900 $', color: '#D4AF37', note: '76 700 – 76 900$ (actuel)', delay: '3.7s'  },
+                        { label: 'Figure chartiste', val: 'Corr. V',  color: '#D4AF37', note: 'retrace haussier H1',       delay: '4.05s' },
                       ].map(({ label, val, color, note, delay }) => (
                         <div key={label} style={{ animation: `fade-up 0.3s ease ${delay} both` }}>
                           <p className="text-[8px] text-[#444]">{label}</p>
                           <p className="text-[10px] font-mono font-bold" style={{ color }}>{val}</p>
-                          <p className="text-[8px] text-[#2e2e2e]">{note}</p>
+                          <p className="text-[8px] text-[#333] leading-tight">{note}</p>
                         </div>
                       ))}
                     </div>
 
-                    {/* Signal + scenario */}
-                    <div style={{ animation: 'fade-up 0.35s ease 4.4s both' }}>
-                      <p className="text-[8px] text-[#555] uppercase tracking-widest mb-1">Scénario privilégié</p>
-                      <p className="text-[10px] text-[#888] leading-relaxed">
-                        Rebond technique sur support 76 380$. Retest probable de 76 900-77 000$ avant reprise baissière. Short au retest avec SL 77 300$ et cible 76 380$.
+                    <div style={{ animation: 'fade-up 0.35s ease 4.5s both' }}>
+                      <p className="text-[8px] text-[#555] uppercase tracking-widest mb-1">Scénario</p>
+                      <p className="text-[10px] text-[#666] leading-relaxed">
+                        Rebond sur support 76 380$. Short au retest 76 900-77 000$ avec SL 77 300$. Cible principale : 76 200$.
                       </p>
                     </div>
 
-                    {/* Confidence */}
-                    <div style={{ animation: 'fade-up 0.4s ease 5.3s both' }}>
+                    <div style={{ animation: 'fade-up 0.4s ease 5.5s both' }}>
                       <div className="flex items-center justify-between text-[9px] mb-1.5">
                         <span className="text-[#444]">Confiance de l'analyse</span>
                         <span className="text-[#ef4444] font-bold">81%</span>
                       </div>
                       <div className="h-1 bg-[#181818] rounded-full overflow-hidden">
                         <div className="h-full bg-[#ef4444] rounded-full"
-                          style={{ width: '81%', animation: 'tab-fill 0.9s ease 5.7s both' }} />
+                          style={{ width: '81%', animation: 'tab-fill 0.9s ease 5.9s both' }} />
                       </div>
                     </div>
 
