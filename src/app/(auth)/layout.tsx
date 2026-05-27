@@ -29,20 +29,20 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           {/* Headline */}
           <div className="flex-1 flex flex-col justify-center">
             <h1 className="text-3xl font-bold text-[#F2EDD7] leading-snug mb-3">
-              Tradez Comme un<br />
-              <span className="text-[#D4AF37]">Hedge Fund</span>
+              Tradez mieux<br />
+              <span className="text-[#D4AF37]">grâce à l'IA</span>
             </h1>
             <p className="text-[#666] text-sm leading-relaxed mb-10">
-              Signaux IA institutionnels, bots automatisés et<br />
-              analyse de marché, tout en une plateforme.
+              Analyse de graphiques, signaux et assistant IA<br />
+              pour vous aider dans vos décisions de trading.
             </p>
 
             <ul className="space-y-3 mb-12">
               {[
-                '73%+ de taux de réussite sur les signaux IA',
-                'Bot de trading automatisé 24h/24',
-                'Forex, Crypto, Indices, Actions',
-                'Sécurité et chiffrement niveau bancaire',
+                'Signaux de marché générés par IA',
+                'Assistant IA pour vos questions trading',
+                'Analyse graphique assistée par IA',
+                'Données Forex, Crypto, Indices, Actions',
               ].map((item) => (
                 <li key={item} className="flex items-center gap-2.5 text-sm text-[#888]">
                   <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full flex-shrink-0" />
@@ -50,20 +50,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 </li>
               ))}
             </ul>
-
-            {/* Stats */}
-            <div className="flex items-center gap-6 pt-8 border-t border-[#1a1a1a]">
-              {[
-                { v: '2,4 Md€+', l: 'Volume' },
-                { v: '18 000+', l: 'Traders' },
-                { v: '73.2%',   l: 'Win Rate' },
-              ].map((s, i) => (
-                <div key={s.l} className={i > 0 ? 'border-l border-[#1a1a1a] pl-6' : ''}>
-                  <p className="text-lg font-bold text-[#D4AF37]">{s.v}</p>
-                  <p className="text-[11px] text-[#555]">{s.l}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>
