@@ -65,19 +65,28 @@ function ConfBar({ value, color }: { value: number; color?: string }) {
 
 // ─── Trading card ─────────────────────────────────────────────────────────────
 
+// Normalize a tp field that might come back as a string, object, or null
+function normalizeTP(raw: any): TPLevel | null {
+  if (!raw) return null
+  if (typeof raw === 'object' && raw.niveau) return { niveau: String(raw.niveau), probabilite: Number(raw.probabilite) || 0 }
+  if (typeof raw === 'string' && raw.trim()) return { niveau: raw.trim(), probabilite: 0 }
+  return null
+}
+
 function TradingCard({ analysis }: { analysis: Analysis }) {
-  const isBuy  = analysis.direction === 'BUY'
-  const isSell = analysis.direction === 'SELL'
+  const dir = (analysis.direction ?? '').toUpperCase()
+  const isBuy  = dir === 'BUY'
+  const isSell = dir === 'SELL'
   const dirColor  = isBuy ? '#22c55e' : isSell ? '#ef4444' : '#888'
   const dirBg     = isBuy ? 'rgba(34,197,94,0.08)'  : isSell ? 'rgba(239,68,68,0.08)'  : 'rgba(100,100,100,0.08)'
   const dirBorder = isBuy ? 'rgba(34,197,94,0.25)'  : isSell ? 'rgba(239,68,68,0.25)'  : 'rgba(100,100,100,0.2)'
   const dirLabel  = isBuy ? '↑  BUY'                : isSell ? '↓  SELL'               : '—  NEUTRE'
 
   const tps = [
-    { label: 'Take Profit 1', data: analysis.tp1, color: '#22c55e' },
-    { label: 'Take Profit 2', data: analysis.tp2, color: '#86efac' },
-    { label: 'Take Profit 3', data: analysis.tp3, color: '#bbf7d0' },
-  ]
+    { label: 'Take Profit 1', data: normalizeTP(analysis.tp1), color: '#22c55e' },
+    { label: 'Take Profit 2', data: normalizeTP(analysis.tp2), color: '#86efac' },
+    { label: 'Take Profit 3', data: normalizeTP(analysis.tp3), color: '#bbf7d0' },
+  ].filter(t => t.data !== null) as { label: string; data: TPLevel; color: string }[]
 
   return (
     <div className="bg-[#0e0e0e] border border-[#1c1c1c] rounded-xl overflow-hidden">

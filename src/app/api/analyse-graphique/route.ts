@@ -11,30 +11,30 @@ export const maxDuration = 60
 
 // ─── System prompt ────────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `Tu es un analyste technique. Analyse le graphique fourni et retourne le meilleur setup de trading en JSON pur.
+const SYSTEM_PROMPT = `Tu es un analyste technique. Retourne UNIQUEMENT un objet JSON avec le setup de trading du graphique.
 
-RÈGLE ABSOLUE : Réponds UNIQUEMENT en JSON valide. Zéro texte avant ou après.
+RÈGLE ABSOLUE : ta réponse doit être un JSON valide et rien d'autre — aucun texte avant ni après.
 
-━━━ JSON À RETOURNER ━━━
+Voici le format exact attendu (adapte les valeurs au graphique réel) :
 {
-  "marche": "paire ex: BTC/USD, EUR/USD, XAU/USD — Inconnu si illisible",
-  "timeframe": "ex: M1, M5, M15, H1, H4, D1 — ou 'multi-TF' si plusieurs graphiques — 'Non visible' si illisible",
-  "direction": "BUY | SELL | NEUTRE",
-  "confiance": <entier 0-100>,
-  "entree": "zone d'entrée précise ex: 104500-105000",
-  "sl": "niveau stop loss structurel ex: 103200",
-  "tp1": { "niveau": "premier objectif ex: 106000", "probabilite": <entier 0-100> },
-  "tp2": { "niveau": "deuxième objectif ex: 107500", "probabilite": <entier 0-100> },
-  "tp3": { "niveau": "extension ex: 109000", "probabilite": <entier 0-100> }
+  "marche": "BTC/USD",
+  "timeframe": "M5",
+  "direction": "BUY",
+  "confiance": 72,
+  "entree": "104500-105000",
+  "sl": "103200",
+  "tp1": { "niveau": "106000", "probabilite": 70 },
+  "tp2": { "niveau": "107500", "probabilite": 45 },
+  "tp3": { "niveau": "109000", "probabilite": 25 }
 }
 
-━━━ RÈGLES ━━━
-• direction BUY si structure/momentum haussier dominant — SELL si baissier — NEUTRE si range sans signal clair
-• probabilite TP = % de chance que le prix atteigne ce niveau avant de toucher le SL — toujours TP1 > TP2 > TP3
-• SL et TP ancrés sur des niveaux structurels réels (swings, liquidités, FVG, supports/résistances, ATR)
-• Si des indicateurs OHLCV calculés sont fournis dans le contexte → utilise ces valeurs pour calibrer les niveaux
-• confiance : 80+ si structure très claire, 60-75 si correct mais incertain, 40-55 si ambigu
-• Si plusieurs graphiques fournis → croiser les timeframes pour un setup plus fiable`
+Règles de remplissage :
+- "direction" : "BUY" si structure/momentum haussier dominant, "SELL" si baissier, "NEUTRE" si range strict sans signal
+- "confiance" : nombre entier 0-100 (80+ très clair, 60-75 correct, 40-55 ambigu)
+- "entree" : zone optimale pour entrer en position
+- "sl" : stop loss sous le dernier swing bas pour BUY, au-dessus du dernier swing haut pour SELL
+- "tp1", "tp2", "tp3" : niveaux progressifs — "probabilite" = % de chance que le prix atteigne ce niveau avant le SL, toujours décroissant
+- Si des indicateurs calculés sont fournis dans le contexte → utilise-les pour affiner les niveaux`
 
 // ─── Phase 1 : fast market identification ────────────────────────────────────
 
@@ -105,7 +105,7 @@ function buildPrompt(
       const sent = item.sentiment ? ` [${item.sentiment}]` : ''
       extra += `${i + 1}. ${item.source}${sent} : "${item.title}"\n`
     })
-    extra += `\nIntègre ces actualités dans tes scénarios si pertinent.\n`
+    extra += `\nTiens compte de ces actualités pour ajuster la direction et les niveaux.\n`
   }
 
   return extra ? SYSTEM_PROMPT + extra : SYSTEM_PROMPT
