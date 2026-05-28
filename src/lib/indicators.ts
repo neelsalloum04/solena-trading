@@ -167,7 +167,10 @@ interface OHLCVSource {
   displayPair: string
 }
 
-const CRYPTO_PREFIXES = ['BTC','ETH','SOL','BNB','XRP','ADA','DOGE','LINK','AVAX','MATIC','DOT','UNI','LTC','TRX','NEAR','ARB','OP','INJ','SUI']
+const CRYPTO_PREFIXES = [
+  'BTC','ETH','SOL','BNB','XRP','ADA','DOGE','LINK','AVAX','MATIC','DOT','UNI','LTC','TRX','NEAR','ARB','OP','INJ','SUI',
+  'ZEC','XLM','ALGO','FIL','HBAR','APT','CRO','SHIB','PEPE','WLD','JTO','PYTH','TIA','BONK','WIF',
+]
 
 const INDEX_YAHOO: Record<string, string> = {
   'NASDAQ': '^IXIC', 'NAS100': '^NDX', 'NDX': '^NDX', 'US100': '^NDX',
@@ -176,7 +179,14 @@ const INDEX_YAHOO: Record<string, string> = {
   'DAX': '^GDAXI', 'DAX40': '^GDAXI', 'GER40': '^GDAXI',
   'CAC': '^FCHI', 'CAC40': '^FCHI', 'FRA40': '^FCHI',
   'FTSE': '^FTSE', 'UK100': '^FTSE', 'FTSE100': '^FTSE',
-  'NIKKEI': '^N225', 'JPN225': '^N225',
+  'NIKKEI': '^N225', 'JPN225': '^N225', 'N225': '^N225', 'NIKKEI225': '^N225',
+  'HSI': '^HSI', 'HK50': '^HSI', 'HANGSENG': '^HSI',
+  'VIX': '^VIX', 'RUT': '^RUT', 'US2000': '^RUT',
+  // CME futures (Yahoo Finance continuous contracts)
+  'NQ': 'NQ=F', 'NQ1': 'NQ=F', 'MNQ': 'NQ=F',
+  'ES': 'ES=F', 'MES': 'ES=F',
+  'YM': 'YM=F', 'MYM': 'YM=F',
+  'RTY': 'RTY=F', 'M2K': 'RTY=F',
 }
 
 const VALID_FX = new Set(['EUR','USD','GBP','JPY','CHF','CAD','AUD','NZD','SEK','NOK','DKK','SGD','HKD','MXN','ZAR','TRY'])

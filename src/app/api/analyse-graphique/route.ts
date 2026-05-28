@@ -72,30 +72,44 @@ RÈGLE ABSOLUE : Réponds UNIQUEMENT en JSON valide. Zéro texte avant ou après
 
 // ─── Phase 1 : fast market identification ────────────────────────────────────
 
-const IDENTIFY_PROMPT = `Identifie uniquement la paire ou le marché visible sur ce graphique. Réponds UNIQUEMENT en JSON : {"marche":"EUR/USD"} ou {"marche":"Inconnu"} si illisible. Exemples : BTC/USD · EUR/USD · XAU/USD · NASDAQ · SPX500 · GBP/JPY`
+const IDENTIFY_PROMPT = `Identifie le marché et estime le prix médian visible sur ce graphique.
+Réponds UNIQUEMENT en JSON : {"marche":"EUR/USD","prix_approx":1.0850} ou {"marche":"Inconnu","prix_approx":null} si illisible.
+Exemples de marchés : BTC/USD · ETH/USD · EUR/USD · GBP/JPY · XAU/USD · XAG/USD · WTI · BRENT · NASDAQ · NAS100 · US100 · SPX500 · US500 · DOW · US30 · DAX · CAC40 · NQ · NQ1 · ES · YM · RTY · NIKKEI · N225 · HK50 · HSI`
 
-async function identifyMarket(ai: ReturnType<typeof requireAnthropic>, base64: string, mediaType: string): Promise<string> {
+async function identifyMarket(
+  ai: ReturnType<typeof requireAnthropic>,
+  base64: string,
+  mediaType: string,
+): Promise<{ market: string; approxPrice?: number }> {
   try {
     const res = await ai.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 40,
+      max_tokens: 80,
       system: IDENTIFY_PROMPT,
       messages: [{
         role: 'user',
         content: [
           { type: 'image', source: { type: 'base64', media_type: mediaType as any, data: base64 } },
-          { type: 'text', text: 'Identifie le marché.' },
+          { type: 'text', text: 'Identifie le marché et le prix visible.' },
         ],
       }],
     })
     const raw = res.content[0]?.type === 'text' ? res.content[0].text : ''
     const m = raw.indexOf('{'), n = raw.lastIndexOf('}')
-    if (m === -1 || n === -1) return 'Inconnu'
+    if (m === -1 || n === -1) return { market: 'Inconnu' }
     const json = JSON.parse(raw.slice(m, n + 1))
-    return json.marche ?? 'Inconnu'
+    const approxPrice = typeof json.prix_approx === 'number' && json.prix_approx > 0 ? json.prix_approx : undefined
+    return { market: json.marche ?? 'Inconnu', approxPrice }
   } catch {
-    return 'Inconnu'
+    return { market: 'Inconnu' }
   }
+}
+
+// Returns true if the live price and the price visible on the chart are in the same order of magnitude.
+// A 5× gap almost certainly means a misidentified market (e.g. NQ futures vs XAU/USD).
+function pricesCompatible(livePrice: number, chartPrice: number): boolean {
+  const ratio = livePrice / chartPrice
+  return ratio >= 0.2 && ratio <= 5.0
 }
 
 // ─── Build enriched system prompt ────────────────────────────────────────────
@@ -184,7 +198,7 @@ export async function POST(req: NextRequest) {
     // Phase 1 — identify market using the first image
     const first = imageList[0]
     const firstBase64 = first.imageBase64.includes(',') ? first.imageBase64.split(',')[1] : first.imageBase64
-    const detectedMarket = await identifyMarket(ai, firstBase64, first.mediaType)
+    const { market: detectedMarket, approxPrice: chartApproxPrice } = await identifyMarket(ai, firstBase64, first.mediaType)
 
     // Phase 2 — fetch price + news + indicators in parallel
     const [priceData, economicContext, indicatorBlock] = await Promise.all([
@@ -192,6 +206,16 @@ export async function POST(req: NextRequest) {
       fetchEconomicContext(detectedMarket).catch(() => ({ news: [], source: 'Alpha Vantage' })),
       buildIndicatorBlock(detectedMarket).catch(() => null),
     ])
+
+    // Discard indicators when the live price and visible chart price are incompatible —
+    // this catches misidentified markets (e.g. NQ futures labelled as XAU/USD).
+    let validatedPriceData = priceData
+    let validatedIndicatorBlock = indicatorBlock
+    if (chartApproxPrice && priceData && !pricesCompatible(priceData.price, chartApproxPrice)) {
+      console.warn(`[analyse] Price mismatch: live=${priceData.price} chart≈${chartApproxPrice} market=${detectedMarket} — discarding indicators`)
+      validatedPriceData = null
+      validatedIndicatorBlock = null
+    }
 
     // Phase 3 — build content blocks with all images
     const imgContentBlocks: any[] = []
@@ -206,10 +230,12 @@ export async function POST(req: NextRequest) {
       type: 'text',
       text: imageList.length > 1
         ? `Analyse ces ${imageList.length} graphiques ensemble. Identifie les convergences et divergences entre timeframes pour construire tes scénarios multi-TF.`
-        : 'Analyse ce graphique en utilisant les indicateurs calculés fournis dans le contexte.',
+        : validatedIndicatorBlock
+          ? 'Analyse ce graphique en utilisant les indicateurs calculés fournis dans le contexte.'
+          : 'Analyse ce graphique en te basant uniquement sur la lecture visuelle — aucun indicateur calculé n\'est disponible pour ce marché.',
     })
 
-    const enrichedPrompt = buildPrompt(detectedMarket, priceData, economicContext, indicatorBlock)
+    const enrichedPrompt = buildPrompt(detectedMarket, validatedPriceData, economicContext, validatedIndicatorBlock)
 
     const response = await ai.messages.create({
       model: 'claude-sonnet-4-6',
@@ -243,10 +269,10 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const hasIndicators = !!indicatorBlock
+    const hasIndicators = !!validatedIndicatorBlock
     console.log(`[analyse] tendance=${analysis.tendance} confiance=${analysis.confiance} marche=${analysis.marche} imgs=${imageList.length} indicators=${hasIndicators}`)
 
-    return NextResponse.json({ analysis, liveData: priceData, economicContext, hasIndicators })
+    return NextResponse.json({ analysis, liveData: validatedPriceData, economicContext, hasIndicators })
 
   } catch (error: any) {
     const msg = error?.message || 'Erreur interne'

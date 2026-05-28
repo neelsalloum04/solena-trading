@@ -41,6 +41,10 @@ const CRYPTO_TICKERS: Record<string, string> = {
   AVAX: 'AVAXUSDT', MATIC: 'MATICUSDT', LTC: 'LTCUSDT', UNI: 'UNIUSDT',
   DOGE: 'DOGEUSDT', ATOM: 'ATOMUSDT', TRX: 'TRXUSDT', NEAR: 'NEARUSDT',
   ARB: 'ARBUSDT', OP: 'OPUSDT', INJ: 'INJUSDT', SUI: 'SUIUSDT',
+  ZEC: 'ZECUSDT', XLM: 'XLMUSDT', ALGO: 'ALGOUSDT', FIL: 'FILUSDT',
+  HBAR: 'HBARUSDT', APT: 'APTUSDT', CRO: 'CROUSDT', SHIB: 'SHIBUSDT',
+  PEPE: 'PEPEUSDT', WLD: 'WLDUSDT', JTO: 'JTOUSDT', PYTH: 'PYTHUSDT',
+  TIA: 'TIAUSDT', BONK: 'BONKUSDT', WIF: 'WIFUSDT',
 }
 
 const INDEX_YAHOO: Record<string, string> = {
@@ -50,9 +54,14 @@ const INDEX_YAHOO: Record<string, string> = {
   'DAX': '^GDAXI', 'DAX40': '^GDAXI', 'GER40': '^GDAXI',
   'CAC': '^FCHI', 'CAC40': '^FCHI', 'FRA40': '^FCHI',
   'FTSE': '^FTSE', 'UK100': '^FTSE', 'FTSE100': '^FTSE',
-  'NIKKEI': '^N225', 'JPN225': '^N225', 'NI225': '^N225',
-  'HSI': '^HSI', 'HK50': '^HSI',
+  'NIKKEI': '^N225', 'JPN225': '^N225', 'NI225': '^N225', 'N225': '^N225', 'NIKKEI225': '^N225',
+  'HSI': '^HSI', 'HK50': '^HSI', 'HANGSENG': '^HSI',
   'VIX': '^VIX', 'RUT': '^RUT', 'US2000': '^RUT',
+  // CME futures (Yahoo Finance continuous contracts)
+  'NQ': 'NQ=F', 'NQ1': 'NQ=F', 'MNQ': 'NQ=F',
+  'ES': 'ES=F', 'MES': 'ES=F',
+  'YM': 'YM=F', 'MYM': 'YM=F',
+  'RTY': 'RTY=F', 'M2K': 'RTY=F',
 }
 
 // ─── Asset classifier ─────────────────────────────────────────────────────────
@@ -186,6 +195,10 @@ const COINGECKO_IDS: Record<string, string> = {
   AVAX: 'avalanche-2', MATIC: 'matic-network', LTC: 'litecoin', UNI: 'uniswap',
   DOGE: 'dogecoin', ATOM: 'cosmos', TRX: 'tron', NEAR: 'near',
   ARB: 'arbitrum', OP: 'optimism', INJ: 'injective-protocol', SUI: 'sui',
+  ZEC: 'zcash', XLM: 'stellar', ALGO: 'algorand', FIL: 'filecoin',
+  HBAR: 'hedera-hashgraph', APT: 'aptos', CRO: 'crypto-com-chain', SHIB: 'shiba-inu',
+  PEPE: 'pepe', WLD: 'worldcoin-wld', JTO: 'jito-governance-token', PYTH: 'pyth-network',
+  TIA: 'celestia', BONK: 'bonk', WIF: 'dogwifcoin',
 }
 
 async function coinGeckoQuote(ticker: string): Promise<{ price: number; prevClose: number } | null> {

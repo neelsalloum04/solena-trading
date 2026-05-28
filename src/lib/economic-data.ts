@@ -29,7 +29,11 @@ function toAlphaVantageTicker(market: string): string {
   }
   if (cryptoMap[m]) return cryptoMap[m]
   // Generic crypto prefix check
-  const cryptoPrefixes = ['BTC','ETH','SOL','BNB','XRP','ADA','DOGE','LINK','AVAX','MATIC','DOT','UNI','LTC','TRX']
+  const cryptoPrefixes = [
+    'BTC','ETH','SOL','BNB','XRP','ADA','DOGE','LINK','AVAX','MATIC','DOT','UNI','LTC','TRX',
+    'ZEC','XLM','ALGO','FIL','HBAR','APT','CRO','SHIB','PEPE','WLD','JTO','PYTH','TIA','BONK','WIF',
+    'NEAR','ARB','OP','INJ','SUI','ATOM',
+  ]
   for (const prefix of cryptoPrefixes) {
     if (m.startsWith(prefix)) return `CRYPTO:${prefix}`
   }
@@ -66,7 +70,9 @@ function toAlphaVantageTicker(market: string): string {
 
 function getAlphaVantageTopics(market: string): string {
   const m = market.toUpperCase()
-  if (m.includes('BTC') || m.includes('ETH') || m.includes('CRYPTO') || m.includes('SOL')) return 'blockchain,cryptocurrency'
+  // If toAlphaVantageTicker resolved a CRYPTO: ticker, this is definitely a crypto asset
+  const resolved = toAlphaVantageTicker(market)
+  if (resolved.startsWith('CRYPTO:')) return 'blockchain,cryptocurrency'
   if (m.includes('XAU') || m.includes('GOLD') || m.includes('XAG') || m.includes('OIL') || m.includes('WTI')) return 'financial_markets,economy_commodities'
   if (m.includes('NASDAQ') || m.includes('NAS') || m.includes('SPX') || m.includes('DOW')) return 'financial_markets,economy_macro'
   if (m.includes('USD') || m.includes('EUR') || m.includes('GBP') || m.includes('JPY')) return 'economy_monetary,economy_macro,financial_markets'
