@@ -11,64 +11,30 @@ export const maxDuration = 60
 
 // ─── System prompt ────────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `Tu es un analyste technique senior, objectif et sans biais directionnel. Tu analyses les marchés financiers avec rigueur et présentes PLUSIEURS SCÉNARIOS possibles avec leurs probabilités et conditions de déclenchement. Tu ne donnes jamais d'instruction directe d'achat ou de vente.
+const SYSTEM_PROMPT = `Tu es un analyste technique. Analyse le graphique fourni et retourne le meilleur setup de trading en JSON pur.
 
 RÈGLE ABSOLUE : Réponds UNIQUEMENT en JSON valide. Zéro texte avant ou après.
-
-━━━ MÉTHODE D'ANALYSE (dans cet ordre) ━━━
-① Si plusieurs graphiques sont fournis (multi-timeframes ou multi-actifs) → analyse chaque graphique et croise les informations pour renforcer ou invalider les scénarios
-② Identifie la paire/marché et le(s) timeframe(s) visibles
-③ Si des INDICATEURS TECHNIQUES CALCULÉS sont fournis dans le contexte → utilise ces valeurs exactes (EMA, RSI, ATR, supports, résistances). Ne les ré-estime pas depuis l'image.
-④ Identifie les niveaux clés : supports, résistances, zones de liquidité, FVG/imbalances
-⑤ Construis 2 ou 3 scénarios objectifs (haussier, baissier, neutre) avec leurs probabilités et arguments factuels
-⑥ Les probabilités des 3 scénarios doivent totaliser exactement 100
-⑦ Si contexte macro/news fourni → intègre-le dans l'analyse des scénarios
-
-━━━ RÈGLES IMPORTANTES ━━━
-⚠ NE DIS PAS "achète", "vends", "BUY", "SELL" — présente les scénarios objectivement avec des conditions
-⚠ Chaque scénario actif (probabilite > 0) doit avoir un déclencheur précis et vérifiable
-⚠ Les niveaux SL/TP sont basés sur les données calculées fournies (ATR, swings) — pas inventés
-⚠ Si le scénario neutre n'est pas pertinent, mets probabilite: 0 et arguments: []
-⚠ confiance : honnête — 80+ si structure très claire, 60-75 si correct mais incertain, 40-55 si ambigu
 
 ━━━ JSON À RETOURNER ━━━
 {
   "marche": "paire ex: BTC/USD, EUR/USD, XAU/USD — Inconnu si illisible",
-  "timeframe": "ex: M15, H1, H4, D1 — ou 'multi-TF' si plusieurs graphiques — 'Non visible' si illisible",
-  "tendance": "HAUSSIÈRE | BAISSIÈRE | NEUTRE | CONSOLIDATION | RETOURNEMENT POSSIBLE",
+  "timeframe": "ex: M1, M5, M15, H1, H4, D1 — ou 'multi-TF' si plusieurs graphiques — 'Non visible' si illisible",
+  "direction": "BUY | SELL | NEUTRE",
   "confiance": <entier 0-100>,
-  "structure": "description concise de la structure de marché (BOS / CHoCH / continuation / sweep / range)",
-  "zones": "niveaux clés identifiés : supports et résistances avec prix approximatifs",
-  "scenario_haussier": {
-    "probabilite": <entier 0-100>,
-    "arguments": ["argument 1 citant des données réelles", "argument 2", "argument 3"],
-    "entree": "zone d'entrée longue ex: 42000-42500 | null si non pertinent",
-    "sl": "stop loss logique | null",
-    "tp1": "premier objectif | null",
-    "tp2": "deuxième objectif | null",
-    "tp3": "extension si forte impulsion | null",
-    "ratio_rr": "ex: 1:2.5 (sur TP1) | null",
-    "declencheur": "condition exacte et vérifiable pour valider ce scénario | null"
-  },
-  "scenario_baissier": {
-    "probabilite": <entier 0-100>,
-    "arguments": ["argument 1 citant des données réelles", "argument 2", "argument 3"],
-    "entree": "zone d'entrée courte | null si non pertinent",
-    "sl": "stop loss logique | null",
-    "tp1": "premier objectif | null",
-    "tp2": "deuxième objectif | null",
-    "tp3": "extension si forte impulsion | null",
-    "ratio_rr": "ex: 1:2.0 (sur TP1) | null",
-    "declencheur": "condition exacte et vérifiable pour valider ce scénario | null"
-  },
-  "scenario_neutre": {
-    "probabilite": <entier 0-100>,
-    "arguments": ["argument si pertinent — sinon tableau vide"],
-    "declencheur": "condition de résolution (cassure d'un côté ou de l'autre) | null"
-  },
-  "analyse": "3-4 phrases de synthèse objective : tendance actuelle, niveaux structurants, scénario dominant et sa condition de déclenchement. Référence les données calculées si fournies.",
-  "manque": null | "info manquante : timeframe illisible / image floue / contexte HTF absent / etc."
-}`
+  "entree": "zone d'entrée précise ex: 104500-105000",
+  "sl": "niveau stop loss structurel ex: 103200",
+  "tp1": { "niveau": "premier objectif ex: 106000", "probabilite": <entier 0-100> },
+  "tp2": { "niveau": "deuxième objectif ex: 107500", "probabilite": <entier 0-100> },
+  "tp3": { "niveau": "extension ex: 109000", "probabilite": <entier 0-100> }
+}
+
+━━━ RÈGLES ━━━
+• direction BUY si structure/momentum haussier dominant — SELL si baissier — NEUTRE si range sans signal clair
+• probabilite TP = % de chance que le prix atteigne ce niveau avant de toucher le SL — toujours TP1 > TP2 > TP3
+• SL et TP ancrés sur des niveaux structurels réels (swings, liquidités, FVG, supports/résistances, ATR)
+• Si des indicateurs OHLCV calculés sont fournis dans le contexte → utilise ces valeurs pour calibrer les niveaux
+• confiance : 80+ si structure très claire, 60-75 si correct mais incertain, 40-55 si ambigu
+• Si plusieurs graphiques fournis → croiser les timeframes pour un setup plus fiable`
 
 // ─── Phase 1 : fast market identification ────────────────────────────────────
 
@@ -229,10 +195,10 @@ export async function POST(req: NextRequest) {
     imgContentBlocks.push({
       type: 'text',
       text: imageList.length > 1
-        ? `Analyse ces ${imageList.length} graphiques ensemble. Identifie les convergences et divergences entre timeframes pour construire tes scénarios multi-TF.`
+        ? `Analyse ces ${imageList.length} graphiques ensemble et retourne un seul setup de trading JSON en croisant les timeframes.`
         : validatedIndicatorBlock
-          ? 'Analyse ce graphique en utilisant les indicateurs calculés fournis dans le contexte.'
-          : 'Analyse ce graphique en te basant uniquement sur la lecture visuelle — aucun indicateur calculé n\'est disponible pour ce marché.',
+          ? 'Analyse ce graphique avec les indicateurs calculés fournis et retourne le setup JSON.'
+          : 'Analyse ce graphique visuellement et retourne le setup JSON.',
     })
 
     const enrichedPrompt = buildPrompt(detectedMarket, validatedPriceData, economicContext, validatedIndicatorBlock)
