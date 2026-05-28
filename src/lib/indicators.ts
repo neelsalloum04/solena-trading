@@ -127,7 +127,7 @@ export async function timedFetch(url: string, ms = 8000): Promise<Response> {
   } finally { clearTimeout(t) }
 }
 
-export async function fetchBinanceKlines(symbol: string, interval: '1h' | '4h', limit = 200): Promise<Candle[]> {
+export async function fetchBinanceKlines(symbol: string, interval: '5m' | '1h' | '4h' | '1d', limit = 200): Promise<Candle[]> {
   try {
     const res = await timedFetch(
       `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
@@ -141,10 +141,10 @@ export async function fetchBinanceKlines(symbol: string, interval: '1h' | '4h', 
   } catch { return [] }
 }
 
-export async function fetchYahooKlines(symbol: string): Promise<Candle[]> {
+export async function fetchYahooKlines(symbol: string, interval = '60m', range = '60d'): Promise<Candle[]> {
   try {
     const res = await timedFetch(
-      `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=60m&range=60d`
+      `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=${interval}&range=${range}`
     )
     if (!res.ok) return []
     const data = await res.json()
@@ -248,20 +248,24 @@ export async function buildIndicatorBlock(market: string): Promise<string | null
   const src = resolveOHLCVSource(market)
   if (!src) return null
 
-  let h1: Candle[], h4: Candle[]
+  let m5: Candle[] = [], h1: Candle[], d1: Candle[] = []
 
   if (src.binanceSymbol) {
-    ;[h1, h4] = await Promise.all([
+    ;[m5, h1, d1] = await Promise.all([
+      fetchBinanceKlines(src.binanceSymbol, '5m', 200),
       fetchBinanceKlines(src.binanceSymbol, '1h', 200),
-      fetchBinanceKlines(src.binanceSymbol, '4h', 100),
+      fetchBinanceKlines(src.binanceSymbol, '1d', 60),
     ])
   } else {
-    h1 = await fetchYahooKlines(src.yahooSymbol)
-    h4 = aggregate4h(h1)
+    ;[h1, d1] = await Promise.all([
+      fetchYahooKlines(src.yahooSymbol, '60m', '60d'),
+      fetchYahooKlines(src.yahooSymbol, '1d', '60d'),
+    ])
   }
 
   if (h1.length < 50) return null
 
+  const h4 = aggregate4h(h1)
   const { h1: i1, h4: i4 } = computeIndicators(h1, h4.length >= 20 ? h4 : aggregate4h(h1))
 
   const dec = pxDecimals(i1.close)
@@ -277,16 +281,59 @@ export async function buildIndicatorBlock(market: string): Promise<string | null
     ? ((i1.close - h1[h1.length - 24].close) / h1[h1.length - 24].close) * 100
     : 0
 
-  return [
+  const avgVolH1 = h1.slice(-24).reduce((s, c) => s + c.volume, 0) / Math.min(24, h1.length)
+
+  const lines: string[] = [
     `━━━ INDICATEURS TECHNIQUES CALCULÉS (données OHLCV réelles — utilise ces valeurs exactes) ━━━`,
     `Marché : ${src.displayPair} | Prix actuel : ${px(i1.close)} | Δ24h : ${change24h >= 0 ? '+' : ''}${change24h.toFixed(2)}%`,
-    `H1 (${h1.length} bougies) → EMA20 : ${px(i1.ema20)} | EMA50 : ${px(i1.ema50)} | RSI : ${i1.rsi.toFixed(1)} | ATR : ${px(i1.atr)}`,
+  ]
+
+  // M5 block (available for crypto via Binance)
+  if (m5.length >= 50) {
+    const closes5 = m5.map(c => c.close)
+    const ema20m5 = calcEMA(closes5, 20)
+    const ema50m5 = calcEMA(closes5, 50)
+    const rsiM5   = calcRSI(closes5)
+    const atrM5   = calcATR(m5)
+    const close5  = m5.at(-1)!.close
+    const trendM5 = calcTrend(close5, ema20m5, ema50m5)
+    const sw5     = calcSwings(m5, 30)
+    const avgVol5 = m5.slice(-20).reduce((s, c) => s + c.volume, 0) / 20
+    lines.push(
+      `M5 (${m5.length} bougies) → EMA20 : ${px(ema20m5)} | EMA50 : ${px(ema50m5)} | RSI : ${rsiM5.toFixed(1)} | ATR : ${px(atrM5)} | Tendance : ${trendM5}`,
+      `Résistance M5 : ${px(sw5.high)} | Support M5 : ${px(sw5.low)} | Volume moyen M5 : ${avgVol5.toFixed(2)}`,
+    )
+  }
+
+  lines.push(
+    `H1 (${h1.length} bougies) → EMA20 : ${px(i1.ema20)} | EMA50 : ${px(i1.ema50)} | RSI : ${i1.rsi.toFixed(1)} | ATR : ${px(i1.atr)} | Vol moy H1 : ${avgVolH1.toFixed(2)}`,
     `H4 (${h4.length} bougies) → EMA20 : ${px(i4.ema20)} | EMA50 : ${px(i4.ema50)} | RSI : ${i4.rsi.toFixed(1)}`,
-    `Résistance H1 (30 dernières bougies) : ${px(i1.swingHigh)} | Support H1 : ${px(i1.swingLow)}`,
-    `Résistance H4 (20 dernières bougies) : ${px(i4.swingHigh)} | Support H4 : ${px(i4.swingLow)}`,
-    `Tendance H1 : ${i1.trend} | Tendance H4 : ${i4.trend} | Biais global : ${globalTrend}`,
+    `Résistance H1 : ${px(i1.swingHigh)} | Support H1 : ${px(i1.swingLow)}`,
+    `Résistance H4 : ${px(i4.swingHigh)} | Support H4 : ${px(i4.swingLow)}`,
+  )
+
+  // D1 block
+  if (d1.length >= 20) {
+    const closes1d = d1.map(c => c.close)
+    const ema20d1  = calcEMA(closes1d, 20)
+    const ema50d1  = calcEMA(closes1d, Math.min(50, closes1d.length))
+    const rsiD1    = calcRSI(closes1d)
+    const atrD1    = calcATR(d1)
+    const closeD1  = d1.at(-1)!.close
+    const trendD1  = calcTrend(closeD1, ema20d1, ema50d1)
+    const swD1     = calcSwings(d1, 20)
+    lines.push(
+      `D1 (${d1.length} bougies) → EMA20 : ${px(ema20d1)} | EMA50 : ${px(ema50d1)} | RSI : ${rsiD1.toFixed(1)} | ATR : ${px(atrD1)} | Tendance : ${trendD1}`,
+      `Résistance D1 : ${px(swD1.high)} | Support D1 : ${px(swD1.low)}`,
+    )
+  }
+
+  lines.push(
+    `Tendance M5 : ${m5.length >= 50 ? calcTrend(m5.at(-1)!.close, calcEMA(m5.map(c=>c.close),20), calcEMA(m5.map(c=>c.close),50)) : 'N/A'} | Tendance H1 : ${i1.trend} | Tendance H4 : ${i4.trend} | Biais global : ${globalTrend}`,
     `⚠ Ces chiffres sont calculés depuis des données réelles. Ne les ré-estime pas depuis l'image — interprète-les.`,
-  ].join('\n')
+  )
+
+  return lines.join('\n')
 }
 
 // ─── Compact summary for signal-engine ───────────────────────────────────────
