@@ -607,23 +607,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Stats ── */}
-      <div className="border-y border-[#151515] bg-[#060606] py-8">
-        <div className="max-w-4xl mx-auto px-5 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          {[
-            { n: '15',    label: 'Cryptos analysées' },
-            { n: '3',     label: 'Modules IA'         },
-            { n: '24/7',  label: 'Disponible'         },
-            { n: 'Claude',label: 'Modèle IA'          },
-          ].map((s) => (
-            <div key={s.label}>
-              <p className="text-2xl font-black text-[#D4AF37]">{s.n}</p>
-              <p className="text-xs font-medium text-[#555] mt-1">{s.label}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* ── Modules ── */}
       <section className="py-24 px-5">
         <div className="max-w-5xl mx-auto">
