@@ -34,6 +34,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" translate="no" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable}`}>
+      {/* Apply saved theme before first paint to prevent flash */}
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='light')document.documentElement.classList.add('light')}catch(e){}})()` }} />
+      </head>
       <body suppressHydrationWarning>
         {children}
         <CookieBanner />
