@@ -3,7 +3,6 @@ import { checkRateLimit } from '@/lib/ai/ratelimit'
 import { getMaxTokens, getModel, routeMessage } from '@/lib/ai/router'
 import { requireAnthropic, SYSTEM_FAST, SYSTEM_SMART } from '@/lib/anthropic/client'
 import { getUserFromRequest } from '@/lib/supabase/auth-api'
-import { createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
@@ -48,21 +47,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { message = '', imageUrl, history = [], plan = 'free' } = body
 
-    // ── Token balance check ─────────────────────────────────────────
     const { user } = await getUserFromRequest(req)
-    const adminDb  = await createAdminClient()
-
-    if (user) {
-      const { data: profile } = await adminDb
-        .from('profiles')
-        .select('token_balance')
-        .eq('id', user.id)
-        .single()
-
-      if (profile && profile.token_balance <= 0) {
-        return NextResponse.json({ error: 'token_balance_empty' }, { status: 402 })
-      }
-    }
 
     // ── Rate limiting (IP-based daily quotas) ──────────────────────
     const ip = getClientIp(req)
@@ -133,21 +118,13 @@ export async function POST(req: NextRequest) {
     const response = await ai.messages.create({ model, max_tokens: maxTokens, system, messages })
     const content = response.content[0]?.type === 'text' ? response.content[0].text : ''
 
-    // ── Token deduction ─────────────────────────────────────────────
-    const usage       = response.usage
-    const tokensUsed  = usage.input_tokens + usage.output_tokens
-    console.log(`[chat] model=${model} in=${usage.input_tokens} out=${usage.output_tokens} tier=${tier}`)
-
-    let newBalance: number | null = null
-    if (user) {
-      const { data } = await adminDb.rpc('deduct_tokens', { p_user_id: user.id, p_amount: tokensUsed })
-      if (typeof data === 'number') newBalance = data
-    }
+    const tokensUsed = response.usage.input_tokens + response.usage.output_tokens
+    console.log(`[chat] model=${model} in=${response.usage.input_tokens} out=${response.usage.output_tokens} tier=${tier}`)
 
     // ── Cache response ──────────────────────────────────────────────
     if (cacheable) setCached(message, content, model)
 
-    return NextResponse.json({ content, model, quota: rateLimit, newBalance, tokensUsed })
+    return NextResponse.json({ content, model, quota: rateLimit, tokensUsed })
   } catch (error: any) {
     const isConfig = error.message?.includes('non configuré')
     const errMsg = error?.error?.error?.message || error?.message || 'Erreur inconnue'
