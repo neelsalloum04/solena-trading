@@ -39,7 +39,6 @@ FORFAITS :
 - Starter X (39€/mois) : tous modules, 1M tokens/mois
 - Pro X (99€/mois) : tous modules, 3M tokens/mois
 - Expert X (199€/mois) : tous modules, 8M tokens/mois
-- PrimeX (699€/mois) : tous modules, 50M tokens/mois, accès prioritaire
 
 PROBLÈMES FRÉQUENTS :
 - Signaux affichent 0 résultats : temporairement, l'API Binance peut être indisponible. Réessaie dans 1–2 min.

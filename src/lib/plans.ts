@@ -192,4 +192,4 @@ export const PLAN_META: Record<Exclude<PlanId, 'admin'>, PlanMeta> = {
   },
 }
 
-export const PLANS_DISPLAY = Object.values(PLAN_META).filter(p => p.id !== 'free')
+export const PLANS_DISPLAY = Object.values(PLAN_META).filter(p => p.id !== 'free' && p.id !== 'premium')

@@ -27,7 +27,6 @@ export default function CGUPage() {
         <p><strong className="text-[#38bdf8]">Starter X (39€/mois) :</strong> Tous les modules PrimeX, 1 million de tokens IA/mois, IA de dernière génération, mises à jour incluses.</p>
         <p><strong className="text-[#D4AF37]">Pro X (99€/mois) :</strong> Tous les modules PrimeX, 3 millions de tokens IA/mois, IA de dernière génération, mises à jour incluses.</p>
         <p><strong className="text-[#a78bfa]">Expert X (199€/mois) :</strong> Tous les modules PrimeX, 8 millions de tokens IA/mois, IA de dernière génération, mises à jour incluses.</p>
-        <p><strong className="text-[#22c55e]">PrimeX (699€/mois) :</strong> Tous les modules PrimeX, 50 millions de tokens IA/mois, IA de dernière génération, accès prioritaire aux nouveautés, mises à jour incluses.</p>
       </Section>
 
       <Section title="4. Gestion des abonnements">
