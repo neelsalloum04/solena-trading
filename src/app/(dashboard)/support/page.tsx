@@ -1,79 +1,10 @@
 'use client'
 import { useTokens } from '@/contexts/TokenContext'
 import { cn } from '@/lib/utils'
-import { ChevronDown, ExternalLink, HelpCircle, Mail, MessageSquare, Send, Shield } from 'lucide-react'
+import { ExternalLink, Mail, MessageSquare, Send, Shield } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
-const FAQ: { q: string; a: string; category: string }[] = [
-  {
-    category: 'Abonnements',
-    q: 'Comment fonctionne la facturation ?',
-    a: 'La facturation est mensuelle et se renouvelle automatiquement à la date anniversaire de votre abonnement. Vous recevez une confirmation par email avant chaque renouvellement.',
-  },
-  {
-    category: 'Abonnements',
-    q: 'Puis-je annuler à tout moment ?',
-    a: "Oui, vous pouvez annuler votre abonnement à tout moment depuis Paramètres → Abonnement. L'annulation prend effet à la fin de la période en cours. Vous conservez l'accès jusqu'à cette date.",
-  },
-  {
-    category: 'Abonnements',
-    q: 'Puis-je changer de forfait en cours de mois ?',
-    a: 'Oui. Un upgrade est effectif immédiatement avec facturation au prorata. Un downgrade prend effet au prochain cycle de facturation.',
-  },
-  {
-    category: 'Abonnements',
-    q: 'Acceptez-vous des remboursements ?',
-    a: "Les abonnements ne sont généralement pas remboursables pour les périodes partielles. En cas de problème technique avéré de notre côté, contactez notre support pour une solution au cas par cas.",
-  },
-  {
-    category: 'Analyse IA',
-    q: 'Quels types de graphiques puis-je analyser ?',
-    a: "PrimeX accepte les captures d'écran de graphiques depuis TradingView, MT4, MT5, Binance, Bybit, cTrader et toute autre plateforme. L'image doit clairement montrer les chandeliers, le cours et idéalement des niveaux de support/résistance.",
-  },
-  {
-    category: 'Analyse IA',
-    q: 'Combien d\'analyses puis-je effectuer ?',
-    a: "Starter : 3 analyses/jour. Pro : 50 analyses/jour. Prime : illimité. Les quotas se réinitialisent chaque jour à minuit (UTC).",
-  },
-  {
-    category: 'Analyse IA',
-    q: "L'IA peut-elle se tromper dans ses analyses ?",
-    a: "Oui, absolument. Les analyses IA sont fournies à titre informatif et éducatif uniquement. Elles ne constituent pas des conseils financiers. Effectuez toujours votre propre analyse avant de prendre une décision.",
-  },
-  {
-    category: 'Signaux',
-    q: "D'où proviennent les signaux ?",
-    a: "Les signaux sont générés par notre moteur IA qui analyse en temps réel plusieurs indicateurs techniques (RSI, MACD, Bollinger, volume, niveaux clés) sur plusieurs marchés. Ils sont mis à jour toutes les 5 minutes.",
-  },
-  {
-    category: 'Signaux',
-    q: 'Les signaux sont-ils fiables à 100% ?',
-    a: "Non. Aucun signal ne garantit un résultat. Le taux de confiance indiqué reflète la conviction algorithmique, pas une probabilité de succès garantie. Utilisez les signaux comme un outil d'aide à la décision, pas comme une instruction d'achat.",
-  },
-  {
-    category: 'Bot de trading',
-    q: 'Le bot utilise-t-il de vrais fonds ?',
-    a: "Le mode Paper Trading simule des transactions avec des prix réels mais sans fonds réels — idéal pour tester. Le mode Live exécute de vraies ordres sur votre compte Binance. Ce mode n'est disponible qu'avec une clé API Binance et le forfait Prime.",
-  },
-  {
-    category: 'Bot de trading',
-    q: 'Comment connecter Binance en toute sécurité ?',
-    a: "Créez une clé API dédiée dans Binance avec uniquement les permissions « Spot Trading ». N'activez jamais le retrait dans les permissions. Utilisez des restrictions IP pour plus de sécurité.",
-  },
-  {
-    category: 'Technique',
-    q: "L'application fonctionne-t-elle sur mobile ?",
-    a: "Oui, PrimeX est entièrement responsive et optimisée pour mobile, tablette et desktop.",
-  },
-  {
-    category: 'Technique',
-    q: 'Mes données sont-elles sécurisées ?',
-    a: "Oui. Toutes les communications sont chiffrées via TLS. Les clés API broker sont stockées de manière sécurisée. PrimeX ne stocke jamais vos données bancaires (gérées par Stripe). Consultez notre Politique de Confidentialité pour les détails.",
-  },
-]
-
-const CATEGORIES = ['Tous', ...Array.from(new Set(FAQ.map(f => f.category)))]
 
 interface ChatMsg {
   role: 'user' | 'assistant'
@@ -94,16 +25,11 @@ const QUICK_QUESTIONS = [
 
 export default function SupportPage() {
   const { syncBalance } = useTokens()
-  const [open, setOpen] = useState<number | null>(null)
-  const [activeCategory, setActiveCategory] = useState('Tous')
-
   // Chatbot state
   const [messages, setMessages] = useState<ChatMsg[]>([WELCOME])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
-
-  const filtered = FAQ.filter(f => activeCategory === 'Tous' || f.category === activeCategory)
 
   useEffect(() => {
     const el = messagesContainerRef.current
@@ -258,53 +184,6 @@ export default function SupportPage() {
               contact@ecomstartprofits.com
             </a>
           </p>
-        </div>
-      </div>
-
-      {/* FAQ */}
-      <div>
-        <div className="flex items-center gap-2 mb-5">
-          <HelpCircle className="w-4 h-4 text-[#D4AF37]" />
-          <h2 className="text-sm font-bold text-white uppercase tracking-wider">Questions fréquentes</h2>
-        </div>
-
-        <div className="flex flex-wrap gap-2 mb-5">
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={cn(
-                'text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all',
-                activeCategory === cat
-                  ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37]'
-                  : 'bg-[#0a0a0a] border-[#1a1a1a] text-[#555] hover:text-[#888]'
-              )}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        <div className="space-y-2">
-          {filtered.map((item, i) => (
-            <div key={i} className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl overflow-hidden">
-              <button
-                onClick={() => setOpen(open === i ? null : i)}
-                className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-[#0f0f0f] transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-[9px] font-bold text-[#444] border border-[#222] px-2 py-0.5 rounded-md uppercase tracking-wide">{item.category}</span>
-                  <span className="text-sm font-medium text-white">{item.q}</span>
-                </div>
-                <ChevronDown className={cn('w-4 h-4 text-[#444] flex-shrink-0 transition-transform ml-3', open === i && 'rotate-180')} />
-              </button>
-              {open === i && (
-                <div className="px-5 pb-5 text-sm text-[#777] leading-relaxed border-t border-[#111] pt-4">
-                  {item.a}
-                </div>
-              )}
-            </div>
-          ))}
         </div>
       </div>
 
