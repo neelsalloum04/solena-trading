@@ -8,24 +8,6 @@ export const metadata: Metadata = {
   description: 'Starter X, Pro X, Expert X ou Prime X. Sans engagement, résiliable à tout moment.',
 }
 
-const FAQ = [
-  {
-    q: "Puis-je annuler à tout moment ?",
-    a: "Oui. Vous pouvez annuler votre abonnement depuis Paramètres → Abonnement. L'accès reste actif jusqu'à la fin de la période facturée.",
-  },
-  {
-    q: "Y a-t-il un engagement ?",
-    a: "Aucun. Les abonnements mensuels sont sans durée minimale supplémentaire.",
-  },
-  {
-    q: "Les paiements sont-ils sécurisés ?",
-    a: "Oui. Les paiements sont traités par Stripe, certifié PCI-DSS. PrimeX ne stocke aucune donnée bancaire.",
-  },
-  {
-    q: "Est-ce que les outils IA donnent des conseils financiers ?",
-    a: "Non. Les analyses et signaux ont une vocation éducative et informative uniquement. Ils ne constituent pas des conseils en investissement.",
-  },
-]
 
 export default function PlansPage() {
   return (
@@ -51,19 +33,6 @@ export default function PlansPage() {
         <Link href="/signup" className="inline-flex items-center gap-1 text-xs text-[#D4AF37] mt-2 hover:underline">
           <Zap className="w-3 h-3" /> Créer un compte gratuit
         </Link>
-      </div>
-
-      {/* FAQ */}
-      <div>
-        <h2 className="text-lg font-bold text-[#F2EDD7] mb-6 text-center">Questions fréquentes</h2>
-        <div className="space-y-4 max-w-2xl mx-auto">
-          {FAQ.map(({ q, a }) => (
-            <div key={q} className="bg-[#0e0e0e] border border-[#1a1a1a] rounded-xl p-5">
-              <p className="text-sm font-semibold text-[#F2EDD7] mb-2">{q}</p>
-              <p className="text-sm text-[#666] leading-relaxed">{a}</p>
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* Risk disclaimer */}
