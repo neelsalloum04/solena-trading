@@ -3,8 +3,10 @@ import { fetchLivePrice } from '@/lib/market-data'
 import { fetchEconomicContext } from '@/lib/economic-data'
 import { buildIndicatorBlock } from '@/lib/indicators'
 import { getUserFromRequest } from '@/lib/supabase/auth-api'
-import { checkAndIncrementQuota } from '@/lib/supabase/quota'
+import { createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+
+const ANALYSE_TOKEN_COST = 3000
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -140,10 +142,15 @@ function extractJSON(text: string): string {
 export async function POST(req: NextRequest) {
   try {
     const { user } = await getUserFromRequest(req)
+    const supabase = await createAdminClient()
     if (user) {
-      const quota = await checkAndIncrementQuota(user.id, 'analyse')
-      if (!quota.allowed && !quota.isPaidPlan) {
-        return NextResponse.json({ error: 'free_quota_exceeded', quota }, { status: 403 })
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('token_balance')
+        .eq('id', user.id)
+        .single()
+      if (profile && profile.token_balance < ANALYSE_TOKEN_COST) {
+        return NextResponse.json({ error: 'insufficient_tokens', tokenBalance: profile.token_balance }, { status: 402 })
       }
     }
 
@@ -238,7 +245,13 @@ export async function POST(req: NextRequest) {
     const hasIndicators = !!validatedIndicatorBlock
     console.log(`[analyse] tendance=${analysis.tendance} confiance=${analysis.confiance} marche=${analysis.marche} imgs=${imageList.length} indicators=${hasIndicators}`)
 
-    return NextResponse.json({ analysis, liveData: validatedPriceData, economicContext, hasIndicators })
+    let newBalance: number | null = null
+    if (user) {
+      const { data } = await supabase.rpc('deduct_tokens', { p_user_id: user.id, p_amount: ANALYSE_TOKEN_COST })
+      if (typeof data === 'number') newBalance = data
+    }
+
+    return NextResponse.json({ analysis, liveData: validatedPriceData, economicContext, hasIndicators, newBalance })
 
   } catch (error: any) {
     const msg = error?.message || 'Erreur interne'
