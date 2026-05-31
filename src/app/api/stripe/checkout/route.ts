@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/merci?plan=${plan}&billing=${isYearly ? 'yearly' : 'monthly'}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings?canceled=true`,
       metadata: { user_id: user.id, plan, billing: isYearly ? 'yearly' : 'monthly' },
     })
