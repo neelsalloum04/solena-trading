@@ -15,6 +15,7 @@ import {
   X,
   Zap,
 } from 'lucide-react'
+import { useTokens } from '@/contexts/TokenContext'
 import { useCallback, useRef, useState } from 'react'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -147,11 +148,12 @@ function TradingCard({ analysis }: { analysis: Analysis }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 function AnalyseContent() {
-  const [images, setImages]         = useState<ImageItem[]>([])
-  const [dragging, setDragging]     = useState(false)
-  const [loading, setLoading]       = useState(false)
-  const [analysis, setAnalysis]     = useState<Analysis | null>(null)
-  const [error, setError]           = useState<string | null>(null)
+  const { syncBalance } = useTokens()
+  const [images, setImages]           = useState<ImageItem[]>([])
+  const [dragging, setDragging]       = useState(false)
+  const [loading, setLoading]         = useState(false)
+  const [analysis, setAnalysis]       = useState<Analysis | null>(null)
+  const [error, setError]             = useState<string | null>(null)
   const [showUpgrade, setShowUpgrade] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -201,6 +203,7 @@ function AnalyseContent() {
       if (!res.ok || data.error) { setError(data.error || 'Erreur serveur.'); return }
       if (!data.analysis)        { setError('Réponse vide. Réessaie.'); return }
       setAnalysis(data.analysis)
+      if (typeof data.newBalance === 'number') syncBalance(data.newBalance)
     } catch {
       setError('Connexion impossible.')
     } finally {
