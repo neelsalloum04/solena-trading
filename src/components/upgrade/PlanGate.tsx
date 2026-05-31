@@ -73,7 +73,7 @@ function FullPageUpgrade({ requiredPlan }: { requiredPlan: PlanId }) {
         </div>
 
         {/* Plans grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 max-w-3xl mx-auto">
           {PLANS_DISPLAY.map((plan) => {
             const isTarget = plan.id === requiredPlan
             return (

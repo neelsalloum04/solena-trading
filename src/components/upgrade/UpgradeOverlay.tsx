@@ -50,8 +50,8 @@ export function UpgradeOverlay({
           <p className="text-sm text-[#555] max-w-sm mx-auto leading-relaxed">{subtitle}</p>
         </div>
 
-        {/* 4-column plan grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {/* Plans grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 max-w-3xl mx-auto">
           {PLANS_DISPLAY.map((plan) => (
             <div
               key={plan.id}
