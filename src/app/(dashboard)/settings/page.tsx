@@ -10,12 +10,10 @@ import {
   Crown,
   ExternalLink,
   Loader2,
-  Moon,
   Save,
   Shield,
   ShieldCheck,
   ShieldOff,
-  Sun,
   User,
   Zap,
 } from 'lucide-react'
@@ -38,24 +36,6 @@ function SettingsContent() {
     return 'Profil'
   })()
   const [activeTab, setActiveTab] = useState(initialTab)
-
-  // ── Theme ─────────────────────────────────────────────────────────────────
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
-
-  useEffect(() => {
-    const saved = localStorage.getItem('theme') as 'dark' | 'light' | null
-    if (saved) setTheme(saved)
-  }, [])
-
-  const applyTheme = (t: 'dark' | 'light') => {
-    setTheme(t)
-    localStorage.setItem('theme', t)
-    if (t === 'light') {
-      document.documentElement.classList.add('light')
-    } else {
-      document.documentElement.classList.remove('light')
-    }
-  }
 
   // ── Profile state ──────────────────────────────────────────────────────────
   const [userId,       setUserId]       = useState('')
@@ -312,36 +292,6 @@ function SettingsContent() {
             </button>
           </div>
 
-          {/* Theme toggle */}
-          <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl p-4">
-            <p className="text-xs font-semibold text-[#888] mb-3">Apparence</p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => applyTheme('dark')}
-                className={cn(
-                  'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold border transition-all',
-                  theme === 'dark'
-                    ? 'bg-[#D4AF37] text-[#080808] border-[#D4AF37]'
-                    : 'text-[#555] border-[#222] hover:border-[#333] hover:text-white'
-                )}
-              >
-                <Moon className="w-3.5 h-3.5" />
-                Sombre
-              </button>
-              <button
-                onClick={() => applyTheme('light')}
-                className={cn(
-                  'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold border transition-all',
-                  theme === 'light'
-                    ? 'bg-[#D4AF37] text-[#080808] border-[#D4AF37]'
-                    : 'text-[#555] border-[#222] hover:border-[#333] hover:text-white'
-                )}
-              >
-                <Sun className="w-3.5 h-3.5" />
-                Clair
-              </button>
-            </div>
-          </div>
         </div>
       )}
 
