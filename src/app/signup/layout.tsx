@@ -31,7 +31,7 @@ export default function SignupLayout({ children }: { children: React.ReactNode }
 
             <ul className="space-y-3 mb-12">
               {[
-                '5 000 tokens offerts dès l\'inscription',
+                '50 000 tokens offerts dès l\'inscription',
                 '3 analyses graphiques gratuites',
                 'Assistant IA disponible immédiatement',
                 'Sans carte bancaire requise',

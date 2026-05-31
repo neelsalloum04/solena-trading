@@ -9,8 +9,8 @@ interface TokenCtx {
 }
 
 const TokenContext = createContext<TokenCtx>({
-  tokenBalance: 5000,
-  tokenLimit: 5000,
+  tokenBalance: 50000,
+  tokenLimit: 50000,
   syncBalance: () => {},
 })
 

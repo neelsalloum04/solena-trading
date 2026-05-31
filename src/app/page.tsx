@@ -221,7 +221,7 @@ export default function LandingPage() {
 
             <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-[#444]">
               <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-[#22c55e]" />Sans carte bancaire</span>
-              <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-[#22c55e]" />5 000 tokens offerts</span>
+              <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-[#22c55e]" />50 000 tokens offerts</span>
               <span className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-[#22c55e]" />Annulation libre</span>
             </div>
           </div>
@@ -884,7 +884,7 @@ export default function LandingPage() {
               <h2 className="text-4xl font-black text-[#F2EDD7] mb-3 leading-tight">
                 Prêt à trader<br /><span className="text-[#D4AF37]">plus intelligemment ?</span>
               </h2>
-              <p className="text-[#555] text-sm mb-8">5 000 tokens offerts. Aucune carte bancaire.</p>
+              <p className="text-[#555] text-sm mb-8">50 000 tokens offerts. Aucune carte bancaire.</p>
               <Link href="/signup" className="btn-gold inline-flex items-center justify-center gap-2 text-base px-10 py-4 rounded-xl font-black">
                 Démarrer gratuitement <ArrowRight className="w-4 h-4" />
               </Link>
