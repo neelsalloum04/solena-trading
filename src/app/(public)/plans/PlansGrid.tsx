@@ -39,7 +39,7 @@ export function PlansGrid() {
   }
 
   return (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-4xl mx-auto">
       {Object.values(PLANS).map((p) => (
         <div
           key={p.plan}
