@@ -1,7 +1,8 @@
 'use client'
+import { createClient } from '@/lib/supabase/client'
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, Suspense } from 'react'
+import { useEffect, useMemo, Suspense } from 'react'
 
 const PLAN_PRICES: Record<string, { monthly: number; yearly: number }> = {
   starter: { monthly: 39,  yearly: 390  },
@@ -9,29 +10,47 @@ const PLAN_PRICES: Record<string, { monthly: number; yearly: number }> = {
   expert:  { monthly: 199, yearly: 1990 },
 }
 
+async function sha256(str: string): Promise<string> {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str))
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
 function MerciContent() {
-  const router  = useRouter()
-  const params  = useSearchParams()
-  const plan    = params.get('plan')    ?? 'starter'
-  const billing = params.get('billing') ?? 'monthly'
+  const router    = useRouter()
+  const params    = useSearchParams()
+  const plan      = params.get('plan')    ?? 'starter'
+  const billing   = params.get('billing') ?? 'monthly'
+  const supabase  = useMemo(() => createClient(), [])
 
   useEffect(() => {
-    // Fire TikTok CompletePayment event
-    const prices = PLAN_PRICES[plan] ?? PLAN_PRICES.starter
-    const value  = billing === 'yearly' ? prices.yearly : prices.monthly
+    const fire = async () => {
+      const prices = PLAN_PRICES[plan] ?? PLAN_PRICES.starter
+      const value  = billing === 'yearly' ? prices.yearly : prices.monthly
 
-    if (typeof window !== 'undefined' && (window as any).ttq) {
-      ;(window as any).ttq.track('CompletePayment', {
-        value,
-        currency: 'EUR',
-        contents: [{ content_id: plan, content_name: `PrimeX ${plan}`, quantity: 1, price: value }],
-      })
+      if (typeof window !== 'undefined' && (window as any).ttq) {
+        const ttq = (window as any).ttq
+
+        // Get user email for TikTok EMQ matching
+        try {
+          const { data: { user } } = await supabase.auth.getUser()
+          if (user?.email) {
+            const hashed = await sha256(user.email.toLowerCase().trim())
+            ttq.identify({ email: hashed })
+          }
+        } catch { /* non-blocking */ }
+
+        ttq.track('CompletePayment', {
+          value,
+          currency: 'EUR',
+          contents: [{ content_id: plan, content_name: `PrimeX ${plan}`, quantity: 1, price: value }],
+        })
+      }
     }
 
-    // Redirect to dashboard after 3 seconds
+    fire()
     const timer = setTimeout(() => router.replace('/analyse'), 3000)
     return () => clearTimeout(timer)
-  }, [plan, billing, router])
+  }, [plan, billing, router, supabase])
 
   return (
     <div className="min-h-screen bg-[#080808] flex items-center justify-center p-6">
