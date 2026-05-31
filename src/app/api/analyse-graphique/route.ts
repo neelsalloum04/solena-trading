@@ -6,7 +6,7 @@ import { getUserFromRequest } from '@/lib/supabase/auth-api'
 import { createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
-const ANALYSE_TOKEN_COST = 3000
+const ANALYSE_TOKEN_COST = 20000
 
 export const runtime = 'nodejs'
 export const maxDuration = 60

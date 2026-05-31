@@ -3,7 +3,10 @@ import { checkRateLimit } from '@/lib/ai/ratelimit'
 import { getMaxTokens, getModel, routeMessage } from '@/lib/ai/router'
 import { requireAnthropic, SYSTEM_FAST, SYSTEM_SMART } from '@/lib/anthropic/client'
 import { getUserFromRequest } from '@/lib/supabase/auth-api'
+import { createAdminClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+
+const CHAT_TOKEN_COST = 5000
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -48,6 +51,18 @@ export async function POST(req: NextRequest) {
     const { message = '', imageUrl, history = [], plan = 'free' } = body
 
     const { user } = await getUserFromRequest(req)
+    const adminDb  = await createAdminClient()
+
+    if (user) {
+      const { data: profile } = await adminDb
+        .from('profiles')
+        .select('token_balance')
+        .eq('id', user.id)
+        .single()
+      if (profile && profile.token_balance < CHAT_TOKEN_COST) {
+        return NextResponse.json({ error: 'insufficient_tokens', tokenBalance: profile.token_balance }, { status: 402 })
+      }
+    }
 
     // ── Rate limiting (IP-based daily quotas) ──────────────────────
     const ip = getClientIp(req)
@@ -121,10 +136,16 @@ export async function POST(req: NextRequest) {
     const tokensUsed = response.usage.input_tokens + response.usage.output_tokens
     console.log(`[chat] model=${model} in=${response.usage.input_tokens} out=${response.usage.output_tokens} tier=${tier}`)
 
+    let newBalance: number | null = null
+    if (user) {
+      const { data } = await adminDb.rpc('deduct_tokens', { p_user_id: user.id, p_amount: CHAT_TOKEN_COST })
+      if (typeof data === 'number') newBalance = data
+    }
+
     // ── Cache response ──────────────────────────────────────────────
     if (cacheable) setCached(message, content, model)
 
-    return NextResponse.json({ content, model, quota: rateLimit, tokensUsed })
+    return NextResponse.json({ content, model, quota: rateLimit, tokensUsed, newBalance })
   } catch (error: any) {
     const isConfig = error.message?.includes('non configuré')
     const errMsg = error?.error?.error?.message || error?.message || 'Erreur inconnue'

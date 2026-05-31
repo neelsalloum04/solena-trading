@@ -25,7 +25,7 @@ export function normalizePlan(dbPlan: string | null | undefined): PlanId {
 }
 
 // ─── Token limits per plan ────────────────────────────────────────────────────
-// free    → 5 000 tokens à vie (pas de reset mensuel)
+// free    → 50 000 tokens à vie (pas de reset mensuel)
 // starter → 1 M  tokens / mois
 // pro     → 3 M  tokens / mois
 // expert  → 8 M  tokens / mois
@@ -33,7 +33,7 @@ export function normalizePlan(dbPlan: string | null | undefined): PlanId {
 // admin   → pratiquement illimité
 
 export const PLAN_TOKEN_LIMITS: Record<PlanId, number> = {
-  free:    5_000,
+  free:    50_000,
   starter: 1_000_000,
   pro:     3_000_000,
   expert:  8_000_000,
