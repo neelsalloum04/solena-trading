@@ -51,12 +51,12 @@ export function UpgradeOverlay({
         </div>
 
         {/* Plans grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 max-w-3xl mx-auto">
+        <div className="flex flex-wrap justify-center gap-4 mb-6">
           {PLANS_DISPLAY.map((plan) => (
             <div
               key={plan.id}
               className={cn(
-                'relative rounded-2xl p-5 border flex flex-col',
+                'relative rounded-2xl p-5 border flex flex-col w-full max-w-[260px]',
                 plan.highlighted
                   ? 'bg-[#141414] border-[#D4AF37]/40 shadow-xl shadow-[#D4AF37]/5'
                   : 'bg-[#0c0c0c] border-[#1c1c1c]',

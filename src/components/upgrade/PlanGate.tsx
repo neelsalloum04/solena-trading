@@ -73,11 +73,11 @@ function FullPageUpgrade({ requiredPlan }: { requiredPlan: PlanId }) {
         </div>
 
         {/* Plans grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 max-w-3xl mx-auto">
+        <div className="flex flex-wrap justify-center gap-4 mb-8">
           {PLANS_DISPLAY.map((plan) => {
             const isTarget = plan.id === requiredPlan
             return (
-              <div key={plan.id} className={cn(
+              <div key={plan.id} className={cn('w-full max-w-[260px]',
                 'relative rounded-2xl p-5 border transition-all',
                 plan.highlighted
                   ? 'bg-[#0f0f0f] border-[#D4AF37]/40 shadow-lg shadow-[#D4AF37]/5'
