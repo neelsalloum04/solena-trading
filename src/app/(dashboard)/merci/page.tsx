@@ -1,4 +1,5 @@
 'use client'
+import { fbq } from '@/lib/meta-pixel'
 import { createClient } from '@/lib/supabase/client'
 import { CheckCircle2, Loader2 } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -45,6 +46,16 @@ function MerciContent() {
           contents: [{ content_id: plan, content_name: `PrimeX ${plan}`, quantity: 1, price: value }],
         })
       }
+
+      // Meta Pixel — Purchase (déclenché uniquement après confirmation Stripe)
+      fbq('track', 'Purchase', {
+        value,
+        currency: 'EUR',
+        content_name: `PrimeX ${plan}`,
+        content_ids: [plan],
+        content_type: 'product',
+        num_items: 1,
+      })
     }
 
     fire()

@@ -1,4 +1,5 @@
 'use client'
+import { fbq } from '@/lib/meta-pixel'
 import { createClient } from '@/lib/supabase/client'
 import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react'
 import Link from 'next/link'
@@ -36,6 +37,7 @@ export default function RegisterPage() {
       if (error) { toast.error(error.message); return }
       // If email confirmation is required, show success message
       if (data.user && !data.session) {
+        fbq('track', 'CompleteRegistration', { status: 'email_pending' })
         setEmailSent(true)
         // Send welcome email (fire & forget — don't block UX)
         fetch('/api/email/welcome', {
@@ -45,6 +47,7 @@ export default function RegisterPage() {
         }).catch(() => {})
       } else {
         // Auto-confirmed (email confirmation disabled in Supabase)
+        fbq('track', 'CompleteRegistration', { status: 'confirmed' })
         fetch('/api/email/welcome', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

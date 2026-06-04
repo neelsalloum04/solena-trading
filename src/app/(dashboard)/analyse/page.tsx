@@ -336,7 +336,7 @@ function AnalyseContent() {
                     <div key={index} className="relative rounded-xl overflow-hidden border border-[#222] bg-[#0a0a0a] group">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={img.src} alt={`Graphique ${index + 1}`}
-                        className={cn('w-full object-contain block', images.length === 1 ? 'max-h-[360px] md:max-h-[480px]' : 'max-h-[180px] md:max-h-[220px]')} />
+                        className={cn('w-full object-contain block blur-sm', images.length === 1 ? 'max-h-[360px] md:max-h-[480px]' : 'max-h-[180px] md:max-h-[220px]')} />
                       <button onClick={() => removeImage(index)}
                         className="absolute top-2 right-2 w-6 h-6 md:w-7 md:h-7 rounded-lg bg-[#080808]/90 border border-[#333] flex items-center justify-center text-[#777] hover:text-[#ef4444] transition-colors opacity-0 group-hover:opacity-100 active:opacity-100">
                         <X className="w-3 h-3 md:w-3.5 md:h-3.5" />
