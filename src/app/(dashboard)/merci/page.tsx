@@ -6,9 +6,10 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, Suspense } from 'react'
 
 const PLAN_PRICES: Record<string, { monthly: number; yearly: number }> = {
-  starter: { monthly: 39,  yearly: 390  },
-  pro:     { monthly: 99,  yearly: 990  },
-  expert:  { monthly: 199, yearly: 1990 },
+  starter: { monthly: 39,   yearly: 390   },
+  pro:     { monthly: 99,   yearly: 990   },
+  expert:  { monthly: 199,  yearly: 1990  },
+  premium: { monthly: 699,  yearly: 6990  },
 }
 
 async function sha256(str: string): Promise<string> {
