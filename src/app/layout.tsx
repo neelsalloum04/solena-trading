@@ -33,8 +33,6 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID ?? '1308510860794868'
-
   return (
     <html lang="fr" translate="no" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body suppressHydrationWarning>
@@ -50,7 +48,7 @@ gtag('js', new Date());
 gtag('config', 'AW-18214795766');`}
         </Script>
 
-        {/* Meta Pixel — 2 pixels initialisés, un seul script */}
+        {/* Meta Pixel */}
         <Script id="meta-pixel" strategy="afterInteractive">
           {`!function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -60,16 +58,10 @@ n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window,document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init','${metaPixelId}');
 fbq('init','1668628987743465');
 fbq('track','PageView');`}
         </Script>
         <noscript>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img height="1" width="1" style={{display:'none'}}
-            src={`https://www.facebook.com/tr?id=${metaPixelId}&ev=PageView&noscript=1`}
-            alt=""
-          />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img height="1" width="1" style={{display:'none'}}
             src="https://www.facebook.com/tr?id=1668628987743465&ev=PageView&noscript=1"
