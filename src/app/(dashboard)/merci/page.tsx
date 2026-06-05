@@ -17,11 +17,12 @@ async function sha256(str: string): Promise<string> {
 }
 
 function MerciContent() {
-  const router    = useRouter()
-  const params    = useSearchParams()
-  const plan      = params.get('plan')    ?? 'starter'
-  const billing   = params.get('billing') ?? 'monthly'
-  const supabase  = useMemo(() => createClient(), [])
+  const router         = useRouter()
+  const params         = useSearchParams()
+  const plan           = params.get('plan')       ?? 'starter'
+  const billing        = params.get('billing')    ?? 'monthly'
+  const sessionId      = params.get('session_id') ?? ''
+  const supabase       = useMemo(() => createClient(), [])
 
   useEffect(() => {
     const fire = async () => {
@@ -44,6 +45,16 @@ function MerciContent() {
           value,
           currency: 'EUR',
           contents: [{ content_id: plan, content_name: `PrimeX ${plan}`, quantity: 1, price: value }],
+        })
+      }
+
+      // Google Ads — Conversion achat
+      if (typeof window !== 'undefined' && typeof (window as any).gtag === 'function') {
+        ;(window as any).gtag('event', 'conversion', {
+          send_to:        'AW-18214795766/xAOrCK_DhrkcEPbzvu1D',
+          value,
+          currency:       'EUR',
+          transaction_id: sessionId,
         })
       }
 
