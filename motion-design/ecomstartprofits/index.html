@@ -264,11 +264,11 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
 #end-guar span{color:#34d399}
 #end-stars{margin-top:26px;display:flex;align-items:center;gap:20px;font:400 38px Sora;color:#aeb3c9}
 #end-stars b{color:#fff}
-#end-hint{position:absolute;left:0;right:0;bottom:36px;display:flex;flex-direction:column;align-items:center;gap:4px}
-#end-hint p{font:600 48px/1.2 Sora;color:#fff;text-align:center}
-#end-hint p b{font-weight:800;background:linear-gradient(90deg,#60a5fa,#a78bfa,#f472b6);-webkit-background-clip:text;background-clip:text;color:transparent}
-#arrows{position:relative;width:170px;height:190px}
-#arrows svg{position:absolute;left:0}
+#end-hint{position:absolute;left:0;right:0;bottom:60px;display:flex;flex-direction:column;align-items:center;gap:18px}
+#end-hint p{font:500 44px/1.2 Sora;color:#d6d9ea;text-align:center}
+#bio{display:flex;align-items:center;gap:24px;height:140px;padding:0 70px;border-radius:70px;border:4px solid transparent;
+  background:linear-gradient(#15143a,#15143a) padding-box,linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899) border-box;box-shadow:0 0 60px rgba(139,92,246,.55);font:800 70px Sora;color:#fff;letter-spacing:-.01em}
+#bio span{background:linear-gradient(90deg,#93c5fd,#c4b5fd 50%,#f9a8d4);-webkit-background-clip:text;background-clip:text;color:transparent}
 
 #end-row{display:flex;flex-direction:column;align-items:center}
 /* =================== SQUARE 1080×1080 overrides =================== */
@@ -319,12 +319,10 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
 .sq #end-guar svg{width:46px;height:54px}
 .sq #end-stars{margin-top:14px;font-size:32px}
 .sq #end-stars svg{width:44px;height:44px}
-.sq #end-hint{bottom:22px;gap:6px}
-.sq #end-hint p{font-size:42px}
-.sq #arrows{width:120px;height:136px}
-.sq #arrows svg{width:120px;height:56px}
-.sq #arrows svg:nth-child(2){top:38px!important}
-.sq #arrows svg:nth-child(3){top:76px!important}
+.sq #end-hint{bottom:34px;gap:12px}
+.sq #end-hint p{font-size:34px}
+.sq #bio{height:104px;padding:0 54px;font-size:54px;gap:18px}
+.sq #bio svg{width:50px;height:50px}
 </style>
 </head>
 <body>
@@ -511,8 +509,8 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
       <div id="end-stars"><span class="s" id="stars2" style="display:inline-flex;gap:8px"></span><span><b>5/5</b> sur Trustpilot</span></div>
     </div>
     <div id="end-hint">
-      <p>Clique sur le bouton<br class="v"> <b>sous cette vidéo</b></p>
-      <div id="arrows"><svg class="chev" style="top:0px" width="170" height="80" viewBox="0 0 170 80" fill="none"><defs><linearGradient id="chg0" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#60a5fa"/><stop offset=".5" stop-color="#a78bfa"/><stop offset="1" stop-color="#f472b6"/></linearGradient></defs><path d="M18 14l67 52 67-52" stroke="url(#chg0)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" opacity="1"/></svg><svg class="chev" style="top:55px" width="170" height="80" viewBox="0 0 170 80" fill="none"><defs><linearGradient id="chg55" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#60a5fa"/><stop offset=".5" stop-color="#a78bfa"/><stop offset="1" stop-color="#f472b6"/></linearGradient></defs><path d="M18 14l67 52 67-52" stroke="url(#chg55)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" opacity="1"/></svg><svg class="chev" style="top:110px" width="170" height="80" viewBox="0 0 170 80" fill="none"><defs><linearGradient id="chg110" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#60a5fa"/><stop offset=".5" stop-color="#a78bfa"/><stop offset="1" stop-color="#f472b6"/></linearGradient></defs><path d="M18 14l67 52 67-52" stroke="url(#chg110)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" opacity="1"/></svg></div>
+      <p>Commande ta boutique</p>
+      <div id="bio"><svg width="66" height="66" viewBox="0 0 24 24" fill="none" id="bio-ic"><defs><linearGradient id="lkg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#60a5fa"/><stop offset=".5" stop-color="#a78bfa"/><stop offset="1" stop-color="#f472b6"/></linearGradient></defs><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L12 5.6" stroke="url(#lkg)" stroke-width="2.4" stroke-linecap="round"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2" stroke="url(#lkg)" stroke-width="2.4" stroke-linecap="round"/></svg><span>Lien en bio</span></div>
     </div>
   </section>
 
@@ -866,15 +864,12 @@ tl.from('#end-stars',{y:30,opacity:0,duration:.5,ease:'power3.out'},T9+2.5);
 tl.from('#stars2 svg',{scale:0,duration:.35,stagger:.07,ease:'back.out(3)'},T9+2.55);
 const tH = T9+2.9;
 tl.from('#end-hint p',{y:40,opacity:0,filter:'blur(8px)',duration:.5,ease:'power3.out'},tH);
-tl.from('#arrows',{opacity:0,y:-30,duration:.4,ease:'power3.out'},tH+.2);
-sfx('whoosh',tH,.5);
+tl.fromTo('#bio',{scale:.6,opacity:0},{scale:1,opacity:1,duration:.55,ease:'back.out(2)'},tH+.2);
+sfx('whoosh',tH,.5); sfx('pop',tH+.25,.7);
 const END = tH+3.9;
-const chev = $$('#arrows .chev');
-for(let t=tH+.3; t<END-.2; t+=.9){
-  chev.forEach((c,k)=> tl.fromTo(c,{opacity:.15},{opacity:1,duration:.22,yoyo:true,repeat:1,ease:'sine.inOut',immediateRender:false},t+k*.14));
-}
-tl.fromTo('#arrows',{y:0},{y:22,duration:.45,yoyo:true,repeat:Math.floor((END-tH-.6)/.45),ease:'sine.inOut',immediateRender:false},tH+.6);
-tl.fromTo('#end-hint p b',{filter:'brightness(1)'},{filter:'brightness(1.35)',duration:.45,yoyo:true,repeat:5,ease:'sine.inOut',immediateRender:false},tH+.7);
+tl.fromTo('#bio',{scale:1},{scale:1.06,duration:.5,yoyo:true,repeat:Math.floor((END-tH-1)/.5),ease:'sine.inOut',immediateRender:false},tH+.85);
+tl.fromTo('#bio',{boxShadow:'0 0 60px rgba(139,92,246,.55)'},{boxShadow:'0 0 110px rgba(236,72,153,.75)',duration:.5,yoyo:true,repeat:Math.floor((END-tH-1)/.5),ease:'sine.inOut',immediateRender:false},tH+.85);
+tl.fromTo('#bio-ic',{rotation:0},{rotation:-14,duration:.15,yoyo:true,repeat:3,ease:'sine.inOut',transformOrigin:'50% 50%',immediateRender:false},tH+.8);
 tl.set({},{},END);
 
 /* ---------- API ---------- */
