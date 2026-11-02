@@ -6,6 +6,7 @@ import json, sys, wave
 import numpy as np
 
 SR = 48000
+MUSIC_GAIN = 0.42   # background music level relative to the sound effects
 rng = np.random.default_rng(3)
 
 
@@ -128,7 +129,14 @@ def main(src, dst):
         mix[o:o + len(s), 0] += s * (1 - pan)
         mix[o:o + len(s), 1] += s * (1 + pan)
     peak = np.abs(mix).max()
-    if peak > 0: mix *= 0.89 / peak
+    if peak > 0: mix *= 0.85 / peak
+    if data.get('music'):
+        sys.path.insert(0, __import__('os').path.dirname(__file__))
+        from music import make_music
+        m = make_music(data['duration'], data['music'])[:len(mix)]
+        mix[:len(m)] += m * MUSIC_GAIN
+        mix = np.tanh(mix * 1.05) / np.tanh(1.05)
+        mix *= 0.89 / np.abs(mix).max()
     pcm = (mix * 32767).astype('<i2')
     with wave.open(dst, 'wb') as w:
         w.setnchannels(2); w.setsampwidth(2); w.setframerate(SR); w.writeframes(pcm.tobytes())

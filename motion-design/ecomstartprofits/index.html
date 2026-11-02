@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>EcomStartProfits – Motion</title>
 <link rel="stylesheet" href="assets/fonts.css">
+<script>if(!/[?&]vertical\b/.test(location.search)) document.documentElement.classList.add('sq');</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background:#000}
@@ -268,6 +269,62 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
 #end-hint p b{font-weight:800;background:linear-gradient(90deg,#60a5fa,#a78bfa,#f472b6);-webkit-background-clip:text;background-clip:text;color:transparent}
 #arrows{position:relative;width:170px;height:190px}
 #arrows svg{position:absolute;left:0}
+
+#end-row{display:flex;flex-direction:column;align-items:center}
+/* =================== SQUARE 1080×1080 overrides =================== */
+.sq body{height:1080px}
+.sq #stage{height:1080px}
+.sq br.v{display:none}
+.sq #chat-head{display:none}
+.sq #chat-wrap{padding:0 84px;gap:40px;transform-origin:50% 55%}
+.sq #browser{height:128px}
+.sq #browser .status{display:none}
+.sq #urlbar{top:20px}
+.sq #site-view,.sq #pr-view{top:128px}
+.sq #ntp-disc{display:none}
+.sq #hero{padding-top:110px}
+.sq .fcard{padding:60px 40px 48px}
+.sq .inp{height:108px;font-size:44px;margin-bottom:22px}
+.sq .fbtn{height:116px;font-size:46px}
+.sq #grid{top:120px;row-gap:34px;left:90px;right:90px}
+.sq .app{font-size:28px;gap:12px}
+.sq .app .ic{width:156px;height:156px;border-radius:38px}
+.sq .app .ic > *{transform:scale(.78)}
+.sq #dock{height:196px;bottom:24px;border-radius:62px;left:60px;right:60px}
+.sq #dock .ic{width:150px;height:150px;border-radius:36px}
+.sq #dock .ic > *{transform:scale(.76)}
+.sq #pages-dots{bottom:240px}
+.sq #ao-inner{height:1080px}
+.sq #ao-logo{left:390px;top:330px;width:300px;height:300px}
+.sq #ao-logo img{width:300px;height:300px}
+.sq #kin{top:400px;font-size:112px}
+.sq #kin-sub{top:680px;font-size:46px}
+.sq .notif{left:70px;width:940px;padding:30px 36px;border-radius:46px;background:rgba(255,255,255,.96)}
+.sq .notif p{font-size:34px}
+.sq #end-wrap{padding-top:46px}
+.sq #end-url{height:80px;font-size:38px;padding:0 40px}
+.sq #end-url svg{width:32px;height:32px}
+.sq #end-h{margin-top:26px;font-size:56px}
+.sq #end-chrono{font-size:106px;margin-top:8px}
+.sq #end-row{flex-direction:row;align-items:stretch;gap:26px;margin-top:32px}
+.sq #end-offer{margin-top:0;width:650px;padding:26px 30px;gap:16px;border-radius:36px}
+.sq #end-offer .it{font-size:31px;gap:18px}
+.sq #end-offer .it i{width:46px;height:46px}
+.sq #end-offer .it i svg{width:24px;height:24px}
+.sq #end-tiers{margin-top:0;flex-direction:column;gap:14px}
+.sq .tier{width:310px;height:auto;flex:1;flex-direction:row;justify-content:space-between;padding:0 26px;border-radius:28px}
+.sq .tier b{font-size:50px}
+.sq .tier span{font-size:23px;text-align:right}
+.sq #end-guar{margin-top:30px;font-size:42px;gap:18px}
+.sq #end-guar svg{width:46px;height:54px}
+.sq #end-stars{margin-top:14px;font-size:32px}
+.sq #end-stars svg{width:44px;height:44px}
+.sq #end-hint{bottom:22px;gap:6px}
+.sq #end-hint p{font-size:42px}
+.sq #arrows{width:120px;height:136px}
+.sq #arrows svg{width:120px;height:56px}
+.sq #arrows svg:nth-child(2){top:38px!important}
+.sq #arrows svg:nth-child(3){top:76px!important}
 </style>
 </head>
 <body>
@@ -280,7 +337,7 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
       <div id="chat-time">Aujourd’hui 17:46</div>
       <div class="slot" id="slot1">
         <div class="typing" id="typ1"><i></i><i></i><i></i></div>
-        <div class="bubble b-in" id="b1">Salut gros, ça te dit<br>on se lance dans le<br>drop shipping ?</div>
+        <div class="bubble b-in" id="b1">Salut gros, ça te dit<br>on se lance dans le<br>dropshipping ?</div>
       </div>
       <div class="slot out" id="slot2">
         <div class="bubble b-out" id="b2">Vas-y go mais comment ?</div>
@@ -435,8 +492,9 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
   <section class="scene" id="s-end">
     <div id="end-wrap">
       <div id="end-url"><svg width="40" height="40" viewBox="0 0 24 24" fill="none"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="#a78bfa"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" stroke="#a78bfa" stroke-width="2.2"/></svg>ecomstartprofits.com</div>
-      <div id="end-h">Obtiens ta boutique prête<br>à vendre</div>
+      <div id="end-h">Obtiens ta boutique prête<br class="v"> à vendre</div>
       <div id="end-chrono" class="grad-text">EN 48 HEURES CHRONO</div>
+      <div id="end-row">
       <div id="end-offer">
         <div class="it"><i><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l4.5 4.5L19.5 7" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></i>Boutique Shopify pro clé en main</div>
         <div class="it"><i><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l4.5 4.5L19.5 7" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></i>Vidéos publicitaires fournies</div>
@@ -448,11 +506,12 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
         <div class="tier best"><b>37 €</b><span>10 produits<br>+ 3 pubs</span></div>
         <div class="tier"><b>67 €</b><span>50 produits<br>+ 50 pubs</span></div>
       </div>
-      <div id="end-guar"><svg width="70" height="80" viewBox="0 0 24 28" fill="none"><path d="M12 1.5L22 5.5v8c0 6.5-4.3 10.8-10 13-5.7-2.2-10-6.5-10-13v-8z" stroke="#34d399" stroke-width="2.2" stroke-linejoin="round"/><path d="M7.5 14l3 3 6-6.5" stroke="#34d399" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><div><span>GARANTIE 120 JOURS :</span> AUCUNE VENTE ?<br>ON VOUS REMBOURSE.</div></div>
+      </div>
+      <div id="end-guar"><svg width="70" height="80" viewBox="0 0 24 28" fill="none"><path d="M12 1.5L22 5.5v8c0 6.5-4.3 10.8-10 13-5.7-2.2-10-6.5-10-13v-8z" stroke="#34d399" stroke-width="2.2" stroke-linejoin="round"/><path d="M7.5 14l3 3 6-6.5" stroke="#34d399" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><div><span>GARANTIE 120 JOURS :</span> AUCUNE VENTE ?<br class="v"> ON VOUS REMBOURSE.</div></div>
       <div id="end-stars"><span class="s" id="stars2" style="display:inline-flex;gap:8px"></span><span><b>5/5</b> sur Trustpilot</span></div>
     </div>
     <div id="end-hint">
-      <p>Clique sur le bouton<br><b>sous cette vidéo</b></p>
+      <p>Clique sur le bouton<br class="v"> <b>sous cette vidéo</b></p>
       <div id="arrows"><svg class="chev" style="top:0px" width="170" height="80" viewBox="0 0 170 80" fill="none"><defs><linearGradient id="chg0" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#60a5fa"/><stop offset=".5" stop-color="#a78bfa"/><stop offset="1" stop-color="#f472b6"/></linearGradient></defs><path d="M18 14l67 52 67-52" stroke="url(#chg0)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" opacity="1"/></svg><svg class="chev" style="top:55px" width="170" height="80" viewBox="0 0 170 80" fill="none"><defs><linearGradient id="chg55" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#60a5fa"/><stop offset=".5" stop-color="#a78bfa"/><stop offset="1" stop-color="#f472b6"/></linearGradient></defs><path d="M18 14l67 52 67-52" stroke="url(#chg55)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" opacity="1"/></svg><svg class="chev" style="top:110px" width="170" height="80" viewBox="0 0 170 80" fill="none"><defs><linearGradient id="chg110" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#60a5fa"/><stop offset=".5" stop-color="#a78bfa"/><stop offset="1" stop-color="#f472b6"/></linearGradient></defs><path d="M18 14l67 52 67-52" stroke="url(#chg110)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" opacity="1"/></svg></div>
     </div>
   </section>
@@ -540,20 +599,24 @@ await Promise.all([...document.images].map(i => i.complete ? 0 : new Promise(r =
 const rect = el => el.getBoundingClientRect();
 const ctr = (el, dy=0) => { const r = rect(typeof el==='string'?$(el):el); return {x:r.left+r.width/2, y:r.top+r.height/2+dy}; };
 
-const SITE_TOP = 208;
+const SQ = document.documentElement.classList.contains('sq');
+const H = SQ ? 1080 : 1920;
+const VIEW_H = H - (SQ ? 128 : 208);
 const formSec = $('#form-sec');
 const offIn = (el, root) => { let y=0; while(el && el!==root){ y+=el.offsetTop; el=el.offsetParent; } return y; };
-const SCROLL_FORM = offIn($('#fcard'), $('#page')) - 330;
+const SCROLL_HERO = SQ ? offIn($('#h-card'), $('#page')) - 70 : 0;
+const SCROLL_FORM = SQ ? offIn($('.steps'), $('#page')) - 40 : offIn($('#fcard'), $('#page')) - 330;
 const P = {
   sbox: ctr('#gpill'), srow1: ctr('#srow1'),
-  cta1: ctr('#cta1'),
+  cta1: ctr('#cta1', -SCROLL_HERO),
   in1: ctr('#in1', -SCROLL_FORM), in2: ctr('#in2', -SCROLL_FORM), in3: ctr('#in3', -SCROLL_FORM), fbtn: ctr('#fbtn', -SCROLL_FORM),
 };
 const prPage = $('#pr-page');
-const SCROLL_PR1 = offIn($('.pay'), prPage) - 260;
-const SCROLL_PR2 = offIn($('#ups'), prPage) - 420;
+const SCROLL_PR1 = offIn($('.pay'), prPage) - (SQ ? 110 : 260);
+const SCROLL_PR2 = offIn($('#ups'), prPage) - (SQ ? 40 : 420);
+const SCROLL_PR3 = SQ ? offIn($('#pbtn'), prPage) - 640 : SCROLL_PR2;
 P.opt2 = ctr('#opt2'); P.opt2r = ctr('#opt2 .radio');
-P.ucb = ctr('#ucb', -SCROLL_PR2); P.pbtn = ctr('#pbtn', -SCROLL_PR2);
+P.ucb = ctr('#ucb', -SCROLL_PR2); P.pbtn = ctr('#pbtn', -SCROLL_PR3);
 const shopIc = rect($('#app-shop .ic'));
 P.shop = {x:shopIc.left+shopIc.width/2, y:shopIc.top+shopIc.height/2};
 
@@ -566,7 +629,7 @@ const typeIn = (chars,t,cps,vol=.5) => { chars.forEach((s,i)=>{ const ti=t+i/cps
 
 const finger=$('#finger'), ripple=$('#ripple');
 gsap.set([finger,ripple],{x:540,y:1500});
-const fingerIn = (t,x,y) => { tl.set(finger,{x,y:y+160},t); tl.to(finger,{opacity:1,y,duration:.35,ease:'power2.out'},t); };
+const fingerIn = (t,x,y) => { y = Math.min(y, H-200); tl.set(finger,{x,y:y+160},t); tl.to(finger,{opacity:1,y,duration:.35,ease:'power2.out'},t); };
 const fingerOut = (t) => tl.to(finger,{opacity:0,scale:.8,duration:.25},t).set(finger,{scale:1},t+.26);
 const tap = (p,t,{move=.38,vol=1}={}) => {
   tl.to(finger,{x:p.x,y:p.y,duration:move,ease:'power2.inOut'},t-move-.04);
@@ -594,7 +657,7 @@ popBubble('#b2',2.25,'100% 100%'); sfx('send',2.25);
 typing('#typ3',3.0,3.75); popBubble('#b3',3.75,'0% 100%'); sfx('receive',3.75);
 tl.to('#b3',{scale:1.07,duration:.35,ease:'power2.out',transformOrigin:'0% 100%'},4.35).to('#b3',{scale:1.0,duration:.35,ease:'power2.inOut'},4.7);
 // out: zoom into bubble 3
-tl.to('#chat-wrap',{scale:2.6,y:-420,x:260,filter:'blur(18px)',duration:.55,ease:'power3.in'},5.0);
+tl.to('#chat-wrap',{scale:2.6,y:SQ?-260:-420,x:260,filter:'blur(18px)',duration:.55,ease:'power3.in'},5.0);
 tl.to('#s-chat',{autoAlpha:0,duration:.2},5.4);
 sfx('whoosh',5.05);
 
@@ -633,6 +696,7 @@ tl.from('#h1 .w',{y:60,opacity:0,filter:'blur(10px)',duration:.55,stagger:.06,ea
 tl.from('#chrono',{scale:1.6,opacity:0,filter:'blur(16px)',duration:.5,ease:'power4.out'},T3+.8);
 sfx('impact',T3+.85);
 tl.from('#h-card',{y:60,opacity:0,duration:.55,ease:'power3.out'},T3+1.1);
+if(SQ){ tl.to('#page',{y:-SCROLL_HERO,duration:.75,ease:'power3.inOut'},T3+1.0); sfx('swoosh',T3+1.0,.4); }
 ['#chip1','#chip2','#chip3'].forEach((c,i)=>{ tl.from(c,{scale:.6,opacity:0,duration:.45,ease:'back.out(2)'},T3+1.35+i*.15); sfx('pop',T3+1.35+i*.15,.5); });
 tl.from('#cta1',{scale:.7,opacity:0,duration:.55,ease:'back.out(1.8)'},T3+1.85);
 tl.from('#guar1',{y:60,opacity:0,duration:.5,ease:'power3.out'},T3+2.0);
@@ -705,7 +769,8 @@ const tUp = tSc2+1.15;
 tap(P.ucb, tUp);
 tl.fromTo('#ucheck',{opacity:0,scale:.3},{opacity:1,scale:1,duration:.25,ease:'back.out(3)',transformOrigin:'50% 50%'},tUp);
 tl.fromTo('#ups',{backgroundColor:'#fdfbea'},{backgroundColor:'#f3fbe9',duration:.3},tUp);
-const tBuy = tUp+.75;
+let tBuy = tUp+.75;
+if(SCROLL_PR3 !== SCROLL_PR2){ tl.to('#pr-page',{y:-SCROLL_PR3,duration:.7,ease:'power3.inOut'},tUp+.4); sfx('swoosh',tUp+.45,.4); tBuy = tUp+1.4; }
 tap(P.pbtn, tBuy);
 tl.to('#pbtn',{scale:.97,backgroundColor:'#0856bb',duration:.08},tBuy).to('#pbtn',{scale:1,duration:.25},tBuy+.08);
 tl.to('#pbtn-t',{opacity:0,duration:.15},tBuy+.1);
@@ -746,14 +811,14 @@ fingerOut(tOpen+.15);
 const sc0 = shopIc.width/1080;
 tl.set('#appopen',{autoAlpha:1,left:shopIc.left,top:shopIc.top,width:shopIc.width,height:shopIc.height,borderRadius:48},tOpen+.12);
 tl.set('#ao-inner',{scale:sc0},tOpen+.12);
-tl.to('#appopen',{left:0,top:0,width:1080,height:1920,borderRadius:0,duration:.55,ease:'power3.inOut'},tOpen+.12);
+tl.to('#appopen',{left:0,top:0,width:1080,height:H,borderRadius:0,duration:.55,ease:'power3.inOut'},tOpen+.12);
 tl.to('#ao-inner',{scale:1,duration:.55,ease:'power3.inOut'},tOpen+.12);
 tl.to(['#grid','#dock','#pages-dots'],{scale:.9,opacity:0,duration:.45,ease:'power2.in'},tOpen+.12);
 sfx('open',tOpen+.12);
 const tApp = tOpen+.7;
 gsap.set('#ao-logo',{transformOrigin:'50% 50%'});
 tl.fromTo('#ao-logo',{scale:.3,opacity:0},{scale:1,opacity:1,duration:.55,ease:'back.out(1.8)'},tApp-.25);
-tl.to('#ao-logo',{y:-400,scale:.55,duration:.6,ease:'power3.inOut'},tApp+.55);
+tl.to('#ao-logo',{y:SQ?-210:-400,scale:SQ?.6:.55,duration:.6,ease:'power3.inOut'},tApp+.55);
 // kinetic words, wavy blur entrance
 $$('#kin .w').forEach((w,i)=>{
   tl.fromTo(w,{opacity:0,y:[90,40,110][i],filter:'blur(22px)',scale:1.3},{opacity:1,y:0,filter:'blur(0px)',scale:1,duration:.55,ease:'power3.out'},tApp+.85+i*.14);
@@ -762,14 +827,15 @@ sfx('impact',tApp+.95,.7);
 tl.fromTo('#kin-sub',{opacity:0,y:40},{opacity:1,y:0,duration:.5,ease:'power3.out'},tApp+1.35);
 // move headline block up, then notifications
 const tN = tApp+2.1;
-tl.to('#ao-logo',{y:-560,scale:.36,duration:.55,ease:'power3.inOut'},tN-.1);
-tl.to('#kin',{y:-470,scale:.72,duration:.55,ease:'power3.inOut'},tN-.1);
-tl.to('#kin-sub',{y:-480,scale:.85,duration:.55,ease:'power3.inOut'},tN-.1);
-const NY0 = 900, NGAP = 245;
+tl.to('#ao-logo',{y:SQ?-390:-560,scale:SQ?.3:.36,duration:.55,ease:'power3.inOut'},tN-.1);
+tl.to('#kin',{y:SQ?-235:-470,scale:SQ?.6:.72,duration:.55,ease:'power3.inOut'},tN-.1);
+tl.to('#kin-sub',{y:SQ?-330:-480,scale:SQ?.8:.85,duration:.55,ease:'power3.inOut'},tN-.1);
+const NY0 = SQ ? 470 : 900, NGAP = SQ ? 62 : 245, NSC = SQ ? .05 : .03, NOP = SQ ? .22 : .12;
 NOTIFS.forEach((_,i)=>{
   const t = tN+.5+i*.55, el='#nt'+i;
   tl.fromTo(el,{autoAlpha:0,y:NY0-260,scale:.9},{autoAlpha:1,y:NY0,scale:1,duration:.45,ease:'back.out(1.4)'},t);
-  for(let j=0;j<i;j++){ const d=i-j; tl.to('#nt'+j,{y:NY0+d*NGAP,scale:1-d*.03,opacity:1-d*.12,duration:.4,ease:'power3.out'},t); }
+  for(let j=0;j<i;j++){ const d=i-j; tl.to('#nt'+j,{y:NY0+d*NGAP,scale:1-d*NSC,opacity:1-d*NOP,duration:.4,ease:'power3.out'},t); }
+  if(SQ && i>0) tl.to(['#nt'+(i-1)+' .nt','#nt'+(i-1)+' .nic'],{opacity:0,duration:.15},t);
   sfx('cash',t+.05);
 });
 const T9 = tN+.5+NOTIFS.length*.55+1.0;
@@ -814,14 +880,15 @@ tl.set({},{},END);
 /* ---------- API ---------- */
 window.DURATION = END;
 window.SFX = SFX.sort((a,b)=>a.t-b.t);
+window.MUSIC = {drop1:T3, brk:T7, drop2:tApp+.95, end:END};
 window.seek = t => { tl.seek(t, false); };
 tl.seek(0);
 const params = new URLSearchParams(location.search);
 if(!params.has('render')){
   document.body.classList.add('preview');
-  const s = Math.min((innerHeight-40)/1920, 1);
+  const s = Math.min((innerHeight-40)/H, 1);
   $('#stage').style.transform = `scale(${s})`;
-  document.body.style.height = (1920*s+40)+'px';
+  document.body.style.height = (H*s+40)+'px';
   if(params.has('t')) tl.seek(+params.get('t')); else tl.play(0);
 }
 window.READY = true;
