@@ -57,25 +57,22 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
 #urlbar .dots{width:60px;flex:none;text-align:center;font:700 44px Inter;color:#444;letter-spacing:2px}
 #loadbar{position:absolute;left:0;bottom:-3px;height:6px;width:0;background:#1a73e8;border-radius:3px}
 
-/* ---------- 2. search ---------- */
-#s-search{background:#fff}
-#search-area{position:absolute;top:208px;left:0;right:0;bottom:0}
-#s-logo{position:absolute;top:330px;left:0;right:0;display:flex;justify-content:center}
-#s-logo .mag{width:190px;height:190px;border-radius:50%;background:linear-gradient(135deg,#eef3ff,#f3ecff);display:flex;align-items:center;justify-content:center;box-shadow:0 20px 50px rgba(80,90,200,.12)}
-#s-hello{position:absolute;top:570px;left:0;right:0;text-align:center;font:600 64px Sora;color:#1d1e24;letter-spacing:-.02em}
-#sbox{position:absolute;top:720px;left:60px;right:60px;height:150px;border-radius:75px;border:3px solid #dfe1e5;background:#fff;display:flex;align-items:center;padding:0 46px;gap:28px;box-shadow:0 6px 24px rgba(32,33,36,.08);font:400 42px Inter;color:#202124;white-space:pre}
-#sbox .ph{color:#80868b}
-#sbox .mic{margin-left:auto}
-#sugg{position:absolute;top:900px;left:60px;right:60px;border-radius:40px;background:#fff;box-shadow:0 16px 50px rgba(32,33,36,.16);overflow:hidden;opacity:0}
-.srow{display:flex;align-items:center;gap:34px;padding:34px 46px;font:400 40px Inter;color:#202124}
+/* ---------- 2. search (Chrome new tab) ---------- */
+#s-search{background:#edf4fe}
+#ntp-top{position:absolute;left:0;top:0;width:1080px;display:block}
+#ntp-disc{position:absolute;left:23px;right:23px;top:1494px;height:700px;border-radius:46px;background:#fff;padding:44px 48px}
+#ntp-disc h5{font:700 35px Inter;color:#1f1f1f}
+#ntp-disc .sk{margin:46px -48px 0;height:520px;background:linear-gradient(135deg,#e7ecf4,#d6deeb)}
+#ntp-bot{position:absolute;left:0;bottom:0;width:1080px;display:block}
+#ntp-dim{position:absolute;left:0;right:0;top:625px;bottom:0;background:#edf4fe;opacity:0}
+#gpill{position:absolute;left:61px;top:450px;width:957px;height:158px;border-radius:79px;background:#fff;border:3px solid #1a73e8;box-shadow:0 0 0 6px rgba(26,115,232,.14),0 12px 30px rgba(32,33,36,.12);display:flex;align-items:center;padding:0 44px;gap:26px;font:400 40px Inter;color:#1f1f1f;white-space:pre;opacity:0}
+#gpill .ph{color:#5f6368}
+#sugg{position:absolute;top:650px;left:40px;right:40px;border-radius:44px;background:#fff;box-shadow:0 16px 50px rgba(32,33,36,.16);overflow:hidden;opacity:0}
+.srow{display:flex;align-items:center;gap:34px;padding:36px 46px;font:400 40px Inter;color:#202124}
 .srow + .srow{border-top:1px solid #eee}
-.srow .ico{width:84px;height:84px;border-radius:50%;background:#f1f3f4;display:flex;align-items:center;justify-content:center;flex:none}
+.srow .ico{width:96px;height:96px;border-radius:50%;background:#f1f3f4;display:flex;align-items:center;justify-content:center;flex:none}
 .srow b{font-weight:700}
 .srow small{display:block;font-size:32px;color:#1a0dab;margin-top:6px}
-#tiles{position:absolute;top:1010px;left:80px;right:80px;display:grid;grid-template-columns:repeat(4,1fr);row-gap:60px}
-.tile{display:flex;flex-direction:column;align-items:center;gap:18px;font:500 30px Inter;color:#3c4043}
-.tile .c{width:130px;height:130px;border-radius:50%;background:#f1f3f4;display:flex;align-items:center;justify-content:center;font:700 52px Sora;color:#fff}
-
 /* ---------- 3/4. site ---------- */
 #s-site{background:#090b20}
 #site-view{position:absolute;top:208px;left:0;right:0;bottom:0;overflow:hidden}
@@ -249,15 +246,28 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
    radial-gradient(70% 30% at 50% 100%,rgba(236,72,153,.18),transparent 70%),
    linear-gradient(180deg,#0b0e2a 0%,#0a0b22 60%,#0d0b26 100%)}
 #s-end::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.035) 2px,transparent 2px);background-size:96px 96px}
-#end-wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-bottom:40px}
+#end-wrap{position:absolute;left:0;right:0;top:0;display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:130px}
 #end-url{display:flex;align-items:center;gap:18px;height:100px;padding:0 50px;border-radius:50px;background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.16);font:600 46px Sora;color:#fff}
-#end-h{margin-top:70px;font:300 76px/1.14 Sora;color:#f3f4fb;white-space:nowrap}
-#end-chrono{font:400 126px/1 'Bebas Neue';letter-spacing:.035em;margin-top:22px}
-#end-cta{margin-top:90px;width:860px;height:150px;border-radius:75px;font-size:48px}
-#end-guar{margin-top:80px;font:400 60px/1.15 'Bebas Neue';letter-spacing:.05em;color:#f1f3f9}
+#end-h{margin-top:46px;font:300 74px/1.14 Sora;color:#f3f4fb;white-space:nowrap}
+#end-chrono{font:400 124px/1 'Bebas Neue';letter-spacing:.035em;margin-top:14px}
+#end-offer{margin-top:46px;width:940px;border-radius:44px;border:2px solid rgba(255,255,255,.1);background:rgba(255,255,255,.035);padding:36px 50px;text-align:left;display:flex;flex-direction:column;gap:24px}
+#end-offer .it{display:flex;align-items:center;gap:28px;font:500 40px Sora;color:#e8eaf6;white-space:nowrap}
+#end-offer .it i{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6 55%,#ec4899);display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 0 20px rgba(139,92,246,.45)}
+#end-tiers{margin-top:40px;display:flex;gap:26px}
+.tier{width:296px;height:206px;border-radius:38px;border:2px solid rgba(255,255,255,.13);background:rgba(255,255,255,.045);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.tier b{font:800 74px/1 Sora;color:#fff;letter-spacing:-.02em}
+.tier span{font:400 29px/1.25 Sora;color:#b3b8cf}
+.tier.best{border:3px solid transparent;background:linear-gradient(#17163d,#17163d) padding-box,linear-gradient(90deg,#3b82f6,#8b5cf6,#ec4899) border-box;box-shadow:0 0 50px rgba(139,92,246,.45)}
+.tier.best b{background:linear-gradient(90deg,#60a5fa,#a78bfa,#f472b6);-webkit-background-clip:text;background-clip:text;color:transparent}
+#end-guar{margin-top:46px;display:flex;align-items:center;gap:24px;font:400 54px/1.1 'Bebas Neue';letter-spacing:.05em;color:#f1f3f9;text-align:left}
 #end-guar span{color:#34d399}
-#end-stars{margin-top:40px;display:flex;align-items:center;gap:20px;font:400 36px Sora;color:#aeb3c9}
+#end-stars{margin-top:26px;display:flex;align-items:center;gap:20px;font:400 38px Sora;color:#aeb3c9}
 #end-stars b{color:#fff}
+#end-hint{position:absolute;left:0;right:0;bottom:36px;display:flex;flex-direction:column;align-items:center;gap:4px}
+#end-hint p{font:600 48px/1.2 Sora;color:#fff;text-align:center}
+#end-hint p b{font-weight:800;background:linear-gradient(90deg,#60a5fa,#a78bfa,#f472b6);-webkit-background-clip:text;background-clip:text;color:transparent}
+#arrows{position:relative;width:170px;height:190px}
+#arrows svg{position:absolute;left:0}
 </style>
 </head>
 <body>
@@ -267,7 +277,7 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
   <section class="scene" id="s-chat">
     <div id="chat-head"><div class="av">Y</div><div class="nm">Yanis <span>›</span></div></div>
     <div id="chat-wrap">
-      <div id="chat-time">Aujourd’hui 16:47</div>
+      <div id="chat-time">Aujourd’hui 17:46</div>
       <div class="slot" id="slot1">
         <div class="typing" id="typ1"><i></i><i></i><i></i></div>
         <div class="bubble b-in" id="b1">Salut gros, ça te dit<br>on se lance dans le<br>drop shipping ?</div>
@@ -285,32 +295,19 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
 
   <!-- ============ 2. SEARCH ============ -->
   <section class="scene" id="s-search">
-    <div id="search-area">
-      <div id="s-logo"><div class="mag">
-        <svg width="96" height="96" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="mg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f6cf6"/><stop offset="1" stop-color="#c14fe6"/></linearGradient></defs><circle cx="10.5" cy="10.5" r="6.5" stroke="url(#mg)" stroke-width="2.4"/><path d="M15.5 15.5L20.5 20.5" stroke="url(#mg)" stroke-width="2.6" stroke-linecap="round"/></svg>
-      </div></div>
-      <div id="s-hello">Lance ta recherche</div>
-      <div id="sbox">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><circle cx="10.5" cy="10.5" r="6.5" stroke="#5f6368" stroke-width="2.2"/><path d="M15.5 15.5L20.5 20.5" stroke="#5f6368" stroke-width="2.4" stroke-linecap="round"/></svg>
-        <span><span class="ph" id="s-ph">Rechercher sur Google ou saisir une URL</span><span id="s-typed"></span><span class="caret" id="s-caret"></span></span>
-        <svg class="mic" width="44" height="44" viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" fill="#4285f4"/><path d="M6 11a6 6 0 0 0 12 0" stroke="#5f6368" stroke-width="2" stroke-linecap="round"/><path d="M12 17v4" stroke="#5f6368" stroke-width="2" stroke-linecap="round"/></svg>
-      </div>
-      <div id="sugg">
-        <div class="srow" id="srow1"><div class="ico"><svg width="44" height="44" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#5f6368" stroke-width="1.8"/><path d="M3 12h18M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18" stroke="#5f6368" stroke-width="1.6"/></svg></div>
-          <div><b>ecomstartprofits.com</b><small>https://www.ecomstartprofits.com</small></div></div>
-        <div class="srow"><div class="ico"><svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="10.5" cy="10.5" r="6.5" stroke="#5f6368" stroke-width="2.2"/><path d="M15.5 15.5L20.5 20.5" stroke="#5f6368" stroke-width="2.4" stroke-linecap="round"/></svg></div>
-          <div>ecomstartprofits <b>boutique shopify</b></div></div>
-      </div>
-      <div id="tiles">
-        <div class="tile"><div class="c" style="background:#ef6c57">A</div>Actus</div>
-        <div class="tile"><div class="c" style="background:#4f8ef7">M</div>Météo</div>
-        <div class="tile"><div class="c" style="background:#30b07a">C</div>Cartes</div>
-        <div class="tile"><div class="c" style="background:#9a67ea">V</div>Vidéos</div>
-        <div class="tile"><div class="c" style="background:#f2a93b">S</div>Sport</div>
-        <div class="tile"><div class="c" style="background:#e5578f">S</div>Shopping</div>
-        <div class="tile"><div class="c" style="background:#3fb7c8">M</div>Musique</div>
-        <div class="tile"><div class="c" style="background:#7d8796">+</div>Ajouter</div>
-      </div>
+    <img id="ntp-top" src="assets/img/chrome-top.jpg" alt="">
+    <div id="ntp-disc"><h5>Discover</h5><div class="sk"></div></div>
+    <img id="ntp-bot" src="assets/img/chrome-bottom.jpg" alt="">
+    <div id="ntp-dim"></div>
+    <div id="gpill">
+      <svg width="46" height="46" viewBox="0 0 24 24" fill="none"><circle cx="10.5" cy="10.5" r="6.5" stroke="#5f6368" stroke-width="2.2"/><path d="M15.5 15.5L20.5 20.5" stroke="#5f6368" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <span><span class="ph" id="s-ph">Rechercher sur Google ou saisir une URL</span><span id="s-typed"></span><span class="caret" id="s-caret"></span></span>
+    </div>
+    <div id="sugg">
+      <div class="srow" id="srow1"><div class="ico" style="background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.12)"><img src="assets/img/shopify.png" width="62" height="62" alt=""></div>
+        <div><b>ecomstartprofits.com</b><small>Ta boutique Shopify prête à vendre en 48 h</small></div></div>
+      <div class="srow"><div class="ico"><svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="10.5" cy="10.5" r="6.5" stroke="#5f6368" stroke-width="2.2"/><path d="M15.5 15.5L20.5 20.5" stroke="#5f6368" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+        <div>ecomstartprofits <b>boutique shopify</b></div></div>
     </div>
   </section>
 
@@ -405,43 +402,10 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
             <li><b>Shopify Inbox</b> : intègre un chat à votre boutique.</li>
           </ol>
         </div>
-        <div class="pbtn" id="pbtn"><span id="pbtn-t">➤ Compléter la demande</span><span class="spin" id="pspin"></span></div>
+        <div class="pbtn" id="pbtn"><span id="pbtn-t">➤ Compléter la demande</span><span class="spin" id="pspin"></span><span id="pbtn-ok" style="position:absolute;display:flex;align-items:center;gap:20px;opacity:0"><svg width="56" height="56" viewBox="0 0 24 24" fill="none"><path d="M4 12.5l5 5L20 6.5" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Commande validée</span></div>
         <div class="secure">* Paiements 100% sûrs &amp; sécurisés *</div>
       </div>
     </div></div>
-  </section>
-
-  <!-- ============ 6. CONFIRMATION ============ -->
-  <section class="scene" id="s-ok">
-    <div class="glow" style="width:700px;height:700px;left:-200px;top:200px;background:#2563eb" id="okg1"></div>
-    <div class="glow" style="width:700px;height:700px;right:-250px;top:900px;background:#a21caf" id="okg2"></div>
-    <div id="ok-wrap">
-      <div id="ring">
-        <svg viewBox="0 0 420 420">
-          <defs>
-            <linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38bdf8"/><stop offset=".5" stop-color="#818cf8"/><stop offset="1" stop-color="#e879f9"/></linearGradient>
-            <radialGradient id="rf" cx=".5" cy=".4" r=".6"><stop offset="0" stop-color="#2a2f6e"/><stop offset="1" stop-color="#121433"/></radialGradient>
-            <filter id="gl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-          </defs>
-          <circle id="ring-fill" cx="210" cy="210" r="168" fill="url(#rf)"/>
-          <circle id="ring-c" cx="210" cy="210" r="180" fill="none" stroke="url(#rg)" stroke-width="18" stroke-linecap="round" filter="url(#gl)" transform="rotate(-90 210 210)" stroke-dasharray="1131" stroke-dashoffset="1131"/>
-          <path id="ring-chk" d="M135 215 L188 266 L290 160" fill="none" stroke="#f4f4ff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="240" stroke-dashoffset="240"/>
-        </svg>
-        <div id="parts"></div>
-      </div>
-      <div id="valide"><svg width="62" height="62" viewBox="0 0 24 24" fill="none"><path d="M4 12.5l5 5L20 6.5" stroke="#34d399" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Validé</div>
-      <div id="ok-title"><span class="w1">Votre boutique</span><br><span class="g">est en création</span></div>
-      <div id="ok-div">
-        <div class="ln" id="ln1" style="background:linear-gradient(90deg,transparent,#6d8cf7)"></div>
-        <svg width="110" height="120" viewBox="0 0 24 26" fill="none" id="ok-bag"><defs><linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#60a5fa"/><stop offset="1" stop-color="#c084fc"/></linearGradient></defs><path d="M4 8h16l-1.3 15H5.3z" stroke="url(#bg2)" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.5 8V6a3.5 3.5 0 0 1 7 0v2" stroke="url(#bg2)" stroke-width="1.8"/><text x="12" y="19.5" font-family="Inter" font-weight="900" font-style="italic" font-size="9" fill="url(#bg2)" text-anchor="middle">S</text></svg>
-        <div class="ln" id="ln2" style="background:linear-gradient(90deg,#c084fc,transparent)"></div>
-      </div>
-      <div id="ok-card">
-        <svg width="130" height="130" viewBox="0 0 24 24" fill="none" style="flex:none"><defs><linearGradient id="cg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38bdf8"/><stop offset="1" stop-color="#c084fc"/></linearGradient></defs><circle cx="12" cy="12" r="9.5" stroke="url(#cg)" stroke-width="1.6"/><g id="clk-h"><path d="M12 12V7" stroke="url(#cg)" stroke-width="1.8" stroke-linecap="round"/></g><g id="clk-m"><path d="M12 12l3.2 2.2" stroke="url(#cg)" stroke-width="1.8" stroke-linecap="round"/></g></svg>
-        <div class="sep"></div>
-        <div><p>Elle sera prête dans</p><h2><span id="cnt">48</span> heures</h2></div>
-      </div>
-    </div>
   </section>
 
   <!-- ============ 7. LATER ============ -->
@@ -473,15 +437,29 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
       <div id="end-url"><svg width="40" height="40" viewBox="0 0 24 24" fill="none"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="#a78bfa"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" stroke="#a78bfa" stroke-width="2.2"/></svg>ecomstartprofits.com</div>
       <div id="end-h">Obtiens ta boutique prête<br>à vendre</div>
       <div id="end-chrono" class="grad-text">EN 48 HEURES CHRONO</div>
-      <div class="cta" id="end-cta"><span class="shine"></span>Obtenir ma boutique maintenant</div>
-      <div id="end-guar"><span>GARANTIE 120 JOURS :</span> SI VOUS NE FAITES AUCUNE<br>VENTE, ON VOUS REMBOURSE.</div>
+      <div id="end-offer">
+        <div class="it"><i><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l4.5 4.5L19.5 7" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></i>Boutique Shopify pro clé en main</div>
+        <div class="it"><i><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l4.5 4.5L19.5 7" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></i>Vidéos publicitaires fournies</div>
+        <div class="it"><i><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l4.5 4.5L19.5 7" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></i>Livrée par mail en 48 h</div>
+        <div class="it"><i><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l4.5 4.5L19.5 7" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></i>Accompagnement inclus</div>
+      </div>
+      <div id="end-tiers">
+        <div class="tier"><b>10 €</b><span>1 produit</span></div>
+        <div class="tier best"><b>37 €</b><span>10 produits<br>+ 3 pubs</span></div>
+        <div class="tier"><b>67 €</b><span>50 produits<br>+ 50 pubs</span></div>
+      </div>
+      <div id="end-guar"><svg width="70" height="80" viewBox="0 0 24 28" fill="none"><path d="M12 1.5L22 5.5v8c0 6.5-4.3 10.8-10 13-5.7-2.2-10-6.5-10-13v-8z" stroke="#34d399" stroke-width="2.2" stroke-linejoin="round"/><path d="M7.5 14l3 3 6-6.5" stroke="#34d399" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><div><span>GARANTIE 120 JOURS :</span> AUCUNE VENTE ?<br>ON VOUS REMBOURSE.</div></div>
       <div id="end-stars"><span class="s" id="stars2" style="display:inline-flex;gap:8px"></span><span><b>5/5</b> sur Trustpilot</span></div>
+    </div>
+    <div id="end-hint">
+      <p>Clique sur le bouton<br><b>sous cette vidéo</b></p>
+      <div id="arrows"><svg class="chev" style="top:0px" width="170" height="80" viewBox="0 0 170 80" fill="none"><defs><linearGradient id="chg0" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#60a5fa"/><stop offset=".5" stop-color="#a78bfa"/><stop offset="1" stop-color="#f472b6"/></linearGradient></defs><path d="M18 14l67 52 67-52" stroke="url(#chg0)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" opacity="1"/></svg><svg class="chev" style="top:55px" width="170" height="80" viewBox="0 0 170 80" fill="none"><defs><linearGradient id="chg55" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#60a5fa"/><stop offset=".5" stop-color="#a78bfa"/><stop offset="1" stop-color="#f472b6"/></linearGradient></defs><path d="M18 14l67 52 67-52" stroke="url(#chg55)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" opacity="1"/></svg><svg class="chev" style="top:110px" width="170" height="80" viewBox="0 0 170 80" fill="none"><defs><linearGradient id="chg110" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#60a5fa"/><stop offset=".5" stop-color="#a78bfa"/><stop offset="1" stop-color="#f472b6"/></linearGradient></defs><path d="M18 14l67 52 67-52" stroke="url(#chg110)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" opacity="1"/></svg></div>
     </div>
   </section>
 
   <!-- ============ shared overlays ============ -->
   <div id="browser">
-    <div class="status"><span>16:48</span><span class="ic sic"></span></div>
+    <div class="status"><span>17:48</span><span class="ic sic"></span></div>
     <div id="urlbar">
       <svg class="back" viewBox="0 0 24 24" fill="none"><path d="M20 12H5M11 5l-7 7 7 7" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <div id="urlpill">
@@ -514,11 +492,7 @@ const STAR = `<svg width="56" height="56" viewBox="0 0 24 24"><path d="M12 2l2.9
 ['#stars1','#stars2'].forEach(s => $(s).innerHTML = STAR.repeat(5));
 
 /* Shopify-style bag mark (drawn) */
-const BAG = (w) => `<svg width="${w}" height="${w}" viewBox="0 0 100 100">
-  <path d="M30 32 C30 14 42 8 50 8 C58 8 70 14 70 32" fill="none" stroke="#5e8e3e" stroke-width="6" stroke-linecap="round"/>
-  <path d="M18 30 L66 26 L72 92 L12 88 Z" fill="#95bf47"/>
-  <path d="M66 26 L84 30 L88 90 L72 92 Z" fill="#5e8e3e"/>
-  <text x="42" y="78" font-family="Inter" font-weight="900" font-style="italic" font-size="50" fill="#fff" text-anchor="middle">S</text></svg>`;
+const BAG = (w) => `<img src="assets/img/shopify.png" width="${w}" height="${w}" alt="" style="display:block">`;
 $('#ao-logo').outerHTML = `<div id="ao-logo">${BAG(400)}</div>`;
 
 /* home screen apps (generic glyphs) */
@@ -550,12 +524,11 @@ $('#dock').innerHTML = [['linear-gradient(180deg,#65e07a,#2fbf4a)',G.phone],['li
 const NOTIFS = [
   ['il y a 2 min','29,90 €'],['il y a 1 min','34,90 €'],['à l’instant','29,90 €'],['à l’instant','49,90 €']
 ];
-$('#notifs').innerHTML = NOTIFS.map(([w,p],i)=>`<div class="notif" id="nt${i}"><div class="nic">${BAG(84)}</div><div class="nt"><h6>Nouvelle commande<span>${w}</span></h6><p>[Ma boutique] Tu as une nouvelle commande de 1 article pour un total de ${p} sur la boutique en ligne.</p></div></div>`).join('');
+$('#notifs').innerHTML = NOTIFS.map(([w,p],i)=>`<div class="notif" id="nt${i}"><div class="nic">${BAG(78)}</div><div class="nt"><h6>Nouvelle commande<span>${w}</span></h6><p>[Ma boutique] Tu as une nouvelle commande de 1 article pour un total de ${p} sur la boutique en ligne.</p></div></div>`).join('');
 
 /* seeded rng + particles */
 let seed = 7; const rnd = () => (seed = (seed*16807) % 2147483647) / 2147483647;
 const PCOL = ['#38bdf8','#818cf8','#e879f9','#34d399','#f472b6','#fde047'];
-$('#parts').innerHTML = Array.from({length:26},(_,i)=>`<i style="background:${PCOL[i%PCOL.length]}"></i>`).join('');
 
 /* typing helpers: split text into hidden spans */
 function prep(el, text){ el.innerHTML=''; return [...text].map(c=>{const s=document.createElement('span'); s.textContent=c; s.style.display='none'; el.appendChild(s); return s;}); }
@@ -572,7 +545,7 @@ const formSec = $('#form-sec');
 const offIn = (el, root) => { let y=0; while(el && el!==root){ y+=el.offsetTop; el=el.offsetParent; } return y; };
 const SCROLL_FORM = offIn($('#fcard'), $('#page')) - 330;
 const P = {
-  sbox: ctr('#sbox'), srow1: ctr('#srow1'),
+  sbox: ctr('#gpill'), srow1: ctr('#srow1'),
   cta1: ctr('#cta1'),
   in1: ctr('#in1', -SCROLL_FORM), in2: ctr('#in2', -SCROLL_FORM), in3: ctr('#in3', -SCROLL_FORM), fbtn: ctr('#fbtn', -SCROLL_FORM),
 };
@@ -625,33 +598,30 @@ tl.to('#chat-wrap',{scale:2.6,y:-420,x:260,filter:'blur(18px)',duration:.55,ease
 tl.to('#s-chat',{autoAlpha:0,duration:.2},5.4);
 sfx('whoosh',5.05);
 
-/* ===== 2. SEARCH 5.35 → 9.45 ===== */
+/* ===== 2. SEARCH (Google / Chrome) ===== */
 const T2=5.35;
-tl.set(['#s-search','#browser'],{autoAlpha:1},T2);
+tl.set('#s-search',{autoAlpha:1},T2);
 tl.fromTo('#s-search',{scale:1.18,filter:'blur(14px)'},{scale:1,filter:'blur(0px)',duration:.55,ease:'power3.out'},T2);
-tl.fromTo('#browser',{y:-208},{y:0,duration:.5,ease:'power3.out'},T2+.05);
-tl.from('#s-logo .mag',{scale:0,duration:.6,ease:'back.out(2)'},T2+.15);
-tl.from('#s-hello',{y:30,opacity:0,duration:.5,ease:'power3.out'},T2+.25);
-tl.from('#sbox',{y:40,opacity:0,duration:.5,ease:'power3.out'},T2+.3);
-tl.from('.tile',{y:40,opacity:0,duration:.45,stagger:.04,ease:'power3.out'},T2+.4);
-fingerIn(T2+.55, 540, 1500);
-tap(P.sbox, T2+1.05);
-tl.to('#sbox',{borderColor:'#1a73e8',boxShadow:'0 0 0 6px rgba(26,115,232,.15), 0 10px 30px rgba(32,33,36,.12)',duration:.2},T2+1.05);
-tl.to('#tiles',{opacity:0,y:30,duration:.3},T2+1.1);
-blinkC('#s-caret',T2+1.1,T2+1.35);
-tl.set('#s-ph',{display:'none'},T2+1.35);
+fingerIn(T2+.5, 600, 1250);
+tap(P.sbox, T2+1.0);
+tl.fromTo('#gpill',{opacity:0,scale:.97},{opacity:1,scale:1,duration:.2,ease:'power2.out'},T2+1.0);
+tl.to('#ntp-dim',{opacity:1,duration:.3},T2+1.05);
+blinkC('#s-caret',T2+1.1,T2+1.4);
+tl.set('#s-ph',{display:'none'},T2+1.4);
 const sChars = prep($('#s-typed'),'www.ecomstartprofits.com');
-let te = typeIn(sChars,T2+1.35,19);
-tl.set('#s-caret',{opacity:1},T2+1.35);
+let te = typeIn(sChars,T2+1.4,19);
+tl.set('#s-caret',{opacity:1},T2+1.4);
 tl.fromTo('#sugg',{opacity:0,y:-20},{opacity:1,y:0,duration:.3,ease:'power2.out'},te-.25);
-tap(P.srow1, te+.45);
-tl.to('#srow1',{backgroundColor:'#eef3fe',duration:.12},te+.45);
-const tLoad = te+.55;
-tl.fromTo('#loadbar',{width:0,opacity:1},{width:'70%',duration:.5,ease:'power2.out'},tLoad);
-tl.to('#url-ph',{opacity:0,duration:.15},tLoad);
-tl.to('#url-txt',{opacity:1,duration:.2},tLoad+.1);
+tl.from('#srow1 .ico',{scale:0,duration:.35,ease:'back.out(2.5)'},te-.15);
+tap(P.srow1, te+.5);
+tl.to('#srow1',{backgroundColor:'#eef3fe',duration:.12},te+.5);
+const tLoad = te+.6;
+tl.set('#browser',{autoAlpha:1},tLoad);
+tl.set('#url-ph',{opacity:0},tLoad); tl.set('#url-txt',{opacity:1},tLoad);
+tl.fromTo('#browser',{y:-208},{y:0,duration:.35,ease:'power3.out'},tLoad);
+tl.fromTo('#loadbar',{width:0,opacity:1},{width:'70%',duration:.5,ease:'power2.out'},tLoad+.1);
 fingerOut(tLoad+.1);
-const T3 = tLoad+.55;  // ≈ 9.5
+const T3 = tLoad+.6;
 
 /* ===== 3. SITE HERO ===== */
 tl.to('#loadbar',{width:'100%',duration:.25,ease:'power1.in'},T3-.05).to('#loadbar',{opacity:0,duration:.2},T3+.2);
@@ -742,41 +712,15 @@ tl.to('#pbtn-t',{opacity:0,duration:.15},tBuy+.1);
 tl.to('#pspin',{opacity:1,duration:.15},tBuy+.15);
 tl.fromTo('#pspin',{rotation:0},{rotation:720,duration:1.1,ease:'none'},tBuy+.1);
 fingerOut(tBuy+.3);
-const T6 = tBuy+1.05;
-
-/* ===== 6. CONFIRMATION ===== */
-tl.to(['#s-pricing','#browser'],{autoAlpha:0,duration:.25},T6);
-flash(T6,.9,.5);
-tl.set('#s-ok',{autoAlpha:1},T6);
-tl.fromTo('#ok-wrap',{scale:1.08},{scale:1,duration:4.2,ease:'power1.out'},T6);
-tl.fromTo('#okg1',{x:0,y:0},{x:120,y:80,duration:4.6,ease:'sine.inOut'},T6);
-tl.fromTo('#okg2',{x:0,y:0},{x:-120,y:-90,duration:4.6,ease:'sine.inOut'},T6);
-tl.from('#ring-fill',{scale:0,transformOrigin:'210px 210px',duration:.5,ease:'back.out(1.7)'},T6+.1);
-tl.to('#ring-c',{attr:{'stroke-dashoffset':0},duration:.75,ease:'power2.inOut'},T6+.15);
-tl.to('#ring-chk',{attr:{'stroke-dashoffset':0},duration:.4,ease:'power2.out'},T6+.75);
-tl.fromTo('#ring',{scale:1},{scale:1.1,duration:.15,yoyo:true,repeat:1,ease:'power2.out'},T6+1.1);
-sfx('success',T6+.8);
-$$('#parts i').forEach((p,i)=>{
-  const a = (i/26)*Math.PI*2 + rnd()*.4, r = 260+rnd()*170;
-  tl.fromTo(p,{x:0,y:0,scale:1,opacity:0},{x:Math.cos(a)*r,y:Math.sin(a)*r,opacity:1,scale:.4+rnd()*.9,duration:.8,ease:'power3.out'},T6+1.1);
-  tl.to(p,{opacity:0,duration:.4},T6+1.6+rnd()*.3);
-});
-show('#valide',T6+1.25,.5,{scale:.5});
-sfx('pop',T6+1.3,.7);
-tl.from('#ok-title .w1',{x:-60,opacity:0,duration:.5,ease:'power3.out'},T6+1.5);
-tl.from('#ok-title .g',{x:60,opacity:0,duration:.5,ease:'power3.out'},T6+1.62);
-tl.from(['#ln1','#ln2'],{scaleX:0,duration:.5,ease:'power3.out',transformOrigin:(i)=>i?'0% 50%':'100% 50%'},T6+1.85);
-tl.from('#ok-bag',{scale:0,rotation:-20,duration:.5,ease:'back.out(2.5)'},T6+1.9);
-tl.from('#ok-card',{y:80,opacity:0,duration:.55,ease:'power3.out'},T6+2.1);
-tl.fromTo('#clk-m',{rotation:0},{rotation:720,svgOrigin:'12 12',duration:2.2,ease:'power1.inOut'},T6+2.2);
-tl.fromTo('#clk-h',{rotation:0},{rotation:60,svgOrigin:'12 12',duration:2.2,ease:'power1.inOut'},T6+2.2);
-tl.set('#cnt',{textContent:'0'},T6);
-for(let k=0;k<=24;k++){ tl.set('#cnt',{textContent:String(Math.round(k*2))},T6+2.2+k*.03); }
-tl.fromTo('#ok-card',{boxShadow:'0 0 60px rgba(139,92,246,.35)'},{boxShadow:'0 0 110px rgba(139,92,246,.7)',duration:.6,yoyo:true,repeat:1},T6+3.0);
-const T7 = T6+4.4;
+// order confirmed on the button, then straight to "48 heures plus tard"
+tl.to('#pspin',{opacity:0,duration:.1},tBuy+.85);
+tl.to('#pbtn',{backgroundColor:'#16a34a',duration:.2},tBuy+.85);
+tl.fromTo('#pbtn-ok',{opacity:0,scale:.6},{opacity:1,scale:1,duration:.3,ease:'back.out(2.5)'},tBuy+.9);
+sfx('pop',tBuy+.9,.7);
+const T7 = tBuy+1.75;
+tl.to(['#s-pricing','#browser'],{autoAlpha:0,duration:.3},T7-.3);
 
 /* ===== 7. 48H LATER ===== */
-tl.to('#s-ok',{autoAlpha:0,scale:.9,duration:.35,ease:'power2.in'},T7-.3);
 tl.set('#s-later',{autoAlpha:1},T7);
 tl.from('#later-clk',{scale:0,duration:.45,ease:'back.out(2)'},T7);
 tl.fromTo('#lm',{rotation:0},{rotation:360*6,svgOrigin:'12 12',duration:1.4,ease:'power2.inOut'},T7+.1);
@@ -836,15 +780,35 @@ tl.set('#s-end',{autoAlpha:1},T9);
 tl.fromTo('#s-end',{opacity:0},{opacity:1,duration:.3},T9-.1);
 show('#end-url',T9+.05,.5,{y:-40});
 tl.from('#end-h',{y:50,opacity:0,filter:'blur(10px)',duration:.55,ease:'power3.out'},T9+.2);
-tl.from('#end-chrono',{scale:1.6,opacity:0,filter:'blur(16px)',duration:.5,ease:'power4.out'},T9+.5);
-sfx('impact',T9+.55);
-tl.from('#end-cta',{scale:.6,opacity:0,duration:.55,ease:'back.out(1.8)'},T9+.85);
-tl.fromTo('#end-cta .shine',{left:'-40%'},{left:'130%',duration:.8,ease:'power2.inOut'},T9+1.4);
-tl.to('#end-cta',{scale:1.05,duration:.5,yoyo:true,repeat:5,ease:'sine.inOut'},T9+1.4);
-tl.from('#end-guar',{y:40,opacity:0,duration:.5,ease:'power3.out'},T9+1.1);
-tl.from('#end-stars',{y:30,opacity:0,duration:.5,ease:'power3.out'},T9+1.3);
-tl.from('#stars2 svg',{scale:0,duration:.35,stagger:.07,ease:'back.out(3)'},T9+1.35);
-const END = T9+4.2;
+tl.from('#end-chrono',{scale:1.6,opacity:0,filter:'blur(16px)',duration:.5,ease:'power4.out'},T9+.45);
+sfx('impact',T9+.5);
+tl.from('#end-offer',{y:60,opacity:0,duration:.5,ease:'power3.out'},T9+.8);
+$$('#end-offer .it').forEach((it,k)=>{
+  const t=T9+.95+k*.16;
+  tl.from(it,{x:-40,opacity:0,duration:.4,ease:'power3.out'},t);
+  tl.from(it.querySelector('i'),{scale:0,duration:.35,ease:'back.out(3)'},t+.05);
+  sfx('pop',t+.05,.45);
+});
+$$('#end-tiers .tier').forEach((tr,k)=>{
+  const t=T9+1.7+k*.14;
+  tl.from(tr,{scale:.6,y:40,opacity:0,duration:.45,ease:'back.out(1.8)'},t);
+  sfx('pop',t,.4);
+});
+tl.fromTo('#end-tiers .best',{scale:1},{scale:1.06,duration:.35,yoyo:true,repeat:1,ease:'sine.inOut'},T9+2.3);
+tl.from('#end-guar',{y:40,opacity:0,duration:.5,ease:'power3.out'},T9+2.3);
+tl.from('#end-stars',{y:30,opacity:0,duration:.5,ease:'power3.out'},T9+2.5);
+tl.from('#stars2 svg',{scale:0,duration:.35,stagger:.07,ease:'back.out(3)'},T9+2.55);
+const tH = T9+2.9;
+tl.from('#end-hint p',{y:40,opacity:0,filter:'blur(8px)',duration:.5,ease:'power3.out'},tH);
+tl.from('#arrows',{opacity:0,y:-30,duration:.4,ease:'power3.out'},tH+.2);
+sfx('whoosh',tH,.5);
+const END = tH+3.9;
+const chev = $$('#arrows .chev');
+for(let t=tH+.3; t<END-.2; t+=.9){
+  chev.forEach((c,k)=> tl.fromTo(c,{opacity:.15},{opacity:1,duration:.22,yoyo:true,repeat:1,ease:'sine.inOut',immediateRender:false},t+k*.14));
+}
+tl.fromTo('#arrows',{y:0},{y:22,duration:.45,yoyo:true,repeat:Math.floor((END-tH-.6)/.45),ease:'sine.inOut',immediateRender:false},tH+.6);
+tl.fromTo('#end-hint p b',{filter:'brightness(1)'},{filter:'brightness(1.35)',duration:.45,yoyo:true,repeat:5,ease:'sine.inOut',immediateRender:false},tH+.7);
 tl.set({},{},END);
 
 /* ---------- API ---------- */
