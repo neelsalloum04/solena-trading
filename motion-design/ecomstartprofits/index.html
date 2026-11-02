@@ -46,10 +46,10 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
 #chat-vig{position:absolute;inset:0;background:radial-gradient(110% 70% at 50% 50%,rgba(255,255,255,0) 55%,rgba(0,0,0,.08) 100%);pointer-events:none}
 
 /* ---------- browser chrome (shared 2→5) ---------- */
-#browser{position:absolute;top:0;left:0;right:0;height:208px;background:#f4f4f6;z-index:40;visibility:hidden;border-bottom:1px solid #e2e2e6}
+#browser{position:absolute;top:0;left:0;right:0;height:128px;background:#f4f4f6;z-index:40;visibility:hidden;border-bottom:1px solid #e2e2e6}
 .status{position:absolute;top:0;left:0;right:0;height:96px;display:flex;align-items:center;justify-content:space-between;padding:12px 76px 0 92px;font:600 42px Inter;color:#111}
 .status .ic{display:flex;gap:14px;align-items:center}
-#urlbar{position:absolute;left:40px;right:40px;top:104px;height:88px;display:flex;align-items:center;gap:20px}
+#urlbar{position:absolute;left:40px;right:40px;top:20px;height:88px;display:flex;align-items:center;gap:20px}
 #urlbar .back{width:56px;height:56px;flex:none}
 #urlpill{flex:1;height:88px;border-radius:44px;background:#e3e4e8;display:flex;align-items:center;justify-content:center;gap:14px;font:500 40px Inter;color:#111;position:relative}
 #url-ph{color:#77787d;font-weight:400}
@@ -60,15 +60,19 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
 
 /* ---------- 2. search (Chrome new tab) ---------- */
 #s-search{background:#edf4fe}
-#ntp-top{position:absolute;left:0;top:0;width:1080px;display:block}
-#ntp-disc{position:absolute;left:23px;right:23px;top:1494px;height:700px;border-radius:46px;background:#fff;padding:44px 48px}
+#ntp-top{position:absolute;left:0;top:-125px;width:1080px;display:block}
+#ntp-disc{position:absolute;left:23px;right:23px;top:1369px;height:700px;border-radius:46px;background:#fff;padding:44px 48px}
 #ntp-disc h5{font:700 35px Inter;color:#1f1f1f}
 #ntp-disc .sk{margin:46px -48px 0;height:520px;background:linear-gradient(135deg,#e7ecf4,#d6deeb)}
+#ntp-sc{position:absolute;left:23px;right:23px;top:665px;height:251px;border-radius:47px;background:#fff;display:flex;align-items:center;padding-left:65px;overflow:hidden}
+.sc{width:218px;flex:none;display:flex;flex-direction:column;align-items:center;gap:20px;font:400 31px Inter;color:#4a4a4a}
+.sc .c{width:125px;height:125px;border-radius:50%;background:#f1f3f4;display:flex;align-items:center;justify-content:center;font:700 50px Sora;color:#fff}
+#ntp-av{position:absolute;left:950px;top:53px;width:98px;height:98px;border-radius:50%;background:#edf4fe;display:flex;align-items:center;justify-content:center}
 #ntp-bot{position:absolute;left:0;bottom:0;width:1080px;display:block}
-#ntp-dim{position:absolute;left:0;right:0;top:625px;bottom:0;background:#edf4fe;opacity:0}
-#gpill{position:absolute;left:61px;top:450px;width:957px;height:158px;border-radius:79px;background:#fff;border:3px solid #1a73e8;box-shadow:0 0 0 6px rgba(26,115,232,.14),0 12px 30px rgba(32,33,36,.12);display:flex;align-items:center;padding:0 44px;gap:26px;font:400 40px Inter;color:#1f1f1f;white-space:pre;opacity:0}
+#ntp-dim{position:absolute;left:0;right:0;top:500px;bottom:0;background:#edf4fe;opacity:0}
+#gpill{position:absolute;left:61px;top:325px;width:957px;height:158px;border-radius:79px;background:#fff;border:3px solid #1a73e8;box-shadow:0 0 0 6px rgba(26,115,232,.14),0 12px 30px rgba(32,33,36,.12);display:flex;align-items:center;padding:0 44px;gap:26px;font:400 40px Inter;color:#1f1f1f;white-space:pre;opacity:0}
 #gpill .ph{color:#5f6368}
-#sugg{position:absolute;top:650px;left:40px;right:40px;border-radius:44px;background:#fff;box-shadow:0 16px 50px rgba(32,33,36,.16);overflow:hidden;opacity:0}
+#sugg{position:absolute;top:525px;left:40px;right:40px;border-radius:44px;background:#fff;box-shadow:0 16px 50px rgba(32,33,36,.16);overflow:hidden;opacity:0}
 .srow{display:flex;align-items:center;gap:34px;padding:36px 46px;font:400 40px Inter;color:#202124}
 .srow + .srow{border-top:1px solid #eee}
 .srow .ico{width:96px;height:96px;border-radius:50%;background:#f1f3f4;display:flex;align-items:center;justify-content:center;flex:none}
@@ -76,7 +80,7 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
 .srow small{display:block;font-size:32px;color:#1a0dab;margin-top:6px}
 /* ---------- 3/4. site ---------- */
 #s-site{background:#090b20}
-#site-view{position:absolute;top:208px;left:0;right:0;bottom:0;overflow:hidden}
+#site-view{position:absolute;top:128px;left:0;right:0;bottom:0;overflow:hidden}
 #page{position:absolute;top:0;left:0;width:1080px}
 #hero{position:relative;padding-top:250px;text-align:center;overflow:hidden;
   background:
@@ -134,7 +138,7 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
 
 /* ---------- 5. pricing ---------- */
 #s-pricing{background:#000}
-#pr-view{position:absolute;top:208px;left:0;right:0;bottom:0;overflow:hidden}
+#pr-view{position:absolute;top:128px;left:0;right:0;bottom:0;overflow:hidden}
 #pr-page{position:absolute;top:0;left:0;width:1080px;padding:26px 26px 120px;background:#000}
 .pr-bar{position:relative;height:12px;background:#1d6db5;margin-top:22px}
 .pr-bar .tri{position:absolute;top:-24px;left:780px;border-left:24px solid transparent;border-right:24px solid transparent;border-bottom:24px solid #1d6db5}
@@ -240,6 +244,43 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
 .notif h6 span{font:500 32px Inter;color:#6b7280}
 .notif p{font:400 37px/1.3 Inter;color:#222;margin-top:6px}
 
+/* ---------- 8b. orders finale ---------- */
+#notifs{position:absolute;inset:0}
+#fbg{position:absolute;inset:0;background:radial-gradient(65% 50% at 50% 46%,#1f6a3a 0%,#0d2c18 55%,#051309 100%);opacity:0}
+#flood{position:absolute;inset:0;perspective:1500px;opacity:0;overflow:hidden}
+#fplane{position:absolute;left:50%;top:50%;width:1640px;height:2400px;margin:-1200px 0 0 -820px;transform:rotateX(34deg) rotateZ(-14deg);transform-style:preserve-3d}
+.fcol{position:absolute;top:0;width:740px}
+#fcolA{left:40px}#fcolB{left:860px}
+.fn{display:flex;align-items:center;gap:26px;padding:28px 32px;margin-bottom:30px;border-radius:44px;background:rgba(255,255,255,.96);box-shadow:0 0 50px rgba(149,191,71,.45);font-family:Inter;color:#111}
+.fn .nic{width:96px;height:96px;border-radius:24px;background:#fff;box-shadow:0 3px 10px rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;flex:none}
+.fn h6{font:700 38px Inter;display:flex;justify-content:space-between;gap:20px}
+.fn h6 span{font:500 28px Inter;color:#6b7280}
+.fn p{font:400 32px Inter;color:#222;margin-top:4px}
+.fn p b{color:#1f7a3a;font-weight:700}
+#nglow{position:absolute;left:50%;width:900px;height:900px;margin-left:-450px;border-radius:50%;background:radial-gradient(circle,rgba(149,191,71,.55),rgba(149,191,71,0) 65%);opacity:0;pointer-events:none}
+#hbshade{position:absolute;inset:0;opacity:0;background:radial-gradient(48% 42% at 50% 52%,rgba(4,16,8,.92) 0%,rgba(4,16,8,.75) 45%,rgba(4,16,8,0) 100%)}
+#flood .fcol{filter:blur(1.2px)}
+#hb{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;pointer-events:none}
+#hb-icon{position:relative;width:340px;height:340px}
+#rays{position:absolute;left:50%;top:50%;width:1800px;height:1800px;margin:-900px 0 0 -900px;opacity:0;
+  background:repeating-conic-gradient(from 0deg,rgba(214,255,170,.16) 0deg 7deg,rgba(214,255,170,0) 7deg 18deg);
+  -webkit-mask-image:radial-gradient(circle,#000 12%,transparent 58%);mask-image:radial-gradient(circle,#000 12%,transparent 58%)}
+#conf{position:absolute;left:50%;top:50%}
+#conf i{position:absolute;width:22px;height:12px;margin:-6px -11px;border-radius:3px;opacity:0}
+#hb-app{position:absolute;inset:0;border-radius:80px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 6px rgba(255,255,255,.25),0 0 90px rgba(149,191,71,.9),0 30px 60px rgba(0,0,0,.4)}
+#hb-app img{width:250px;height:250px}
+#hb-badge{position:absolute;right:-46px;top:-46px;min-width:140px;height:140px;padding:0 26px;border-radius:70px;background:#ff3b30;color:#fff;font:800 76px/140px Inter;text-align:center;box-shadow:0 10px 30px rgba(255,59,48,.5),0 0 0 8px #0d2c18}
+#hb-t1{margin-top:40px;font:800 84px Sora;color:#fff;letter-spacing:-.02em;text-shadow:0 0 40px rgba(149,191,71,.6)}
+#hb-t2{font:500 50px Sora;color:#c9f5d4}
+#hb-t2 b{font-weight:800;color:#95bf47}
+.sq #hb{gap:16px}
+.sq #hb-icon{width:270px;height:270px}
+.sq #hb-app{border-radius:64px}
+.sq #hb-app img{width:200px;height:200px}
+.sq #hb-badge{min-width:116px;height:116px;font-size:62px;line-height:116px;right:-38px;top:-38px;border-radius:58px}
+.sq #hb-t1{margin-top:24px;font-size:72px}
+.sq #hb-t2{font-size:44px}
+
 /* ---------- 9. end ---------- */
 #s-end{background:
    radial-gradient(60% 35% at 85% 10%,rgba(124,58,237,.32),transparent 70%),
@@ -277,10 +318,7 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
 .sq br.v{display:none}
 .sq #chat-head{display:none}
 .sq #chat-wrap{padding:0 84px;gap:40px;transform-origin:50% 55%}
-.sq #browser{height:128px}
-.sq #browser .status{display:none}
-.sq #urlbar{top:20px}
-.sq #site-view,.sq #pr-view{top:128px}
+#browser .status{display:none}
 .sq #ntp-disc{display:none}
 .sq #hero{padding-top:110px}
 .sq .fcard{padding:60px 40px 48px}
@@ -351,6 +389,14 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
   <!-- ============ 2. SEARCH ============ -->
   <section class="scene" id="s-search">
     <img id="ntp-top" src="assets/img/chrome-top.jpg" alt="">
+    <div id="ntp-av"><svg width="84" height="84" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#c8d3e8"/><circle cx="12" cy="9.5" r="4" fill="#fff"/><path d="M4.5 19.5c1.6-3.3 4.3-5 7.5-5s5.9 1.7 7.5 5" fill="#fff"/></svg></div>
+    <div id="ntp-sc">
+      <div class="sc"><div class="c" style="background:#fff;box-shadow:inset 0 0 0 2px #eceff3"><img src="assets/img/shopify.png" width="70" height="70" alt=""></div>Shopify</div>
+      <div class="sc"><div class="c" style="background:#ef6c57">A</div>Actus</div>
+      <div class="sc"><div class="c" style="background:#4f8ef7">M</div>Météo</div>
+      <div class="sc"><div class="c" style="background:#9a67ea">V</div>Vidéos</div>
+      <div class="sc"><div class="c" style="background:#e8f0fe;color:#1a73e8;font-weight:400;font-size:70px">+</div>Ajouter</div>
+    </div>
     <div id="ntp-disc"><h5>Discover</h5><div class="sk"></div></div>
     <img id="ntp-bot" src="assets/img/chrome-bottom.jpg" alt="">
     <div id="ntp-dim"></div>
@@ -473,16 +519,23 @@ body.preview{width:auto;height:auto;overflow:auto;display:flex;justify-content:c
   <section class="scene" id="s-phone">
     <div class="blob" style="width:600px;height:600px;left:-150px;top:300px;background:rgba(255,255,255,.55)"></div>
     <div class="blob" style="width:700px;height:700px;right:-250px;bottom:200px;background:rgba(80,180,120,.35)"></div>
-    <div id="ph-status"><div class="status"><span>16:47</span><span class="ic sic"></span></div></div>
     <div id="grid"></div>
     <div id="pages-dots"><i></i><i></i><i></i></div>
     <div id="dock"></div>
     <div id="appopen"><div id="ao-inner">
-      <div id="ao-status" class="status" style="color:#10261a"><span>16:47</span><span class="ic sic"></span></div>
       <svg id="ao-logo" viewBox="0 0 100 100"></svg>
       <div id="kin"><span class="w">Commence</span><span class="w">à</span><span class="w">vendre</span></div>
-      <div id="kin-sub"><svg width="56" height="56" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#2f9e52"/><path d="M6.5 12.5l3.5 3.5 7.5-8" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>avec ta boutique <b>prête à vendre</b></span></div>
+      <div id="kin-sub"><svg width="56" height="56" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#2f9e52"/><path d="M6.5 12.5l3.5 3.5 7.5-8" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>avec ta boutique <b>Shopify</b></span></div>
+      <div id="fbg"></div>
+      <div id="flood"><div id="fplane"><div class="fcol" id="fcolA"></div><div class="fcol" id="fcolB"></div></div></div>
+      <div id="nglow"></div>
       <div id="notifs"></div>
+      <div id="hbshade"></div>
+      <div id="hb">
+        <div id="hb-icon"><div id="rays"></div><div id="conf"></div><div id="hb-app"><img src="assets/img/shopify.png" alt=""><span id="hb-badge">4</span></div></div>
+        <div id="hb-t1">Nouvelles commandes</div>
+        <div id="hb-t2">sur ta boutique <b>Shopify</b></div>
+      </div>
     </div></div>
   </section>
 
@@ -583,6 +636,14 @@ const NOTIFS = [
 ];
 $('#notifs').innerHTML = NOTIFS.map(([w,p],i)=>`<div class="notif" id="nt${i}"><div class="nic">${BAG(78)}</div><div class="nt"><h6>Nouvelle commande<span>${w}</span></h6><p>[Ma boutique] Tu as une nouvelle commande de 1 article pour un total de ${p} sur la boutique en ligne.</p></div></div>`).join('');
 
+/* flood of order cards */
+const FAMOUNTS = ['29,90','34,90','49,90','24,90','39,90','59,90','29,90','44,90','34,90','27,90','49,90','39,90'];
+const fcard = (k) => `<div class="fn"><div class="nic">${BAG(70)}</div><div style="flex:1"><h6>Nouvelle commande<span>à l’instant</span></h6><p>1 article · <b>${FAMOUNTS[k%FAMOUNTS.length]} €</b> · boutique en ligne</p></div></div>`;
+$('#fcolA').innerHTML = Array.from({length:12},(_,k)=>fcard(k)).join('');
+$('#fcolB').innerHTML = Array.from({length:12},(_,k)=>fcard(k+5)).join('');
+const CCOL = ['#95bf47','#fde047','#ffffff','#34d399','#5e8e3e','#ffd166'];
+$('#conf').innerHTML = Array.from({length:60},(_,i)=>`<i style="background:${CCOL[i%CCOL.length]}"></i>`).join('');
+
 /* seeded rng + particles */
 let seed = 7; const rnd = () => (seed = (seed*16807) % 2147483647) / 2147483647;
 const PCOL = ['#38bdf8','#818cf8','#e879f9','#34d399','#f472b6','#fde047'];
@@ -599,7 +660,7 @@ const ctr = (el, dy=0) => { const r = rect(typeof el==='string'?$(el):el); retur
 
 const SQ = document.documentElement.classList.contains('sq');
 const H = SQ ? 1080 : 1920;
-const VIEW_H = H - (SQ ? 128 : 208);
+const VIEW_H = H - 128;
 const formSec = $('#form-sec');
 const offIn = (el, root) => { let y=0; while(el && el!==root){ y+=el.offsetTop; el=el.offsetParent; } return y; };
 const SCROLL_HERO = SQ ? offIn($('#h-card'), $('#page')) - 70 : 0;
@@ -679,7 +740,7 @@ tl.to('#srow1',{backgroundColor:'#eef3fe',duration:.12},te+.5);
 const tLoad = te+.6;
 tl.set('#browser',{autoAlpha:1},tLoad);
 tl.set('#url-ph',{opacity:0},tLoad); tl.set('#url-txt',{opacity:1},tLoad);
-tl.fromTo('#browser',{y:-208},{y:0,duration:.35,ease:'power3.out'},tLoad);
+tl.fromTo('#browser',{y:-128},{y:0,duration:.35,ease:'power3.out'},tLoad);
 tl.fromTo('#loadbar',{width:0,opacity:1},{width:'70%',duration:.5,ease:'power2.out'},tLoad+.1);
 fingerOut(tLoad+.1);
 const T3 = tLoad+.6;
@@ -829,14 +890,54 @@ tl.to('#ao-logo',{y:SQ?-390:-560,scale:SQ?.3:.36,duration:.55,ease:'power3.inOut
 tl.to('#kin',{y:SQ?-235:-470,scale:SQ?.6:.72,duration:.55,ease:'power3.inOut'},tN-.1);
 tl.to('#kin-sub',{y:SQ?-330:-480,scale:SQ?.8:.85,duration:.55,ease:'power3.inOut'},tN-.1);
 const NY0 = SQ ? 470 : 900, NGAP = SQ ? 62 : 245, NSC = SQ ? .05 : .03, NOP = SQ ? .22 : .12;
+gsap.set('#nglow',{top:NY0-330});
+const NT = [0,.55,.95,1.25];                         // accelerating arrivals
 NOTIFS.forEach((_,i)=>{
-  const t = tN+.5+i*.55, el='#nt'+i;
-  tl.fromTo(el,{autoAlpha:0,y:NY0-260,scale:.9},{autoAlpha:1,y:NY0,scale:1,duration:.45,ease:'back.out(1.4)'},t);
-  for(let j=0;j<i;j++){ const d=i-j; tl.to('#nt'+j,{y:NY0+d*NGAP,scale:1-d*NSC,opacity:1-d*NOP,duration:.4,ease:'power3.out'},t); }
+  const t = tN+.5+NT[i], el='#nt'+i;
+  tl.fromTo(el,{autoAlpha:0,y:NY0-260,scale:.9,rotationX:-35,transformPerspective:900},{autoAlpha:1,y:NY0,scale:1,rotationX:0,duration:.45,ease:'back.out(1.6)'},t);
+  for(let j=0;j<i;j++){ const d=i-j; tl.to('#nt'+j,{y:NY0+d*NGAP,scale:1-d*NSC,opacity:1-d*NOP,duration:.35,ease:'power3.out'},t); }
   if(SQ && i>0) tl.to(['#nt'+(i-1)+' .nt','#nt'+(i-1)+' .nic'],{opacity:0,duration:.15},t);
+  tl.fromTo('#nglow',{opacity:.9,scale:.6},{opacity:0,scale:1.25,duration:.6,ease:'power2.out',immediateRender:false},t+.12);
+  tl.fromTo('#ao-inner',{x:0},{x:i%2?-7:7,duration:.045,yoyo:true,repeat:3,ease:'none',immediateRender:false},t+.12);
   sfx('cash',t+.05);
 });
-const T9 = tN+.5+NOTIFS.length*.55+1.0;
+// --- the flood ---
+const t1 = tN+.5+NT[3]+.75;
+tl.to(['#ao-logo','#kin','#kin-sub'],{opacity:0,filter:'blur(10px)',y:'-=80',duration:.4,ease:'power2.in'},t1);
+tl.to('#notifs',{scale:.6,opacity:0,filter:'blur(8px)',duration:.45,ease:'power2.in',transformOrigin:'50% 40%'},t1);
+tl.to('#fbg',{opacity:1,duration:.5,ease:'power2.out'},t1);
+tl.to('#flood',{opacity:1,duration:.35},t1+.1);
+const FD = 3.8;
+tl.fromTo('#fcolA',{y:1500},{y:-2700,duration:FD,ease:'power2.in'},t1);
+tl.fromTo('#fcolB',{y:2300},{y:-1900,duration:FD,ease:'power2.in'},t1);
+tl.fromTo('#fplane',{rotationZ:-14,scale:1},{rotationZ:-8,scale:.92,duration:FD,ease:'none'},t1);
+for(let t=t1+.15, dt=.34; t<t1+3.2; t+=dt, dt=Math.max(.11, dt*.86)) sfx('cash',t,.28);
+// hero: app icon with a badge counting up
+const th = t1+.75;
+tl.to('#hbshade',{opacity:1,duration:.5,ease:'power2.out'},th-.1);
+tl.fromTo('#hb-app',{scale:0,rotation:-12},{scale:1,rotation:0,duration:.6,ease:'back.out(2.2)'},th);
+tl.fromTo('#rays',{opacity:0,rotation:0},{opacity:1,rotation:70,duration:3.2,ease:'none'},th);
+tl.fromTo('#hb-badge',{scale:0},{scale:1,duration:.4,ease:'back.out(3)'},th+.3);
+sfx('impact',th+.05,.8); sfx('success',th+.1,.55);
+const COUNT_END = 37;
+for(let k=5, t=th+.45, dt=.16; k<=COUNT_END; k++, t+=dt, dt=Math.max(.045, dt*.9)){
+  tl.set('#hb-badge',{textContent:String(k)},t);
+  if(k===COUNT_END) tl.fromTo('#hb-badge',{scale:1},{scale:1.35,duration:.14,yoyo:true,repeat:1,ease:'power2.out',immediateRender:false},t);
+}
+tl.fromTo('#hb-t1',{opacity:0,y:40,filter:'blur(10px)'},{opacity:1,y:0,filter:'blur(0px)',duration:.5,ease:'power3.out'},th+.35);
+tl.fromTo('#hb-t2',{opacity:0,y:30},{opacity:1,y:0,duration:.45,ease:'power3.out'},th+.55);
+tl.fromTo('#hb-app',{scale:1},{scale:1.06,duration:.35,yoyo:true,repeat:5,ease:'sine.inOut',immediateRender:false},th+.7);
+// confetti bursts
+const conf = $$('#conf i');
+conf.forEach((c,k)=>{
+  const t = th + (k<30 ? .1 : 1.3);
+  const a = rnd()*Math.PI*2, r = (SQ?260:320) + rnd()*(SQ?420:520);
+  const x = Math.cos(a)*r, y = Math.sin(a)*r*.8;
+  tl.fromTo(c,{x:0,y:0,rotation:0,opacity:1,scale:.6+rnd()*.8},{x, y, rotation:rnd()*720-360, duration:.75, ease:'power3.out', immediateRender:false},t);
+  tl.to(c,{y:y+(SQ?260:420), rotation:'+=240', opacity:0, duration:1.1, ease:'power1.in'},t+.75);
+});
+const T9 = th+3.0;
+flash(T9-.12,.85,.45);
 
 /* ===== 9. END CARD ===== */
 tl.to('#s-phone',{autoAlpha:0,scale:1.1,filter:'blur(14px)',duration:.4,ease:'power2.in'},T9-.3);
