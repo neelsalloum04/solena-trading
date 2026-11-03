@@ -132,9 +132,13 @@ def main(src, dst):
     if peak > 0: mix *= 0.85 / peak
     if data.get('music'):
         sys.path.insert(0, __import__('os').path.dirname(__file__))
-        from music import make_music
-        m = make_music(data['duration'], data['music'])[:len(mix)]
-        mix[:len(m)] += m * MUSIC_GAIN
+        mk = data['music']
+        if mk.get('style') == 'epic':
+            from music_epic import make_music
+        else:
+            from music import make_music
+        m = make_music(data['duration'], mk)[:len(mix)]
+        mix[:len(m)] += m * mk.get('gain', MUSIC_GAIN)
         mix = np.tanh(mix * 1.05) / np.tanh(1.05)
         mix *= 0.89 / np.abs(mix).max()
     pcm = (mix * 32767).astype('<i2')

@@ -1,6 +1,6 @@
 # Vidéo 2 : kinetic typography – ecomstartprofits.com
 
-- `ecomstartprofits-kinetic-carre.mp4` : version carrée 1080×1080, 32 s.
+- `ecomstartprofits-kinetic-carre.mp4` : version carrée 1080×1080, 49 s, animée en 3D, avec une musique épique.
 - `ecomstartprofits-kinetic-vertical.mp4` : version verticale 1080×1920, avec le même contenu centré dans la zone sûre.
 
 Le texte est découpé en 15 écrans. Chaque phrase a sa propre animation (mots qui montent derrière un masque, flou, impact, compteur…) et un visuel animé qui l’illustre :
@@ -15,7 +15,7 @@ Le texte est découpé en 15 écrans. Chaque phrase a sa propre animation (mots 
 14. Commande ta boutique en ligne, on s’occupe du reste ! : l’adresse ecomstartprofits.com se tape.
 15. Lien en bio ! : badge animé avec halo.
 
-La musique et les effets sonores réutilisent ceux de la première vidéo (`../ecomstartprofits/sfx.py` et `music.py`), générés par code et donc libres de droits.
+La musique épique vient de `../ecomstartprofits/music_epic.py` : piano, cordes, chœurs, cuivres, tambours taiko et coups de cuivres graves. Les effets sonores viennent de `../ecomstartprofits/sfx.py`. Tout est généré par code, donc libre de droits.
 
 ## Refaire le rendu
 - `node render.cjs` : version carrée.
