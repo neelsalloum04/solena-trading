@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>L'Eau Vive – Chili reel</title>
+<link rel="stylesheet" href="../leauvive-chili/assets/fonts.css">
+<style>
+html,body{margin:0;background:#111}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:'Baloo 2',sans-serif;background:#000}
+#vw{position:absolute;inset:0;overflow:hidden}
+#v{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;z-index:5}
+#vig{position:absolute;inset:0;z-index:4;background:linear-gradient(rgba(0,0,0,.28),rgba(0,0,0,0) 14%,rgba(0,0,0,0) 62%,rgba(0,0,0,.38) 100%)}
+#bar{position:absolute;left:0;top:0;height:14px;width:1080px;background:#8bd17c;z-index:40;transform-origin:0 50%;box-shadow:0 0 14px rgba(120,220,100,.8)}
+#barbg{position:absolute;left:0;top:0;height:14px;width:1080px;background:rgba(255,255,255,.25);z-index:39}
+#cap{position:absolute;left:0;top:1330px;width:1080px;height:420px;z-index:50}
+.capItem{position:absolute;left:40px;width:1000px;top:0;text-align:center}
+.row{display:flex;justify-content:center;align-items:center;gap:18px;margin-bottom:8px}
+.lbl{background:#fff;color:#2e7d32;font-weight:800;font-size:42px;padding:2px 30px;border-radius:30px;box-shadow:0 6px 14px rgba(0,0,0,.3)}
+.bio{width:104px;height:104px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#5cbf55,#2e8b32);border:6px solid #fff;color:#fff;font-weight:800;font-size:38px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 16px rgba(0,0,0,.35);line-height:1}
+.txt{font-weight:800;font-size:104px;line-height:1.0;color:#fff;-webkit-text-stroke:20px #2e7d32;paint-order:stroke fill;filter:drop-shadow(0 10px 12px rgba(0,0,0,.35))}
+.txt span{display:inline-block;margin:0 12px}
+.hl{color:#ffe36b}
+.pac{font-family:'Pacifico',cursive;font-weight:400}
+#logoS{position:absolute;left:34px;top:46px;z-index:55;background:rgba(255,255,255,.92);border-radius:28px;padding:10px 18px;box-shadow:0 8px 18px rgba(0,0,0,.25)}
+#logoS img{width:160px;display:block}
+#save{position:absolute;right:40px;top:260px;z-index:52;background:#fff;border-radius:34px;padding:14px 28px 14px 22px;display:flex;align-items:center;gap:16px;font-weight:800;font-size:40px;color:#2e7d32;box-shadow:0 10px 22px rgba(0,0,0,.3)}
+#save i{display:block;width:34px;height:44px;background:#2e8b32;clip-path:polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)}
+#chrono{position:absolute;right:40px;top:46px;z-index:55;background:#2e7d32;color:#fff;font-weight:800;font-size:40px;padding:6px 26px;border-radius:30px;box-shadow:0 8px 18px rgba(0,0,0,.3)}
+#end{position:absolute;inset:0;z-index:60;background:radial-gradient(circle at 50% 42%,#ffffff 0%,#f4f8ec 45%,#d6ebc9 100%);clip-path:circle(0px at 540px 1000px)}
+#end img{position:absolute;left:150px;top:520px;width:780px}
+#endTxt{position:absolute;left:80px;width:920px;top:1110px;text-align:center;font-weight:700;font-size:66px;line-height:1.12;color:#2b5e2d}
+#endTxt b{display:block;font-family:'Pacifico';font-weight:400;font-size:104px;color:#2e8b32;margin-top:18px}
+.leaf{position:absolute;z-index:61}
+</style></head><body>
+<div id="stage">
+ <div id="vw"><img id="v" alt=""></div>
+ <div id="vig"></div><div id="flash"></div>
+ <div id="barbg"></div><div id="bar"></div>
+ <div id="cap"></div>
+ <div id="save"><i></i>Enregistre la recette</div>
+ <div id="chrono">0 s</div>
+ <div id="logoS"><img src="../leauvive-chili/assets/logo.png" alt=""></div>
+ <div id="end"><img src="../leauvive-chili/assets/logo@3x.png" alt=""><div id="endTxt">Tous les ingrédients de cette recette sont chez<b>L'Eau Vive</b></div></div>
+</div>
+<script src="out/segments.js"></script>
+<script src="../leauvive-chili/assets/gsap.min.js"></script>
+<script>
+(async()=>{
+await document.fonts.ready;
+const $=s=>document.querySelector(s), img=$('#v'), C=window.CUTS, VL=window.VLEN, NF=window.NF;
+const tl=gsap.timeline({paused:true}); const SFX=[]; const cue=(t,type,o={})=>SFX.push(Object.assign({t:+t.toFixed(3),type},o));
+const END=VL+.05, DUR=END+3.6;
+
+/* zoom punch + dérive lente à chaque coupe */
+C.forEach((c,i)=>{const nx=C[i+1]??VL, big=i%3===0;
+ tl.fromTo(img,{scale:big?1.18:1.1,rotation:i%2?-1.2:1.2},{scale:1.0,rotation:0,duration:.38,ease:'power3.out',immediateRender:false},c);
+ tl.to(img,{scale:1.05,duration:Math.max(.1,nx-c-.38),ease:'none'},c+.38);
+ if(i>0){tl.fromTo('#flash',{opacity:big?.55:.25},{opacity:0,duration:.18,immediateRender:false},c);cue(c,'whoosh',{v:big?1:.6})}});
+gsap.set(img,{transformOrigin:'50% 45%'});
+tl.fromTo('#bar',{scaleX:0},{scaleX:1,duration:VL,ease:'none'},0);
+const chrono={v:0};tl.to(chrono,{v:VL,duration:VL,ease:'none',onUpdate:()=>{$('#chrono').textContent=Math.floor(chrono.v)+' s'}},0);
+tl.from('#chrono',{scale:0,duration:.4,ease:'back.out(2)'},.2);
+tl.from('#logoS',{x:-60,opacity:0,duration:.45,ease:'power2.out'},.15);
+tl.to(['#logoS','#chrono','#bar','#barbg'],{opacity:0,duration:.25},C[17]);
+
+function caption(t,t2,lbl,text,o={}){
+ const c=document.createElement('div');c.className='capItem';$('#cap').appendChild(c);
+ c.innerHTML=(lbl?`<div class="row"><div class="lbl">${lbl}</div><div class="bio">BIO</div></div>`:'')+`<div class="txt ${o.cls||''}" style="${o.style||''}">${text.split(' ').map(w=>`<span${w.startsWith('*')?' class="hl"':''}>${w.replace('*','').replace(/_/g,' ')}</span>`).join('')}</div>`;
+ if(o.top!=null)c.style.top=o.top+'px';
+ gsap.set(c,{opacity:0}); tl.set(c,{opacity:1},t);
+ if(lbl){tl.from(c.querySelector('.lbl'),{y:40,opacity:0,duration:.28,ease:'back.out(2)'},t);tl.from(c.querySelector('.bio'),{scale:0,rotation:-120,duration:.6,ease:'elastic.out(1,.5)'},t+.08)}
+ tl.from(c.querySelectorAll('.txt span'),{scale:.2,opacity:0,y:40,duration:.38,ease:'back.out(2.8)',stagger:.06},t+.05);
+ tl.to(c.querySelectorAll('.txt span'),{y:-8,duration:.35,yoyo:true,repeat:Math.max(1,Math.floor((t2-t-.8)/.35)),ease:'sine.inOut',stagger:.05},t+.5);
+ tl.to(c,{opacity:0,scale:.9,y:20,duration:.2,ease:'power2.in'},t2-.2);
+ cue(t+.05,'pop',{n:Math.min(4,text.split(' ').length)});
+}
+caption(.05,C[1],'',"Chili *sin_carne",{cls:'pac',style:'font-size:140px;line-height:1.3;-webkit-text-stroke:22px #2e7d32',top:-60});
+caption(.55,C[1],'',"La recette *bio & réconfortante",{style:'font-size:64px;-webkit-text-stroke:14px #2e7d32',top:150});
+caption(C[1],C[2],'ÉTAPE 1',"Un filet d'*huile_d'olive");
+caption(C[2],C[4],'ÉTAPE 2',"*Oignon & *carotte");
+caption(C[4],C[6],'ÉTAPE 3',"*Paprika & épices");
+caption(C[6],C[8],'ÉTAPE 4',"*Maïs & coulis de *tomates");
+caption(C[8],C[10],'ÉTAPE 5',"*Haricots rouges");
+caption(C[10],C[11],'ÉTAPE 6',"On mélange & on *couvre");
+caption(C[11],C[14],'ÉTAPE 7',"Pendant ce temps, le *riz");
+caption(C[14],C[16],'',"On *sert !");
+caption(C[16],C[17],'',"Bon *appétit !",{cls:'pac',style:'font-size:150px;line-height:1.3;-webkit-text-stroke:22px #2e7d32'});
+
+/* sticker "enregistre" */
+gsap.set('#save',{opacity:0});tl.set('#save',{opacity:1},C[9]);
+tl.from('#save',{scale:0,rotation:-25,duration:.55,ease:'elastic.out(1,.55)'},C[9]); cue(C[9],'pop',{n:1});
+tl.to('#save',{scale:1.08,duration:.3,yoyo:true,repeat:5,ease:'sine.inOut'},C[9]+.6);
+tl.to('#save',{scale:0,duration:.25,ease:'back.in(2)'},C[10]+1.2);
+
+/* son d'ambiance cuisine selon les scènes */
+cue(C[8]+.1,'beans',{dur:1.8}); cue(C[11],'simmer',{dur:C[12]-C[11]}); cue(C[12]+.2,'rice',{dur:1.4});
+cue(C[1]+.2,'oil'); [C[2]+.3,C[2]+1.3,C[6]+.2].forEach(t=>cue(t,'drops',{n:14,dur:.5})); cue(C[6]+1.0,'sauce'); cue(C[4]+.3,'powder'); cue(C[4]+1.2,'powder');
+[C[3],C[5],C[7],C[10]+1].forEach(t=>cue(t,'scrape',{dur:1.0}));
+
+/* FIN */
+const end=$('#end');
+tl.to(end,{clipPath:'circle(1500px at 540px 1000px)',duration:.7,ease:'power2.inOut'},END); cue(END,'whoosh',{v:1.2});
+tl.from('#end img',{scale:.4,opacity:0,y:60,duration:.9,ease:'elastic.out(1,.6)'},END+.3); cue(END+.35,'shine');
+tl.from('#endTxt',{y:60,opacity:0,duration:.55,ease:'back.out(1.8)'},END+.75);
+tl.from('#endTxt b',{scale:.3,opacity:0,duration:.6,ease:'back.out(2.5)'},END+1.1);
+tl.to('#end img',{scale:1.04,duration:2,ease:'sine.inOut'},END+1.2);
+const LEAF=`<svg width="70" height="70" viewBox="0 0 64 64"><path d="M32 60 C12 52 4 32 12 18 C16 24 22 24 24 15 C28 7 36 5 40 13 C42 21 48 23 52 17 C60 32 52 52 32 60Z" fill="#45a83f"/><path d="M32 60 L32 22 M32 44 L20 32 M32 40 L44 28" stroke="#2c7a2c" stroke-width="2.4" fill="none"/></svg>`;
+[[140,380,-30],[930,420,40],[120,1500,20],[950,1560,-50],[540,330,10],[300,1720,60],[800,1760,-20]].forEach(([x,y,r],i)=>{const l=document.createElement('div');l.className='leaf';l.innerHTML=LEAF;end.appendChild(l);
+ Object.assign(l.style,{left:x+'px',top:y+'px'});gsap.set(l,{xPercent:-50,yPercent:-50,rotation:r});tl.from(l,{scale:0,rotation:r-120,duration:.6,ease:'back.out(2)'},END+.6+i*.06);tl.to(l,{y:-20,rotation:r+15,duration:2,ease:'sine.inOut'},END+1.3)});
+tl.to({},{duration:.01},DUR-.01);
+
+window.DURATION=DUR;
+window.SFX={cues:SFX.sort((a,b)=>a.t-b.t),cuts:C,vlen:VL};
+let cur=-1; const pad=i=>String(i+1).padStart(5,'0');
+window.seek=async t=>{tl.seek(t,false);const i=Math.max(0,Math.min(NF-1,Math.floor(t*30+1e-6)));if(i!==cur){cur=i;img.src=`out/vframes/${pad(i)}.jpg`;await img.decode()}};
+await window.seek(0);
+const P=new URLSearchParams(location.search);
+if(!P.has('render')){let t0=performance.now();const loop=()=>{const t=(performance.now()-t0)/1000%DUR;window.seek(t);requestAnimationFrame(loop)};if(P.has('t'))window.seek(+P.get('t'));else loop()}
+window.READY=true;
+})();
+</script></body></html>
