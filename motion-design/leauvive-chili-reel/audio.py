@@ -147,6 +147,10 @@ for c in cfg['cues']:
         for k in range(26): add(sfx, t0 + rng.uniform(0, c['dur']), plop(rng.uniform(.8, 1.3)), .08, rng.uniform(-.5, .5))
     elif ty == 'rice':
         d = c['dur']; add(sfx, t0, filt(noise(d), 'bandpass', [2500, 8000]) * np.sin(np.pi * tt(d) / d) * (0.6 + 0.4 * np.abs(np.sin(2 * np.pi * 11 * tt(d)))), .12)
+    elif ty == 'boil':
+        d = c['dur']; add(sfx, t0, filt(noise(d), 'lowpass', 700) * np.sin(np.pi * tt(d) / d) ** .4 * (0.6 + 0.4 * np.abs(np.sin(2 * np.pi * 3 * tt(d)))), .3)
+        for k in range(int(d * 14)): add(sfx, t0 + rng.uniform(0, d - .1), blub(rng.uniform(.6, 1.1)), .05, rng.uniform(-.6, .6))
+    elif ty == 'clink': add(sfx, t0, metal(.9, [(1, 1, 0), (2.76, .5, 0), (5.4, .3, 0)], 1900, .12), .07, .2); add(sfx, t0, thud(200, .08), .08)
     elif ty == 'oil': oil(t0)
     elif ty == 'powder': powder(t0)
     elif ty == 'sauce': sauce(t0)
@@ -172,7 +176,7 @@ for c in cfg['cues']:
         for k, f in enumerate([1047, 1319, 1568, 2093]): add(sfx, t0 + k * .07, np.sin(2 * np.pi * f * tt(1.2)) * env(1.2, .004, .3), .045, -.3 + k * .2)
 
 # grésillement continu, intensité selon les étapes
-cu = cfg['cuts']; kt, kv = zip(*[(0, 0), (cu[1], 0), (cu[1] + .6, .35), (cu[8], .45), (cu[8] + .3, .15), (cu[10], .25), (cu[11], .1), (cu[12], 0), (cfg['duration'], 0)])
+kt, kv = zip(*cfg['sizzle'])
 lvl = np.interp(np.arange(N) / SR, kt, kv)
 hiss = filt(rng.standard_normal(N), 'bandpass', [3000, 10000]) * (0.35 + 0.65 * filt(np.abs(rng.standard_normal(N)), 'lowpass', 30))
 cr = np.zeros(N); idx = np.where(rng.random(N) < (lvl * 90 / SR))[0]
@@ -232,7 +236,7 @@ mus = np.tanh(mus * 1.3) / 1.3
 fade = np.clip(np.arange(N) / SR / 1.2, 0, 1) * np.clip((DUR - np.arange(N) / SR) / 2.0, 0, 1)
 mus *= fade[:, None]
 
-mix = sfx * .8 + mus * .6 / max(1e-6, np.abs(mus).max())
+mix = sfx * 1.0 + mus * .38 / max(1e-6, np.abs(mus).max())
 mix /= np.abs(mix).max() / .6
 mix = np.tanh(mix * 1.1) / np.tanh(1.1)
 wavfile.write(sys.argv[2], SR, (mix * 32767 * .95).astype(np.int16))

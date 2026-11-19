@@ -10,7 +10,7 @@ html,body{margin:0;background:#111}
 #vig{position:absolute;inset:0;z-index:4;background:linear-gradient(rgba(0,0,0,.28),rgba(0,0,0,0) 14%,rgba(0,0,0,0) 62%,rgba(0,0,0,.38) 100%)}
 #bar{position:absolute;left:0;top:0;height:14px;width:1080px;background:#8bd17c;z-index:40;transform-origin:0 50%;box-shadow:0 0 14px rgba(120,220,100,.8)}
 #barbg{position:absolute;left:0;top:0;height:14px;width:1080px;background:rgba(255,255,255,.25);z-index:39}
-#cap{position:absolute;left:0;top:1330px;width:1080px;height:420px;z-index:50}
+#cap{position:absolute;left:0;top:800px;width:1080px;height:420px;z-index:50}
 .capItem{position:absolute;left:40px;width:1000px;top:0;text-align:center}
 .row{display:flex;justify-content:center;align-items:center;gap:18px;margin-bottom:8px}
 .lbl{background:#fff;color:#2e7d32;font-weight:800;font-size:42px;padding:2px 30px;border-radius:30px;box-shadow:0 6px 14px rgba(0,0,0,.3)}
@@ -29,12 +29,18 @@ html,body{margin:0;background:#111}
 #endTxt{position:absolute;left:80px;width:920px;top:1110px;text-align:center;font-weight:700;font-size:66px;line-height:1.12;color:#2b5e2d}
 #endTxt b{display:block;font-family:'Pacifico';font-weight:400;font-size:104px;color:#2e8b32;margin-top:18px}
 .leaf{position:absolute;z-index:61}
+.stk{position:absolute;left:50%;top:-230px;width:200px;height:200px;margin-left:-100px;filter:drop-shadow(0 12px 14px rgba(0,0,0,.35))}
+.badge{position:absolute;left:50%;top:150px;z-index:52;transform:translateX(-50%);background:#fff;color:#d2361f;font-weight:800;font-size:46px;letter-spacing:4px;padding:4px 34px;border-radius:40px;box-shadow:0 10px 22px rgba(0,0,0,.3);display:flex;align-items:center;gap:14px;white-space:nowrap}
+.badge .dot{width:22px;height:22px;border-radius:50%;background:#e23b2a}
+.badge .ff{display:flex}.badge .ff i{width:0;height:0;border-left:24px solid #2e7d32;border-top:15px solid transparent;border-bottom:15px solid transparent}
+#ffb{color:#2e7d32}
 </style></head><body>
 <div id="stage">
  <div id="vw"><img id="v" alt=""></div>
  <div id="vig"></div><div id="flash"></div>
  <div id="barbg"></div><div id="bar"></div>
  <div id="cap"></div>
+ <div class="badge" id="slow"><span class="dot"></span>SLOW MO</div><div class="badge" id="ffb"><span class="ff"><i></i><i></i></span><span id="ffx">x2</span></div>
  <div id="save"><i></i>Enregistre la recette</div>
  <div id="chrono">0 s</div>
  <div id="logoS"><img src="../leauvive-chili/assets/logo.png" alt=""></div>
@@ -49,56 +55,90 @@ const $=s=>document.querySelector(s), img=$('#v'), C=window.CUTS, VL=window.VLEN
 const tl=gsap.timeline({paused:true}); const SFX=[]; const cue=(t,type,o={})=>SFX.push(Object.assign({t:+t.toFixed(3),type},o));
 const END=VL+.05, DUR=END+3.6;
 
-/* zoom punch + dérive lente à chaque coupe */
-C.forEach((c,i)=>{const nx=C[i+1]??VL, big=i%3===0;
- tl.fromTo(img,{scale:big?1.18:1.1,rotation:i%2?-1.2:1.2},{scale:1.0,rotation:0,duration:.38,ease:'power3.out',immediateRender:false},c);
- tl.to(img,{scale:1.05,duration:Math.max(.1,nx-c-.38),ease:'none'},c+.38);
- if(i>0){tl.fromTo('#flash',{opacity:big?.55:.25},{opacity:0,duration:.18,immediateRender:false},c);cue(c,'whoosh',{v:big?1:.6})}});
+/* groupes de segments (même tag consécutif) */
+const S=window.SEGS, RUNS=[]; S.forEach(g=>{const r=RUNS[RUNS.length-1];if(r&&r.tag===g.tag){r.t1=g.t+g.d;r.segs.push(g)}else RUNS.push({tag:g.tag,t0:g.t,t1:g.t+g.d,segs:[g]})});
+const run=(tag,k=0)=>RUNS.filter(r=>r.tag===tag)[k];
 gsap.set(img,{transformOrigin:'50% 45%'});
+RUNS.forEach((r,i)=>{ if(i>0){tl.fromTo('#flash',{opacity:i%3===0?.6:.3},{opacity:0,duration:.2,immediateRender:false},r.t0)}
+ tl.fromTo(img,{scale:i%3===0?1.2:1.12,rotation:i%2?-1.5:1.5},{scale:1.0,rotation:0,duration:.4,ease:'power3.out',immediateRender:false},r.t0);
+ r.segs.forEach((g,j)=>{const st=j===0?g.t+.4:g.t, d=Math.max(.05,g.t+g.d-st);
+  if(g.s<1) tl.to(img,{scale:'+=0.09',duration:d,ease:'sine.inOut'},st);          // ralenti : lente poussée
+  else if(g.s>=2) tl.to(img,{scale:1.04,rotation:i%2?.6:-.6,duration:d,ease:'none'},st);
+  else tl.to(img,{scale:'+=0.04',duration:d,ease:'none'},st);});});
+/* badges SLOW MO / avance rapide */
+gsap.set(['#slow','#ffb'],{opacity:0});
+S.forEach(g=>{if(g.tag==='hook'||g.tag==='brand')return;
+ if(g.s<1){tl.set('#slow',{opacity:1},g.t);tl.fromTo('#slow',{scale:0},{scale:1,duration:.35,ease:'back.out(2.5)',immediateRender:false},g.t);tl.to('#slow .dot',{opacity:.2,duration:.25,yoyo:true,repeat:Math.max(1,Math.floor(g.d/.25)-1)},g.t);tl.to('#slow',{scale:0,duration:.15},g.t+g.d-.15);tl.set('#slow',{opacity:0},g.t+g.d)}
+ if(g.s>=2){tl.set('#ffb',{opacity:1},g.t);tl.call(()=>{},null,g.t);tl.set('#ffx',{textContent:'x'+g.s},g.t);tl.fromTo('#ffb',{scale:0},{scale:1,duration:.3,ease:'back.out(2.5)',immediateRender:false},g.t);tl.to('#ffb .ff',{x:10,duration:.15,yoyo:true,repeat:Math.max(1,Math.floor(g.d/.15)-1)},g.t);tl.to('#ffb',{scale:0,duration:.15},g.t+g.d-.15);tl.set('#ffb',{opacity:0},g.t+g.d)}});
 tl.fromTo('#bar',{scaleX:0},{scaleX:1,duration:VL,ease:'none'},0);
 const chrono={v:0};tl.to(chrono,{v:VL,duration:VL,ease:'none',onUpdate:()=>{$('#chrono').textContent=Math.floor(chrono.v)+' s'}},0);
 tl.from('#chrono',{scale:0,duration:.4,ease:'back.out(2)'},.2);
 tl.from('#logoS',{x:-60,opacity:0,duration:.45,ease:'power2.out'},.15);
-tl.to(['#logoS','#chrono','#bar','#barbg'],{opacity:0,duration:.25},C[17]);
+tl.to(['#logoS','#chrono','#bar','#barbg'],{opacity:0,duration:.25},run('brand').t0);
 
+const STK={
+oil:`<svg viewBox="0 0 100 100"><path d="M50 6 C62 30 82 48 82 66 A32 32 0 0 1 18 66 C18 48 38 30 50 6Z" fill="#f2c230" stroke="#fff" stroke-width="5"/><path d="M36 60 C36 72 44 80 54 82" stroke="#fff6c0" stroke-width="7" fill="none" stroke-linecap="round"/></svg>`,
+onion:`<svg viewBox="0 0 100 100"><path d="M50 8 C52 18 56 22 60 26 C82 34 90 56 80 74 C72 88 28 88 20 74 C10 56 18 34 40 26 C44 22 48 18 50 8Z" fill="#f3e6d0" stroke="#fff" stroke-width="5"/><path d="M50 30 C40 46 40 70 50 86 M50 30 C60 46 60 70 50 86 M42 28 C26 44 28 70 36 84 M58 28 C74 44 72 70 64 84" stroke="#d9bf98" stroke-width="3" fill="none"/><path d="M50 8 L46 0 M50 8 L55 1" stroke="#7aa34e" stroke-width="4"/></svg>`,
+pepper:`<svg viewBox="0 0 100 100"><path d="M30 30 C50 26 76 40 88 84 C70 66 46 58 28 48 Z" fill="#e2301f" stroke="#fff" stroke-width="5"/><path d="M36 36 C54 36 70 48 80 70" stroke="#ff8a78" stroke-width="5" fill="none"/><path d="M30 30 C22 22 16 22 10 12 C20 16 28 16 34 22 C38 30 36 44 30 46 C24 42 24 36 30 30Z" fill="#3e8f37" stroke="#fff" stroke-width="3"/></svg>`,
+corn:`<svg viewBox="0 0 100 100"><ellipse cx="50" cy="48" rx="20" ry="38" fill="#f6c22c" stroke="#fff" stroke-width="5"/><g fill="#ffe27a">${[0,1,2,3,4,5].map(r=>[0,1,2].map(c=>`<circle cx="${40+c*10}" cy="${22+r*10}" r="3.5"/>`).join('')).join('')}</g><path d="M50 92 C30 80 22 60 28 40 C34 60 42 72 50 92Z M50 92 C70 80 78 60 72 40 C66 60 58 72 50 92Z" fill="#5aa83f" stroke="#fff" stroke-width="3"/></svg>`,
+tomato:`<svg viewBox="0 0 100 100"><circle cx="50" cy="56" r="38" fill="#e23b2a" stroke="#fff" stroke-width="5"/><circle cx="38" cy="44" r="9" fill="#ff8c72" opacity=".7"/><path d="M50 30 L56 16 L58 32 L72 28 L60 38 L68 48 L54 42 L50 54 L46 42 L32 48 L40 38 L28 28 L42 32 L44 16Z" fill="#3e8f37"/></svg>`,
+bean:`<svg viewBox="0 0 100 100"><path d="M24 34 C34 12 70 14 80 36 C88 54 78 80 58 76 C48 74 48 62 38 66 C22 72 14 54 24 34Z" fill="#8e2028" stroke="#fff" stroke-width="5"/><path d="M36 30 C46 22 62 24 70 34" stroke="#d0606a" stroke-width="6" fill="none" stroke-linecap="round"/></svg>`,
+rice:`<svg viewBox="0 0 100 100"><path d="M14 50 L86 50 C84 72 70 88 50 88 C30 88 16 72 14 50Z" fill="#6fae66" stroke="#fff" stroke-width="5"/><path d="M18 50 C20 30 80 30 82 50Z" fill="#fffdf4" stroke="#fff" stroke-width="3"/><g fill="#e8e0cc">${[[34,42],[46,38],[58,41],[66,45],[40,46],[52,45]].map(p=>`<ellipse cx="${p[0]}" cy="${p[1]}" rx="4" ry="1.8"/>`).join('')}</g></svg>`,
+herb:`<svg viewBox="0 0 64 64"><path d="M32 60 C12 52 4 32 12 18 C16 24 22 24 24 15 C28 7 36 5 40 13 C42 21 48 23 52 17 C60 32 52 52 32 60Z" fill="#45a83f" stroke="#fff" stroke-width="3"/><path d="M32 60 L32 22 M32 44 L20 32 M32 40 L44 28" stroke="#2c7a2c" stroke-width="2.4" fill="none"/></svg>`,
+spoon:`<svg viewBox="0 0 100 100"><rect x="44" y="40" width="12" height="58" rx="6" fill="#d9a066" stroke="#fff" stroke-width="3"/><ellipse cx="50" cy="26" rx="20" ry="24" fill="#d9a066" stroke="#fff" stroke-width="5"/></svg>`};
 function caption(t,t2,lbl,text,o={}){
  const c=document.createElement('div');c.className='capItem';$('#cap').appendChild(c);
- c.innerHTML=(lbl?`<div class="row"><div class="lbl">${lbl}</div><div class="bio">BIO</div></div>`:'')+`<div class="txt ${o.cls||''}" style="${o.style||''}">${text.split(' ').map(w=>`<span${w.startsWith('*')?' class="hl"':''}>${w.replace('*','').replace(/_/g,' ')}</span>`).join('')}</div>`;
+ c.innerHTML=(o.stk?`<div class="stk">${STK[o.stk]}</div>`:'')+(lbl?`<div class="row"><div class="lbl">${lbl}</div><div class="bio">BIO</div></div>`:'')+`<div class="txt ${o.cls||''}" style="${o.style||''}">${text.split(' ').map(w=>`<span${w.startsWith('*')?' class="hl"':''}>${w.replace('*','').replace(/_/g,' ')}</span>`).join('')}</div>`;
  if(o.top!=null)c.style.top=o.top+'px';
  gsap.set(c,{opacity:0}); tl.set(c,{opacity:1},t);
  if(lbl){tl.from(c.querySelector('.lbl'),{y:40,opacity:0,duration:.28,ease:'back.out(2)'},t);tl.from(c.querySelector('.bio'),{scale:0,rotation:-120,duration:.6,ease:'elastic.out(1,.5)'},t+.08)}
- tl.from(c.querySelectorAll('.txt span'),{scale:.2,opacity:0,y:40,duration:.38,ease:'back.out(2.8)',stagger:.06},t+.05);
- tl.to(c.querySelectorAll('.txt span'),{y:-8,duration:.35,yoyo:true,repeat:Math.max(1,Math.floor((t2-t-.8)/.35)),ease:'sine.inOut',stagger:.05},t+.5);
- tl.to(c,{opacity:0,scale:.9,y:20,duration:.2,ease:'power2.in'},t2-.2);
- cue(t+.05,'pop',{n:Math.min(4,text.split(' ').length)});
+ const sp=c.querySelectorAll('.txt span');
+ tl.fromTo(sp,{scale:2.4,opacity:0,rotation:()=>R(-14,14)},{scale:1,opacity:1,rotation:0,duration:.32,ease:'back.out(1.8)',stagger:.08,immediateRender:true},t+.05);
+ const reps=Math.max(1,Math.floor((t2-t-.9)/.4));
+ tl.to(sp,{y:-10,duration:.4,yoyo:true,repeat:reps,ease:'sine.inOut',stagger:.06},t+.6);
+ const k=c.querySelector('.stk');
+ if(k){tl.fromTo(k,{scale:0,rotation:-180,y:80},{scale:1,rotation:-8,y:0,duration:.7,ease:'elastic.out(1,.45)',immediateRender:true},t+.12);tl.to(k,{rotation:8,y:-12,duration:.45,yoyo:true,repeat:Math.max(1,Math.floor((t2-t-1)/.45)),ease:'sine.inOut'},t+.82)}
+ tl.to(c,{opacity:0,scale:.85,duration:.18,ease:'power2.in'},t2-.18);
 }
-caption(.05,C[1],'',"Chili *sin_carne",{cls:'pac',style:'font-size:140px;line-height:1.3;-webkit-text-stroke:22px #2e7d32',top:-60});
-caption(.55,C[1],'',"La recette *bio & réconfortante",{style:'font-size:64px;-webkit-text-stroke:14px #2e7d32',top:150});
-caption(C[1],C[2],'ÉTAPE 1',"Un filet d'*huile_d'olive");
-caption(C[2],C[4],'ÉTAPE 2',"*Oignon & *carotte");
-caption(C[4],C[6],'ÉTAPE 3',"*Paprika & épices");
-caption(C[6],C[8],'ÉTAPE 4',"*Maïs & coulis de *tomates");
-caption(C[8],C[10],'ÉTAPE 5',"*Haricots rouges");
-caption(C[10],C[11],'ÉTAPE 6',"On mélange & on *couvre");
-caption(C[11],C[14],'ÉTAPE 7',"Pendant ce temps, le *riz");
-caption(C[14],C[16],'',"On *sert !");
-caption(C[16],C[17],'',"Bon *appétit !",{cls:'pac',style:'font-size:150px;line-height:1.3;-webkit-text-stroke:22px #2e7d32'});
+let seedR=3;const R=(a,b)=>{seedR=(seedR*16807)%2147483647;return a+(seedR/2147483647)*(b-a)};
+const rr=n=>run(n);
+caption(.05,rr('hook').t1,'',"Chili *con_carne",{cls:'pac',style:'font-size:150px;line-height:1.3;-webkit-text-stroke:22px #2e7d32',top:-120,stk:'pepper'});
+caption(.6,rr('hook').t1,'',"La recette *bio & réconfortante",{style:'font-size:66px;-webkit-text-stroke:14px #2e7d32',top:110});
+caption(rr('oil').t0,rr('oil').t1,'ÉTAPE 1',"Un filet d'*huile_d'olive",{stk:'oil'});
+caption(rr('onion').t0,run('stir',0).t1,'ÉTAPE 2',"*Oignon & *carotte",{stk:'onion'});
+caption(rr('spice').t0,run('stir',1).t1,'ÉTAPE 3',"*Paprika & épices",{stk:'pepper'});
+caption(rr('corn').t0,rr('corn').t1,'ÉTAPE 4',"Le *maïs",{stk:'corn'});
+caption(rr('tomato').t0,run('stir',2).t1,'ÉTAPE 5',"Coulis de *tomates",{stk:'tomato'});
+caption(rr('beans').t0,rr('beans').t1,'ÉTAPE 6',"*Haricots rouges",{stk:'bean'});
+caption(rr('mix').t0,rr('mix').t1,'ÉTAPE 7',"On mélange & on *couvre",{stk:'spoon'});
+caption(rr('steam').t0,rr('rice').t1,'ÉTAPE 8',"Pendant ce temps, le *riz",{stk:'rice'});
+caption(rr('serve').t0,rr('serve').t1,'',"On *sert !");
+caption(rr('herb').t0,rr('herb').t1,'',"+ coriandre *fraîche",{stk:'herb'});
+caption(rr('final').t0,rr('final').t1,'',"Bon *appétit !",{cls:'pac',style:'font-size:150px;line-height:1.3;-webkit-text-stroke:22px #2e7d32'});
 
 /* sticker "enregistre" */
-gsap.set('#save',{opacity:0});tl.set('#save',{opacity:1},C[9]);
-tl.from('#save',{scale:0,rotation:-25,duration:.55,ease:'elastic.out(1,.55)'},C[9]); cue(C[9],'pop',{n:1});
-tl.to('#save',{scale:1.08,duration:.3,yoyo:true,repeat:5,ease:'sine.inOut'},C[9]+.6);
-tl.to('#save',{scale:0,duration:.25,ease:'back.in(2)'},C[10]+1.2);
+gsap.set('#save',{opacity:0});const sv=rr('beans').t0+.4;tl.set('#save',{opacity:1},sv);
+tl.from('#save',{scale:0,rotation:-25,duration:.55,ease:'elastic.out(1,.55)'},sv);
+tl.to('#save',{scale:1.08,duration:.3,yoyo:true,repeat:5,ease:'sine.inOut'},sv+.6);
+tl.to('#save',{scale:0,duration:.25,ease:'back.in(2)'},rr('mix').t0+1.5);
 
-/* son d'ambiance cuisine selon les scènes */
-cue(C[8]+.1,'beans',{dur:1.8}); cue(C[11],'simmer',{dur:C[12]-C[11]}); cue(C[12]+.2,'rice',{dur:1.4});
-cue(C[1]+.2,'oil'); [C[2]+.3,C[2]+1.3,C[6]+.2].forEach(t=>cue(t,'drops',{n:14,dur:.5})); cue(C[6]+1.0,'sauce'); cue(C[4]+.3,'powder'); cue(C[4]+1.2,'powder');
-[C[3],C[5],C[7],C[10]+1].forEach(t=>cue(t,'scrape',{dur:1.0}));
+/* bruits de cuisine uniquement */
+cue(rr('oil').t0+.25,'oil');
+[rr('onion').t0+.25,rr('onion').segs[1].t+.1,rr('corn').t0+.1].forEach(t=>cue(t,'drops',{n:16,dur:.7}));
+RUNS.filter(r=>r.tag==='stir').forEach(r=>cue(r.t0,'scrape',{dur:r.t1-r.t0}));
+cue(rr('mix').t0+.3,'scrape',{dur:2.2});
+cue(rr('spice').t0+.3,'powder');cue(rr('spice').t0+1.4,'powder');
+cue(rr('tomato').t0+.05,'sauce');
+cue(rr('beans').t0+.1,'beans',{dur:2.6});
+cue(rr('steam').t0,'boil',{dur:rr('steam').t1-rr('steam').t0});
+cue(rr('rice').t0+.1,'rice',{dur:rr('rice').segs[0].d-.2});cue(rr('rice').segs[1].t,'boil',{dur:rr('rice').segs[1].d});
+cue(rr('serve').t0+.4,'clink');cue(rr('final').t0+.3,'clink');
+const SIZ=[[0,0],[rr('oil').t0,0],[rr('oil').t0+.5,.4],[rr('onion').t0+.3,.6],[rr('tomato').t0,.65],[rr('tomato').t0+.5,.4],[rr('mix').t1,.35],[rr('mix').t1+.2,0],[99,0]];
 
 /* FIN */
 const end=$('#end');
-tl.to(end,{clipPath:'circle(1500px at 540px 1000px)',duration:.7,ease:'power2.inOut'},END); cue(END,'whoosh',{v:1.2});
-tl.from('#end img',{scale:.4,opacity:0,y:60,duration:.9,ease:'elastic.out(1,.6)'},END+.3); cue(END+.35,'shine');
+tl.to(end,{clipPath:'circle(1500px at 540px 1000px)',duration:.7,ease:'power2.inOut'},END); 
+tl.from('#end img',{scale:.4,opacity:0,y:60,duration:.9,ease:'elastic.out(1,.6)'},END+.3); 
 tl.from('#endTxt',{y:60,opacity:0,duration:.55,ease:'back.out(1.8)'},END+.75);
 tl.from('#endTxt b',{scale:.3,opacity:0,duration:.6,ease:'back.out(2.5)'},END+1.1);
 tl.to('#end img',{scale:1.04,duration:2,ease:'sine.inOut'},END+1.2);
@@ -108,7 +148,7 @@ const LEAF=`<svg width="70" height="70" viewBox="0 0 64 64"><path d="M32 60 C12 
 tl.to({},{duration:.01},DUR-.01);
 
 window.DURATION=DUR;
-window.SFX={cues:SFX.sort((a,b)=>a.t-b.t),cuts:C,vlen:VL};
+window.SFX={cues:SFX.sort((a,b)=>a.t-b.t),sizzle:SIZ,vlen:VL};
 let cur=-1; const pad=i=>String(i+1).padStart(5,'0');
 window.seek=async t=>{tl.seek(t,false);const i=Math.max(0,Math.min(NF-1,Math.floor(t*30+1e-6)));if(i!==cur){cur=i;img.src=`out/vframes/${pad(i)}.jpg`;await img.decode()}};
 await window.seek(0);
