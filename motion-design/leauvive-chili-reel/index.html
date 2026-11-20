@@ -40,7 +40,6 @@ html,body{margin:0;background:#111}
  <div id="vig"></div><div id="flash"></div>
  <div id="barbg"></div><div id="bar"></div>
  <div id="cap"></div>
- <div class="badge" id="slow"><span class="dot"></span>SLOW MO</div><div class="badge" id="ffb"><span class="ff"><i></i><i></i></span><span id="ffx">x2</span></div>
  <div id="save"><i></i>Enregistre la recette</div>
  <div id="chrono">0 s</div>
  <div id="logoS"><img src="../leauvive-chili/assets/logo.png" alt=""></div>
@@ -59,17 +58,9 @@ const END=VL+.05, DUR=END+3.6;
 const S=window.SEGS, RUNS=[]; S.forEach(g=>{const r=RUNS[RUNS.length-1];if(r&&r.tag===g.tag){r.t1=g.t+g.d;r.segs.push(g)}else RUNS.push({tag:g.tag,t0:g.t,t1:g.t+g.d,segs:[g]})});
 const run=(tag,k=0)=>RUNS.filter(r=>r.tag===tag)[k];
 gsap.set(img,{transformOrigin:'50% 45%'});
-RUNS.forEach((r,i)=>{ if(i>0){tl.fromTo('#flash',{opacity:i%3===0?.6:.3},{opacity:0,duration:.2,immediateRender:false},r.t0)}
- tl.fromTo(img,{scale:i%3===0?1.2:1.12,rotation:i%2?-1.5:1.5},{scale:1.0,rotation:0,duration:.4,ease:'power3.out',immediateRender:false},r.t0);
- r.segs.forEach((g,j)=>{const st=j===0?g.t+.4:g.t, d=Math.max(.05,g.t+g.d-st);
-  if(g.s<1) tl.to(img,{scale:'+=0.09',duration:d,ease:'sine.inOut'},st);          // ralenti : lente poussée
-  else if(g.s>=2) tl.to(img,{scale:1.04,rotation:i%2?.6:-.6,duration:d,ease:'none'},st);
-  else tl.to(img,{scale:'+=0.04',duration:d,ease:'none'},st);});});
-/* badges SLOW MO / avance rapide */
-gsap.set(['#slow','#ffb'],{opacity:0});
-S.forEach(g=>{if(g.tag==='hook'||g.tag==='brand')return;
- if(g.s<1){tl.set('#slow',{opacity:1},g.t);tl.fromTo('#slow',{scale:0},{scale:1,duration:.35,ease:'back.out(2.5)',immediateRender:false},g.t);tl.to('#slow .dot',{opacity:.2,duration:.25,yoyo:true,repeat:Math.max(1,Math.floor(g.d/.25)-1)},g.t);tl.to('#slow',{scale:0,duration:.15},g.t+g.d-.15);tl.set('#slow',{opacity:0},g.t+g.d)}
- if(g.s>=2){tl.set('#ffb',{opacity:1},g.t);tl.call(()=>{},null,g.t);tl.set('#ffx',{textContent:'x'+g.s},g.t);tl.fromTo('#ffb',{scale:0},{scale:1,duration:.3,ease:'back.out(2.5)',immediateRender:false},g.t);tl.to('#ffb .ff',{x:10,duration:.15,yoyo:true,repeat:Math.max(1,Math.floor(g.d/.15)-1)},g.t);tl.to('#ffb',{scale:0,duration:.15},g.t+g.d-.15);tl.set('#ffb',{opacity:0},g.t+g.d)}});
+RUNS.forEach((r,i)=>{
+ tl.fromTo(img,{scale:1.06},{scale:1.0,duration:.9,ease:'sine.out',immediateRender:false},r.t0);
+ tl.to(img,{scale:1.05,duration:Math.max(.1,r.t1-r.t0-.9),ease:'none'},r.t0+.9);});
 tl.fromTo('#bar',{scaleX:0},{scaleX:1,duration:VL,ease:'none'},0);
 const chrono={v:0};tl.to(chrono,{v:VL,duration:VL,ease:'none',onUpdate:()=>{$('#chrono').textContent=Math.floor(chrono.v)+' s'}},0);
 tl.from('#chrono',{scale:0,duration:.4,ease:'back.out(2)'},.2);
@@ -88,43 +79,40 @@ herb:`<svg viewBox="0 0 64 64"><path d="M32 60 C12 52 4 32 12 18 C16 24 22 24 24
 spoon:`<svg viewBox="0 0 100 100"><rect x="44" y="40" width="12" height="58" rx="6" fill="#d9a066" stroke="#fff" stroke-width="3"/><ellipse cx="50" cy="26" rx="20" ry="24" fill="#d9a066" stroke="#fff" stroke-width="5"/></svg>`};
 function caption(t,t2,lbl,text,o={}){
  const c=document.createElement('div');c.className='capItem';$('#cap').appendChild(c);
- c.innerHTML=(o.stk?`<div class="stk">${STK[o.stk]}</div>`:'')+(lbl?`<div class="row"><div class="lbl">${lbl}</div><div class="bio">BIO</div></div>`:'')+`<div class="txt ${o.cls||''}" style="${o.style||''}">${text.split(' ').map(w=>`<span${w.startsWith('*')?' class="hl"':''}>${w.replace('*','').replace(/_/g,' ')}</span>`).join('')}</div>`;
+ c.innerHTML=(o.stk?`<div class="stk">${STK[o.stk]}</div>`:'')+(lbl?`<div class="row"><div class="lbl">${lbl}</div></div>`:'')+`<div class="txt ${o.cls||''}" style="${o.style||''}">${text.split(' ').map(w=>`<span${w.startsWith('*')?' class="hl"':''}>${w.replace('*','').replace(/_/g,' ')}</span>`).join('')}</div>`;
  if(o.top!=null)c.style.top=o.top+'px';
  gsap.set(c,{opacity:0}); tl.set(c,{opacity:1},t);
- if(lbl){tl.from(c.querySelector('.lbl'),{y:40,opacity:0,duration:.28,ease:'back.out(2)'},t);tl.from(c.querySelector('.bio'),{scale:0,rotation:-120,duration:.6,ease:'elastic.out(1,.5)'},t+.08)}
+ if(lbl){tl.from(c.querySelector('.lbl'),{y:20,opacity:0,duration:.4,ease:'power2.out'},t);}
  const sp=c.querySelectorAll('.txt span');
- tl.fromTo(sp,{scale:2.4,opacity:0,rotation:()=>R(-14,14)},{scale:1,opacity:1,rotation:0,duration:.32,ease:'back.out(1.8)',stagger:.08,immediateRender:true},t+.05);
- const reps=Math.max(1,Math.floor((t2-t-.9)/.4));
- tl.to(sp,{y:-10,duration:.4,yoyo:true,repeat:reps,ease:'sine.inOut',stagger:.06},t+.6);
+ tl.fromTo(sp,{opacity:0,y:30},{opacity:1,y:0,duration:.5,ease:'power2.out',stagger:.12,immediateRender:true},t+.1);
  const k=c.querySelector('.stk');
- if(k){tl.fromTo(k,{scale:0,rotation:-180,y:80},{scale:1,rotation:-8,y:0,duration:.7,ease:'elastic.out(1,.45)',immediateRender:true},t+.12);tl.to(k,{rotation:8,y:-12,duration:.45,yoyo:true,repeat:Math.max(1,Math.floor((t2-t-1)/.45)),ease:'sine.inOut'},t+.82)}
- tl.to(c,{opacity:0,scale:.85,duration:.18,ease:'power2.in'},t2-.18);
+ if(k){tl.fromTo(k,{scale:.6,opacity:0,rotation:-8},{scale:1,opacity:1,rotation:-4,duration:.6,ease:'back.out(1.4)',immediateRender:true},t+.1);tl.to(k,{rotation:4,y:-8,duration:Math.max(.5,t2-t-.9),ease:'sine.inOut'},t+.7)}
+ tl.to(c,{opacity:0,y:-20,duration:.35,ease:'power1.in'},t2-.35);
 }
 let seedR=3;const R=(a,b)=>{seedR=(seedR*16807)%2147483647;return a+(seedR/2147483647)*(b-a)};
 const rr=n=>run(n);
 caption(.05,rr('hook').t1,'',"Chili *con_carne",{cls:'pac',style:'font-size:150px;line-height:1.3;-webkit-text-stroke:22px #2e7d32',top:-120,stk:'pepper'});
-caption(.6,rr('hook').t1,'',"La recette *bio & réconfortante",{style:'font-size:66px;-webkit-text-stroke:14px #2e7d32',top:110});
+caption(.6,rr('hook').t1,'',"La recette *facile & réconfortante",{style:'font-size:66px;-webkit-text-stroke:14px #2e7d32',top:110});
 caption(rr('oil').t0,rr('oil').t1,'ÉTAPE 1',"Un filet d'*huile_d'olive",{stk:'oil'});
 caption(rr('onion').t0,run('stir',0).t1,'ÉTAPE 2',"*Oignon & *carotte",{stk:'onion'});
 caption(rr('spice').t0,run('stir',1).t1,'ÉTAPE 3',"*Paprika & épices",{stk:'pepper'});
-caption(rr('corn').t0,rr('corn').t1,'ÉTAPE 4',"Le *maïs",{stk:'corn'});
-caption(rr('tomato').t0,run('stir',2).t1,'ÉTAPE 5',"Coulis de *tomates",{stk:'tomato'});
-caption(rr('beans').t0,rr('beans').t1,'ÉTAPE 6',"*Haricots rouges",{stk:'bean'});
-caption(rr('mix').t0,rr('mix').t1,'ÉTAPE 7',"On mélange & on *couvre",{stk:'spoon'});
-caption(rr('steam').t0,rr('rice').t1,'ÉTAPE 8',"Pendant ce temps, le *riz",{stk:'rice'});
+caption(rr('corn').t0,run('stir',2).t1,'ÉTAPE 4',"*Maïs & coulis de *tomates",{stk:'tomato'});
+caption(rr('beans').t0,rr('beans').t1,'ÉTAPE 5',"*Haricots rouges",{stk:'bean'});
+caption(rr('mix').t0,rr('mix').t1,'ÉTAPE 6',"On mélange & on *couvre",{stk:'spoon'});
+caption(rr('steam').t0,rr('rice').t1,'ÉTAPE 7',"Pendant ce temps, le *riz",{stk:'rice'});
 caption(rr('serve').t0,rr('serve').t1,'',"On *sert !");
 caption(rr('herb').t0,rr('herb').t1,'',"+ coriandre *fraîche",{stk:'herb'});
 caption(rr('final').t0,rr('final').t1,'',"Bon *appétit !",{cls:'pac',style:'font-size:150px;line-height:1.3;-webkit-text-stroke:22px #2e7d32'});
 
 /* sticker "enregistre" */
 gsap.set('#save',{opacity:0});const sv=rr('beans').t0+.4;tl.set('#save',{opacity:1},sv);
-tl.from('#save',{scale:0,rotation:-25,duration:.55,ease:'elastic.out(1,.55)'},sv);
-tl.to('#save',{scale:1.08,duration:.3,yoyo:true,repeat:5,ease:'sine.inOut'},sv+.6);
+tl.from('#save',{opacity:0,x:40,duration:.5,ease:'power2.out'},sv);
+
 tl.to('#save',{scale:0,duration:.25,ease:'back.in(2)'},rr('mix').t0+1.5);
 
 /* bruits de cuisine uniquement */
 cue(rr('oil').t0+.25,'oil');
-[rr('onion').t0+.25,rr('onion').segs[1].t+.1,rr('corn').t0+.1].forEach(t=>cue(t,'drops',{n:16,dur:.7}));
+[rr('onion').t0+.25,rr('onion').t0+1.8,rr('corn').t0+.1].forEach(t=>cue(t,'drops',{n:16,dur:.7}));
 RUNS.filter(r=>r.tag==='stir').forEach(r=>cue(r.t0,'scrape',{dur:r.t1-r.t0}));
 cue(rr('mix').t0+.3,'scrape',{dur:2.2});
 cue(rr('spice').t0+.3,'powder');cue(rr('spice').t0+1.4,'powder');
