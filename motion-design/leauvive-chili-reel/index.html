@@ -5,45 +5,33 @@
 html,body{margin:0;background:#111}
 #stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:'Baloo 2',sans-serif;background:#000}
 #vw{position:absolute;inset:0;overflow:hidden}
-#v{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover}
-#flash{position:absolute;inset:0;background:#fff;opacity:0;z-index:5}
-#vig{position:absolute;inset:0;z-index:4;background:linear-gradient(rgba(0,0,0,.28),rgba(0,0,0,0) 14%,rgba(0,0,0,0) 62%,rgba(0,0,0,.38) 100%)}
-#bar{position:absolute;left:0;top:0;height:14px;width:1080px;background:#8bd17c;z-index:40;transform-origin:0 50%;box-shadow:0 0 14px rgba(120,220,100,.8)}
-#barbg{position:absolute;left:0;top:0;height:14px;width:1080px;background:rgba(255,255,255,.25);z-index:39}
+#v{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;transform-origin:50% 48%}
+#vig{position:absolute;inset:0;z-index:4;background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 58%,rgba(0,0,0,.22) 100%)}
 #cap{position:absolute;left:0;top:800px;width:1080px;height:420px;z-index:50}
 .capItem{position:absolute;left:40px;width:1000px;top:0;text-align:center}
-.row{display:flex;justify-content:center;align-items:center;gap:18px;margin-bottom:8px}
+.row{display:flex;justify-content:center;margin-bottom:10px}
 .lbl{background:#fff;color:#2e7d32;font-weight:800;font-size:42px;padding:2px 30px;border-radius:30px;box-shadow:0 6px 14px rgba(0,0,0,.3)}
-.bio{width:104px;height:104px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#5cbf55,#2e8b32);border:6px solid #fff;color:#fff;font-weight:800;font-size:38px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 16px rgba(0,0,0,.35);line-height:1}
 .txt{font-weight:800;font-size:104px;line-height:1.0;color:#fff;-webkit-text-stroke:20px #2e7d32;paint-order:stroke fill;filter:drop-shadow(0 10px 12px rgba(0,0,0,.35))}
 .txt span{display:inline-block;margin:0 12px}
 .hl{color:#ffe36b}
 .pac{font-family:'Pacifico',cursive;font-weight:400}
-#logoS{position:absolute;left:34px;top:46px;z-index:55;background:rgba(255,255,255,.92);border-radius:28px;padding:10px 18px;box-shadow:0 8px 18px rgba(0,0,0,.25)}
-#logoS img{width:160px;display:block}
-#save{position:absolute;right:40px;top:260px;z-index:52;background:#fff;border-radius:34px;padding:14px 28px 14px 22px;display:flex;align-items:center;gap:16px;font-weight:800;font-size:40px;color:#2e7d32;box-shadow:0 10px 22px rgba(0,0,0,.3)}
+.stk{position:absolute;left:50%;top:-230px;width:200px;height:200px;margin-left:-100px;filter:drop-shadow(0 12px 14px rgba(0,0,0,.35))}
+#logoS{position:absolute;left:36px;top:220px;z-index:55;background:rgba(255,255,255,.9);border-radius:24px;padding:8px 14px;box-shadow:0 8px 18px rgba(0,0,0,.25)}
+#logoS img{width:130px;display:block}
+#save{position:absolute;right:40px;top:300px;z-index:52;background:#fff;border-radius:34px;padding:14px 28px 14px 22px;display:flex;align-items:center;gap:16px;font-weight:800;font-size:40px;color:#2e7d32;box-shadow:0 10px 22px rgba(0,0,0,.3)}
 #save i{display:block;width:34px;height:44px;background:#2e8b32;clip-path:polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)}
-#chrono{position:absolute;right:40px;top:46px;z-index:55;background:#2e7d32;color:#fff;font-weight:800;font-size:40px;padding:6px 26px;border-radius:30px;box-shadow:0 8px 18px rgba(0,0,0,.3)}
 #end{position:absolute;inset:0;z-index:60;background:radial-gradient(circle at 50% 42%,#ffffff 0%,#f4f8ec 45%,#d6ebc9 100%);clip-path:circle(0px at 540px 1000px)}
 #end img{position:absolute;left:140px;top:760px;width:800px}
 #endTxt{position:absolute;left:80px;width:920px;top:520px;text-align:center;font-weight:700;font-size:66px;line-height:1.12;color:#2b5e2d}
-#loc{position:absolute;left:50%;top:1170px;transform:translateX(-50%);white-space:nowrap;display:inline-flex;align-items:center;gap:16px;margin-top:22px;background:#2e8b32;color:#fff;font-weight:800;font-size:64px;padding:6px 40px 6px 30px;border-radius:50px;box-shadow:0 10px 22px rgba(20,60,20,.25)}
+#loc{position:absolute;left:50%;top:1170px;transform:translateX(-50%);white-space:nowrap;display:inline-flex;align-items:center;gap:16px;background:#2e8b32;color:#fff;font-weight:800;font-size:64px;padding:6px 40px 6px 30px;border-radius:50px;box-shadow:0 10px 22px rgba(20,60,20,.25)}
 #loc i{width:34px;height:34px;background:#fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:inset 0 0 0 10px #fff,inset 0 0 0 30px #2e8b32}
-#endTxt b{display:block;font-family:'Pacifico';font-weight:400;font-size:104px;color:#2e8b32;margin-top:18px}
 .leaf{position:absolute;z-index:61}
-.stk{position:absolute;left:50%;top:-230px;width:200px;height:200px;margin-left:-100px;filter:drop-shadow(0 12px 14px rgba(0,0,0,.35))}
-.badge{position:absolute;left:50%;top:150px;z-index:52;transform:translateX(-50%);background:#fff;color:#d2361f;font-weight:800;font-size:46px;letter-spacing:4px;padding:4px 34px;border-radius:40px;box-shadow:0 10px 22px rgba(0,0,0,.3);display:flex;align-items:center;gap:14px;white-space:nowrap}
-.badge .dot{width:22px;height:22px;border-radius:50%;background:#e23b2a}
-.badge .ff{display:flex}.badge .ff i{width:0;height:0;border-left:24px solid #2e7d32;border-top:15px solid transparent;border-bottom:15px solid transparent}
-#ffb{color:#2e7d32}
 </style></head><body>
 <div id="stage">
  <div id="vw"><img id="v" alt=""></div>
- <div id="vig"></div><div id="flash"></div>
- <div id="barbg"></div><div id="bar"></div>
+ <div id="vig"></div>
  <div id="cap"></div>
  <div id="save"><i></i>Enregistre la recette</div>
- <div id="chrono">0 s</div>
  <div id="logoS"><img src="../leauvive-chili/assets/logo.png" alt=""></div>
  <div id="end"><div id="endTxt">Tous les ingrédients de cette recette sont chez</div><img src="assets/logo-sans-slogan.png" alt=""><div id="loc"><i></i>Andelnans</div></div>
 </div>
@@ -52,95 +40,93 @@ html,body{margin:0;background:#111}
 <script>
 (async()=>{
 await document.fonts.ready;
-const $=s=>document.querySelector(s), img=$('#v'), C=window.CUTS, VL=window.VLEN, NF=window.NF;
-const tl=gsap.timeline({paused:true}); const SFX=[]; const cue=(t,type,o={})=>SFX.push(Object.assign({t:+t.toFixed(3),type},o));
-const END=VL+.05, DUR=END+4.2;
+const $=s=>document.querySelector(s), img=$('#v'), S=window.SEGS, VL=window.VLEN, NF=window.NF;
+const tl=gsap.timeline({paused:true}); const SFX=[]; const cue=(t,type,o={})=>{if(t!=null)SFX.push(Object.assign({t:+t.toFixed(3),type},o))};
+const END=VL-.25, DUR=END+2.4;   // carte de fin courte : la boucle repart vite sur l'accroche
+const RUNS=[]; S.forEach(g=>{const r=RUNS[RUNS.length-1];if(r&&r.tag===g.tag)r.segs.push(g);else RUNS.push({tag:g.tag,t0:g.t,segs:[g]})});
+RUNS.forEach((r,i)=>r.t1=i<RUNS.length-1?RUNS[i+1].t0:VL);
+const rr=tag=>RUNS.find(r=>r.tag===tag);
+const at=src=>{const g=S.find(g=>src>=g.a-1e-6&&src<=g.b+1e-6);return g?g.t+(src-g.a)/g.s:null};  // temps source -> temps montage
 
-/* groupes de segments (même tag consécutif) */
-const S=window.SEGS, RUNS=[]; S.forEach(g=>{const r=RUNS[RUNS.length-1];if(r&&r.tag===g.tag){r.t1=g.t+g.d;r.segs.push(g)}else RUNS.push({tag:g.tag,t0:g.t,t1:g.t+g.d,segs:[g]})});
-const run=(tag,k=0)=>RUNS.filter(r=>r.tag===tag)[k];
-gsap.set(img,{transformOrigin:'50% 45%'});
-RUNS.forEach((r,i)=>{
- tl.fromTo(img,{scale:1.06},{scale:1.0,duration:.9,ease:'sine.out',immediateRender:false},r.t0);
- tl.to(img,{scale:1.05,duration:Math.max(.1,r.t1-r.t0-.9),ease:'none'},r.t0+.9);});
-tl.fromTo('#bar',{scaleX:0},{scaleX:1,duration:VL,ease:'none'},0);
-const chrono={v:0};tl.to(chrono,{v:VL,duration:VL,ease:'none',onUpdate:()=>{$('#chrono').textContent=Math.floor(chrono.v)+' s'}},0);
-tl.from('#chrono',{scale:0,duration:.4,ease:'back.out(2)'},.2);
-tl.from('#logoS',{x:-60,opacity:0,duration:.45,ease:'power2.out'},.15);
-tl.to(['#logoS','#chrono','#bar','#barbg'],{opacity:0,duration:.25},END);
+/* ---------- ACCROCHE (visible dès la 1re image) ---------- */
+const hk=document.createElement('div');hk.className='capItem';hk.style.top='-140px';$('#cap').appendChild(hk);
+hk.innerHTML=`<div class="txt pac" style="font-size:150px;line-height:1.3;-webkit-text-stroke:22px #2e7d32">Chili <span class="hl">con carne</span></div>`+
+ `<div class="txt" id="hsub" style="font-size:66px;-webkit-text-stroke:14px #2e7d32;margin-top:4px">${"La recette réconfortante de l'hiver".split(' ').map(w=>`<span>${w}</span>`).join('')}</div>`;
+tl.fromTo(hk.querySelector('.pac'),{scale:1.08},{scale:1,duration:.7,ease:'power2.out'},0);
+tl.fromTo('#hsub span',{opacity:0,y:20},{opacity:1,y:0,duration:.35,stagger:.06,ease:'power2.out'},.12);
+tl.to(hk,{opacity:0,y:-20,duration:.25,ease:'power1.in'},rr('oil').t0-.22);
 
+/* ---------- ÉTAPES ---------- */
 const STK={
 oil:`<svg viewBox="0 0 100 100"><path d="M50 6 C62 30 82 48 82 66 A32 32 0 0 1 18 66 C18 48 38 30 50 6Z" fill="#f2c230" stroke="#fff" stroke-width="5"/><path d="M36 60 C36 72 44 80 54 82" stroke="#fff6c0" stroke-width="7" fill="none" stroke-linecap="round"/></svg>`,
 onion:`<svg viewBox="0 0 100 100"><path d="M50 8 C52 18 56 22 60 26 C82 34 90 56 80 74 C72 88 28 88 20 74 C10 56 18 34 40 26 C44 22 48 18 50 8Z" fill="#f3e6d0" stroke="#fff" stroke-width="5"/><path d="M50 30 C40 46 40 70 50 86 M50 30 C60 46 60 70 50 86 M42 28 C26 44 28 70 36 84 M58 28 C74 44 72 70 64 84" stroke="#d9bf98" stroke-width="3" fill="none"/><path d="M50 8 L46 0 M50 8 L55 1" stroke="#7aa34e" stroke-width="4"/></svg>`,
 pepper:`<svg viewBox="0 0 100 100"><path d="M30 30 C50 26 76 40 88 84 C70 66 46 58 28 48 Z" fill="#e2301f" stroke="#fff" stroke-width="5"/><path d="M36 36 C54 36 70 48 80 70" stroke="#ff8a78" stroke-width="5" fill="none"/><path d="M30 30 C22 22 16 22 10 12 C20 16 28 16 34 22 C38 30 36 44 30 46 C24 42 24 36 30 30Z" fill="#3e8f37" stroke="#fff" stroke-width="3"/></svg>`,
-corn:`<svg viewBox="0 0 100 100"><ellipse cx="50" cy="48" rx="20" ry="38" fill="#f6c22c" stroke="#fff" stroke-width="5"/><g fill="#ffe27a">${[0,1,2,3,4,5].map(r=>[0,1,2].map(c=>`<circle cx="${40+c*10}" cy="${22+r*10}" r="3.5"/>`).join('')).join('')}</g><path d="M50 92 C30 80 22 60 28 40 C34 60 42 72 50 92Z M50 92 C70 80 78 60 72 40 C66 60 58 72 50 92Z" fill="#5aa83f" stroke="#fff" stroke-width="3"/></svg>`,
 tomato:`<svg viewBox="0 0 100 100"><circle cx="50" cy="56" r="38" fill="#e23b2a" stroke="#fff" stroke-width="5"/><circle cx="38" cy="44" r="9" fill="#ff8c72" opacity=".7"/><path d="M50 30 L56 16 L58 32 L72 28 L60 38 L68 48 L54 42 L50 54 L46 42 L32 48 L40 38 L28 28 L42 32 L44 16Z" fill="#3e8f37"/></svg>`,
 bean:`<svg viewBox="0 0 100 100"><path d="M24 34 C34 12 70 14 80 36 C88 54 78 80 58 76 C48 74 48 62 38 66 C22 72 14 54 24 34Z" fill="#8e2028" stroke="#fff" stroke-width="5"/><path d="M36 30 C46 22 62 24 70 34" stroke="#d0606a" stroke-width="6" fill="none" stroke-linecap="round"/></svg>`,
-rice:`<svg viewBox="0 0 100 100"><path d="M14 50 L86 50 C84 72 70 88 50 88 C30 88 16 72 14 50Z" fill="#6fae66" stroke="#fff" stroke-width="5"/><path d="M18 50 C20 30 80 30 82 50Z" fill="#fffdf4" stroke="#fff" stroke-width="3"/><g fill="#e8e0cc">${[[34,42],[46,38],[58,41],[66,45],[40,46],[52,45]].map(p=>`<ellipse cx="${p[0]}" cy="${p[1]}" rx="4" ry="1.8"/>`).join('')}</g></svg>`,
-herb:`<svg viewBox="0 0 64 64"><path d="M32 60 C12 52 4 32 12 18 C16 24 22 24 24 15 C28 7 36 5 40 13 C42 21 48 23 52 17 C60 32 52 52 32 60Z" fill="#45a83f" stroke="#fff" stroke-width="3"/><path d="M32 60 L32 22 M32 44 L20 32 M32 40 L44 28" stroke="#2c7a2c" stroke-width="2.4" fill="none"/></svg>`,
-spoon:`<svg viewBox="0 0 100 100"><rect x="44" y="40" width="12" height="58" rx="6" fill="#d9a066" stroke="#fff" stroke-width="3"/><ellipse cx="50" cy="26" rx="20" ry="24" fill="#d9a066" stroke="#fff" stroke-width="5"/></svg>`};
-function caption(t,t2,lbl,text,o={}){
+rice:`<svg viewBox="0 0 100 100"><path d="M14 50 L86 50 C84 72 70 88 50 88 C30 88 16 72 14 50Z" fill="#6fae66" stroke="#fff" stroke-width="5"/><path d="M18 50 C20 30 80 30 82 50Z" fill="#fffdf4" stroke="#fff" stroke-width="3"/><g fill="#e8e0cc"><ellipse cx="34" cy="42" rx="4" ry="1.8"/><ellipse cx="46" cy="38" rx="4" ry="1.8"/><ellipse cx="58" cy="41" rx="4" ry="1.8"/><ellipse cx="66" cy="45" rx="4" ry="1.8"/><ellipse cx="40" cy="46" rx="4" ry="1.8"/><ellipse cx="52" cy="45" rx="4" ry="1.8"/></g></svg>`,
+lid:`<svg viewBox="0 0 100 100"><ellipse cx="50" cy="62" rx="42" ry="20" fill="#e2301f" stroke="#fff" stroke-width="5"/><ellipse cx="50" cy="56" rx="30" ry="12" fill="#f0553f"/><rect x="40" y="34" width="20" height="18" rx="7" fill="#3a332d" stroke="#fff" stroke-width="4"/><path d="M30 26 C26 18 34 14 30 6 M50 24 C46 16 54 12 50 4 M70 26 C66 18 74 14 70 6" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" opacity=".9"/></svg>`};
+function caption(t,t2,lbl,text,stk){
  const c=document.createElement('div');c.className='capItem';$('#cap').appendChild(c);
- c.innerHTML=(o.stk?`<div class="stk">${STK[o.stk]}</div>`:'')+(lbl?`<div class="row"><div class="lbl">${lbl}</div></div>`:'')+`<div class="txt ${o.cls||''}" style="${o.style||''}">${text.split(' ').map(w=>`<span${w.startsWith('*')?' class="hl"':''}>${w.replace('*','').replace(/_/g,' ')}</span>`).join('')}</div>`;
- if(o.top!=null)c.style.top=o.top+'px';
+ c.innerHTML=(stk?`<div class="stk">${STK[stk]}</div>`:'')+`<div class="row"><div class="lbl">${lbl}</div></div>`+
+  `<div class="txt">${text.split(' ').map(w=>`<span${w.startsWith('*')?' class="hl"':''}>${w.replace('*','').replace(/_/g,' ')}</span>`).join('')}</div>`;
  gsap.set(c,{opacity:0}); tl.set(c,{opacity:1},t);
- if(lbl){tl.from(c.querySelector('.lbl'),{y:20,opacity:0,duration:.4,ease:'power2.out'},t);}
- const sp=c.querySelectorAll('.txt span');
- tl.fromTo(sp,{opacity:0,y:30},{opacity:1,y:0,duration:.5,ease:'power2.out',stagger:.12,immediateRender:true},t+.1);
+ tl.from(c.querySelector('.lbl'),{y:20,opacity:0,duration:.4,ease:'power2.out'},t);
+ tl.fromTo(c.querySelectorAll('.txt span'),{opacity:0,y:30},{opacity:1,y:0,duration:.45,ease:'power2.out',stagger:.1,immediateRender:true},t+.08);
  const k=c.querySelector('.stk');
- if(k){tl.fromTo(k,{scale:.6,opacity:0,rotation:-8},{scale:1,opacity:1,rotation:-4,duration:.6,ease:'back.out(1.4)',immediateRender:true},t+.1);tl.to(k,{rotation:4,y:-8,duration:Math.max(.5,t2-t-.9),ease:'sine.inOut'},t+.7)}
- tl.to(c,{opacity:0,y:-20,duration:.35,ease:'power1.in'},t2-.35);
+ if(k){tl.fromTo(k,{scale:.6,opacity:0,rotation:-8},{scale:1,opacity:1,rotation:-4,duration:.55,ease:'back.out(1.5)',immediateRender:true},t+.05);
+  tl.to(k,{rotation:4,y:-8,duration:Math.max(.5,t2-t-.8),ease:'sine.inOut'},t+.6)}
+ tl.to(c,{opacity:0,y:-20,duration:.3,ease:'power1.in'},t2-.3);
 }
-let seedR=3;const R=(a,b)=>{seedR=(seedR*16807)%2147483647;return a+(seedR/2147483647)*(b-a)};
-const rr=n=>run(n);
-caption(.05,rr('hook').t1,'',"Chili *con_carne",{cls:'pac',style:'font-size:150px;line-height:1.3;-webkit-text-stroke:22px #2e7d32',top:-120,stk:'pepper'});
-caption(.6,rr('hook').t1,'',"La recette *facile & réconfortante",{style:'font-size:66px;-webkit-text-stroke:14px #2e7d32',top:110});
-caption(rr('oil').t0,rr('oil').t1,'ÉTAPE 1',"Un filet d'*huile_d'olive",{stk:'oil'});
-caption(rr('onion').t0,run('stir',0).t1,'ÉTAPE 2',"*Oignon & *carotte",{stk:'onion'});
-caption(rr('spice').t0,run('stir',1).t1,'ÉTAPE 3',"*Paprika & épices",{stk:'pepper'});
-caption(rr('corn').t0,run('stir',2).t1,'ÉTAPE 4',"*Maïs & coulis de *tomates",{stk:'tomato'});
-caption(rr('beans').t0,rr('beans').t1,'ÉTAPE 5',"*Haricots rouges",{stk:'bean'});
-caption(rr('mix').t0,rr('mix').t1,'ÉTAPE 6',"On mélange & on *couvre",{stk:'spoon'});
-caption(rr('steam').t0,rr('rice').t1,'ÉTAPE 7',"Pendant ce temps, le *riz",{stk:'rice'});
+const step=(tag,n,text,stk)=>{const r=rr(tag);caption(r.t0+.15,r.t1+.2,'ÉTAPE '+n,text,stk)};
+step('oil',1,"Un filet d'*huile_d'olive",'oil');
+step('onion',2,"*Oignon & *carotte",'onion');
+step('spice',3,"*Paprika & épices",'pepper');
+step('tomcorn',4,"*Maïs & coulis de *tomates",'tomato');
+step('beans',5,"*Haricots rouges",'bean');
+step('mix',6,"On couvre & on *mijote",'lid');
+step('rice',7,"Pendant ce temps, le *riz",'rice');
+// fin (tag "final") : aucun texte, on admire le plat
 
-/* sticker "enregistre" */
-gsap.set('#save',{opacity:0});const sv=rr('beans').t0+.4;tl.set('#save',{opacity:1},sv);
-tl.from('#save',{opacity:0,x:40,duration:.5,ease:'power2.out'},sv);
+/* petit logo (pas pendant l'accroche) + sticker "enregistre" */
+gsap.set('#logoS',{opacity:0}); tl.to('#logoS',{opacity:1,duration:.5},rr('oil').t0+.3); tl.to('#logoS',{opacity:0,duration:.4},rr('final').t0);
+gsap.set('#save',{opacity:0}); const sv=rr('mix').t0+.4;
+tl.fromTo('#save',{opacity:0,x:40},{opacity:1,x:0,duration:.5,ease:'power2.out',immediateRender:false},sv);
+tl.to('#save',{scale:1.06,duration:.35,yoyo:true,repeat:1,ease:'sine.inOut'},sv+.8);
+tl.to('#save',{opacity:0,x:40,duration:.35},rr('rice').t1-.45);
 
-tl.to('#save',{scale:0,duration:.25,ease:'back.in(2)'},rr('mix').t0+1.5);
-
-/* bruits de cuisine uniquement */
-cue(rr('oil').t0+.25,'oil');
-[rr('onion').t0+.25,rr('onion').t0+1.8,rr('corn').t0+.1].forEach(t=>cue(t,'drops',{n:16,dur:.7}));
-RUNS.filter(r=>r.tag==='stir').forEach(r=>cue(r.t0,'scrape',{dur:r.t1-r.t0}));
-cue(rr('mix').t0+.3,'scrape',{dur:2.2});
-cue(rr('spice').t0+.3,'powder');cue(rr('spice').t0+1.4,'powder');
-cue(rr('tomato').t0+.05,'sauce');
-cue(rr('beans').t0+.1,'beans',{dur:2.6});
-cue(rr('steam').t0,'boil',{dur:rr('steam').t1-rr('steam').t0});
-cue(rr('rice').t0+.1,'rice',{dur:rr('rice').segs[0].d-.2});cue(rr('rice').segs[1].t,'boil',{dur:rr('rice').segs[1].d});
-cue(rr('serve').t0+.4,'clink');cue(rr('final').t0+.3,'clink');
-const SIZ=[[0,0],[rr('oil').t0,0],[rr('oil').t0+.5,.4],[rr('onion').t0+.3,.6],[rr('tomato').t0,.65],[rr('tomato').t0+.5,.4],[rr('mix').t1,.35],[rr('mix').t1+.2,0],[99,0]];
-
-/* FIN */
+/* ---------- FIN ---------- */
 const end=$('#end');
-tl.to(end,{clipPath:'circle(1500px at 540px 1000px)',duration:.7,ease:'power2.inOut'},END); 
-tl.from('#end img',{scale:.4,opacity:0,y:60,duration:.9,ease:'elastic.out(1,.6)'},END+.9); 
-tl.from('#endTxt',{y:40,opacity:0,duration:.6,ease:'power2.out'},END+.35);
-tl.from('#loc',{scale:0,opacity:0,duration:.6,ease:'back.out(2)'},END+1.5);
-tl.to('#end img',{scale:1.04,duration:2,ease:'sine.inOut'},END+1.2);
+tl.to(end,{clipPath:'circle(1500px at 540px 1000px)',duration:.5,ease:'power2.inOut'},END);
+tl.from('#endTxt',{y:30,opacity:0,duration:.4,ease:'power2.out'},END+.15);
+tl.from('#end img',{scale:.6,opacity:0,duration:.6,ease:'back.out(1.6)'},END+.3);
+tl.from('#loc',{scale:0,opacity:0,duration:.45,ease:'back.out(2)'},END+.55);
+tl.to('#end img',{scale:1.03,duration:1.5,ease:'sine.inOut'},END+.9);
 const LEAF=`<svg width="70" height="70" viewBox="0 0 64 64"><path d="M32 60 C12 52 4 32 12 18 C16 24 22 24 24 15 C28 7 36 5 40 13 C42 21 48 23 52 17 C60 32 52 52 32 60Z" fill="#45a83f"/><path d="M32 60 L32 22 M32 44 L20 32 M32 40 L44 28" stroke="#2c7a2c" stroke-width="2.4" fill="none"/></svg>`;
 [[140,380,-30],[930,420,40],[120,1500,20],[950,1560,-50],[540,330,10],[300,1720,60],[800,1760,-20]].forEach(([x,y,r],i)=>{const l=document.createElement('div');l.className='leaf';l.innerHTML=LEAF;end.appendChild(l);
- Object.assign(l.style,{left:x+'px',top:y+'px'});gsap.set(l,{xPercent:-50,yPercent:-50,rotation:r});tl.from(l,{scale:0,rotation:r-120,duration:.6,ease:'back.out(2)'},END+.6+i*.06);tl.to(l,{y:-20,rotation:r+15,duration:2,ease:'sine.inOut'},END+1.3)});
+ Object.assign(l.style,{left:x+'px',top:y+'px'});gsap.set(l,{xPercent:-50,yPercent:-50,rotation:r});tl.from(l,{scale:0,rotation:r-120,duration:.5,ease:'back.out(2)'},END+.35+i*.04);tl.to(l,{y:-16,rotation:r+12,duration:1.4,ease:'sine.inOut'},END+.9)});
 tl.to({},{duration:.01},DUR-.01);
+
+/* ---------- SONS DE CUISINE (calés sur les images source) ---------- */
+cue(at(41.15),'scoop');
+cue(at(2.25),'oil');
+cue(at(4.0),'drops',{n:14,dur:.7}); cue(at(5.0),'drops',{n:14,dur:.8});
+cue(at(9.05),'powder'); cue(at(10.2),'powder');
+cue(at(15.6),'drops',{n:16,dur:.7}); cue(at(16.5),'sauce');
+cue(at(20.7),'beans',{dur:2.6});
+cue(at(28.9),'scrape',{dur:1.2}); cue(at(30.95),'lid');
+cue(at(36.45),'rice',{dur:2.3}); cue(at(38.2),'boil',{dur:1.4});
+cue(at(40.3),'clink');
+const SIZ=[[0,0],[rr('oil').t0,0],[rr('oil').t0+.4,.35],[rr('onion').t0+.3,.55],[rr('tomcorn').t1-.4,.6],[rr('beans').t0+.2,.3],[rr('mix').t1-.4,.3],[rr('mix').t1,0],[99,0]];
 
 window.DURATION=DUR;
 window.SFX={cues:SFX.sort((a,b)=>a.t-b.t),sizzle:SIZ,vlen:VL};
 let cur=-1; const pad=i=>String(i+1).padStart(5,'0');
-window.seek=async t=>{tl.seek(t,false);const i=Math.max(0,Math.min(NF-1,Math.floor(t*30+1e-6)));if(i!==cur){cur=i;img.src=`out/vframes/${pad(i)}.jpg`;await img.decode()}};
+window.seek=async t=>{tl.seek(t,false);
+ img.style.transform=`scale(${(1+.035*(.5-.5*Math.cos(2*Math.PI*t/7))).toFixed(4)})`;  // respiration lente, jamais < 1 (pas de bord noir)
+ const i=Math.max(0,Math.min(NF-1,Math.floor(t*30+1e-6)));if(i!==cur){cur=i;img.src=`out/vframes/${pad(i)}.jpg`;await img.decode()}};
 await window.seek(0);
 const P=new URLSearchParams(location.search);
-if(!P.has('render')){let t0=performance.now();const loop=()=>{const t=(performance.now()-t0)/1000%DUR;window.seek(t);requestAnimationFrame(loop)};if(P.has('t'))window.seek(+P.get('t'));else loop()}
+if(!P.has('render')){let t0=performance.now();const loop=()=>{window.seek((performance.now()-t0)/1000%DUR);requestAnimationFrame(loop)};if(P.has('t'))window.seek(+P.get('t'));else loop()}
 window.READY=true;
 })();
 </script></body></html>

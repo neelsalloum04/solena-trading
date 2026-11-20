@@ -68,14 +68,23 @@ async function openPage(browser) {
     }
     await page.close();
   }));
+  // couverture Instagram
+  const cp = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
+  await cp.goto('file://' + path.join(ROOT, 'cover.html'));
+  await cp.waitForFunction(() => window.READY === true, null, { timeout: 30000 });
+  await cp.screenshot({ path: path.join(ROOT, 'couverture.jpg'), type: 'jpeg', quality: 92 });
   await browser.close();
 
-  // audio
-  execFileSync('python3', [path.join(ROOT, 'audio.py'), path.join(OUT, 'sfx.json'), path.join(OUT, 'sfx.wav')], { stdio: 'inherit' });
+  // audio : avec musique + bruits de cuisine seuls
+  execFileSync('python3', [path.join(ROOT, 'audio.py'), path.join(OUT, 'sfx.json'), path.join(OUT, 'sfx.wav'), path.join(OUT, 'sfx-sans-musique.wav')], { stdio: 'inherit' });
 
   const mp4 = path.join(ROOT, 'leauvive-chili-reel.mp4');
   execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', String(FPS), '-i', path.join(FRAMES, '%05d.jpg'),
     '-i', path.join(OUT, 'sfx.wav'), '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p',
     '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', mp4], { stdio: 'inherit' });
   console.log('wrote', mp4);
+  const mp4b = path.join(ROOT, 'leauvive-chili-reel-sans-musique.mp4');
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', mp4, '-i', path.join(OUT, 'sfx-sans-musique.wav'), '-map', '0:v', '-map', '1:a',
+    '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', mp4b], { stdio: 'inherit' });
+  console.log('wrote', mp4b);
 })();

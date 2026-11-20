@@ -1,6 +1,6 @@
 """Nouvelle bande-son 100 % générée par code pour le reel (la musique d'origine est remplacée) :
 whooshs sur les coupes, pops des sous-titres, bruits de cuisson + musique lo-fi groovy.
-Usage : python3 audio.py out/sfx.json out/sfx.wav"""
+Usage : python3 audio.py out/sfx.json out/sfx.wav [out/sfx-sans-musique.wav]"""
 import json, sys
 import numpy as np
 from scipy.signal import butter, sosfilt, fftconvolve
@@ -151,6 +151,9 @@ for c in cfg['cues']:
         d = c['dur']; add(sfx, t0, filt(noise(d), 'lowpass', 700) * np.sin(np.pi * tt(d) / d) ** .4 * (0.6 + 0.4 * np.abs(np.sin(2 * np.pi * 3 * tt(d)))), .3)
         for k in range(int(d * 14)): add(sfx, t0 + rng.uniform(0, d - .1), blub(rng.uniform(.6, 1.1)), .05, rng.uniform(-.6, .6))
     elif ty == 'clink': add(sfx, t0, metal(.9, [(1, 1, 0), (2.76, .5, 0), (5.4, .3, 0)], 1900, .12), .07, .2); add(sfx, t0, thud(200, .08), .08)
+    elif ty == 'scoop':  # cuillère de chili déposée sur le riz
+        d = .45; add(sfx, t0, filt(noise(d), 'bandpass', [180, 1400]) * env(d, .01, .07), .35)
+        for k in range(3): add(sfx, t0 + .05 + k * .07, plop(rng.uniform(.45, .6)), .12, rng.uniform(-.3, .3))
     elif ty == 'oil': oil(t0)
     elif ty == 'powder': powder(t0)
     elif ty == 'sauce': sauce(t0)
@@ -236,8 +239,13 @@ mus = np.tanh(mus * 1.3) / 1.3
 fade = np.clip(np.arange(N) / SR / 1.2, 0, 1) * np.clip((DUR - np.arange(N) / SR) / 2.0, 0, 1)
 mus *= fade[:, None]
 
-mix = sfx * 1.0 + mus * .38 / max(1e-6, np.abs(mus).max())
-mix /= np.abs(mix).max() / .6
-mix = np.tanh(mix * 1.1) / np.tanh(1.1)
-wavfile.write(sys.argv[2], SR, (mix * 32767 * .95).astype(np.int16))
+def master(x, path, drive=1.1):
+    x = x / (np.abs(x).max() / .6)
+    x = np.tanh(x * drive) / np.tanh(drive)  # limiteur doux
+    wavfile.write(path, SR, (x * 32767 * .89).astype(np.int16))
+
+
+master(sfx + mus * .38 / max(1e-6, np.abs(mus).max()), sys.argv[2])   # version avec musique lo-fi discrète
+if len(sys.argv) > 3:
+    master(sfx.copy(), sys.argv[3], drive=3.2)  # plus compressé : volume comparable sans musique                                    # version bruits de cuisine seuls
 print('audio ok', sys.argv[2], f'{DUR:.1f}s')

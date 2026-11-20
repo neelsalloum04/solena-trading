@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Couverture</title>
+<link rel="stylesheet" href="../leauvive-chili/assets/fonts.css">
+<style>
+body{margin:0}
+#c{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:'Baloo 2',sans-serif;background:#000}
+#bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.05)}
+#g{position:absolute;inset:0;background:linear-gradient(rgba(0,0,0,.38),rgba(0,0,0,0) 36%,rgba(0,0,0,0) 72%,rgba(0,0,0,.22))}
+/* tout l'essentiel reste dans la zone 3:4 centrale (y 240-1680) affichée dans la grille du profil */
+#t{position:absolute;left:0;right:0;top:300px;text-align:center;font-family:'Pacifico',cursive;font-size:168px;line-height:1.25;color:#fff;-webkit-text-stroke:24px #2e7d32;paint-order:stroke fill;filter:drop-shadow(0 12px 14px rgba(0,0,0,.4))}
+#t span{color:#ffe36b}
+#s{position:absolute;left:50%;top:560px;transform:translateX(-50%);white-space:nowrap;background:#fff;color:#2e7d32;font-weight:800;font-size:56px;padding:6px 40px;border-radius:40px;box-shadow:0 8px 18px rgba(0,0,0,.3)}
+#l{position:absolute;left:50%;top:1480px;transform:translateX(-50%);background:rgba(255,255,255,.92);border-radius:26px;padding:10px 20px;box-shadow:0 8px 18px rgba(0,0,0,.25)}
+#l img{width:190px;display:block}
+</style></head><body>
+<div id="c"><img id="bg" alt=""><div id="g"></div><div id="t">Chili <span>con carne</span></div><div id="s">La recette réconfortante</div><div id="l"><img src="../leauvive-chili/assets/logo.png" alt=""></div></div>
+<script src="out/segments.js"></script>
+<script>
+(async()=>{await document.fonts.ready;
+ const f=window.SEGS.filter(g=>g.tag==='final').pop(), i=Math.round((f.t+f.d*.6)*30);
+ const bg=document.getElementById('bg'); bg.src='out/vframes/'+String(i+1).padStart(5,'0')+'.jpg'; await bg.decode();
+ window.READY=true})();
+</script></body></html>
