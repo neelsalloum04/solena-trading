@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Logo propre</title>
+<link rel="stylesheet" href="../leauvive-chili/assets/fonts.css">
+<style>
+html,body{margin:0;background:transparent}
+#stage{position:relative;width:1080px;height:1380px;overflow:hidden}
+/* carte blanche qui recouvre entièrement l'ancien logo mal détouré (zone x 210-870, y 390-970) */
+#card{position:absolute;left:170px;top:350px;width:740px;height:660px;border-radius:64px;background:radial-gradient(circle at 50% 35%,#ffffff,#f6faf1 70%,#eaf4e2);box-shadow:0 24px 50px rgba(60,10,10,.35),0 0 0 8px rgba(255,255,255,.55);transform-origin:50% 50%;opacity:0}
+#card img{position:absolute;left:80px;top:40px;width:580px}
+#mag{position:absolute;left:0;right:0;top:300px;text-align:center;font-family:'Baloo 2';font-weight:700;font-size:74px;color:#ee9a3d;letter-spacing:1px}
+#ban{position:absolute;left:-50px;top:410px;width:840px;height:190px}
+#ban svg{position:absolute;inset:0;filter:drop-shadow(0 10px 12px rgba(20,60,20,.3))}
+#ban span{position:absolute;left:0;right:0;top:22px;text-align:center;font-family:'Pacifico';font-size:96px;color:#fff;transform:rotate(-3deg)}
+</style></head><body>
+<div id="stage"><div id="card"><img src="../leauvive-chili-reel/assets/logo-sans-slogan.png" alt=""><div id="mag">mon magasin Bio</div>
+<div id="ban"><svg viewBox="0 0 840 190" preserveAspectRatio="none"><path d="M0 60 C200 10 420 70 840 20 L840 140 C560 190 300 120 0 175 Z" fill="#2e9a3c"/><path d="M0 60 C200 10 420 70 840 20 L840 34 C420 84 200 24 0 74Z" fill="#5cbf55" opacity=".7"/></svg><span>Andelnans</span></div></div></div>
+<script src="../leauvive-chili/assets/gsap.min.js"></script>
+<script>
+(async()=>{await document.fonts.ready;await document.querySelector('#card img').decode();
+const T0=88/30, tl=gsap.timeline({paused:true});
+tl.fromTo('#card',{scale:.88},{scale:1,duration:.3,ease:'power1.out'},T0);
+tl.set('#card',{opacity:1},T0);
+tl.fromTo('#ban',{scaleX:.6},{scaleX:1,duration:.45,ease:'back.out(2)'},T0+.05);
+tl.to('#card',{scale:1.03,duration:1.2,yoyo:true,repeat:1,ease:'sine.inOut'},T0+.4);
+tl.to({},{duration:.01},6);
+window.DURATION=176/30; window.seek=t=>{tl.seek(t,false)}; window.seek(0); window.READY=true;})();
+</script></body></html>
