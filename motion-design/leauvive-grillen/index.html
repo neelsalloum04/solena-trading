@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>L'Eau Vive – Grillen</title>
+<style>
+html,body{margin:0;background:#000}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;background:#000}
+.sh{position:absolute;inset:0;overflow:hidden;opacity:0}
+.sh img{position:absolute;left:50%;top:50%;transform-origin:50% 50%}
+#flash{position:absolute;inset:0;background:#fff;opacity:0}
+#vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 60%,rgba(0,0,0,.25) 100%);pointer-events:none}
+</style></head><body>
+<div id="stage"><div class="sh"><img src="photos/1-rayon.jpg"></div><div class="sh"><img src="photos/2-ralph.jpg"></div><div class="sh"><img src="photos/3-ginger.jpg"></div><div class="sh"><img src="photos/4-panda.jpg"></div><div id="vig"></div><div id="flash"></div></div>
+<script src="../leauvive-chili/assets/gsap.min.js"></script>
+<script>
+(async()=>{
+const sh=[...document.querySelectorAll('.sh')], im=sh.map(s=>s.querySelector('img'));
+await Promise.all(im.map(i=>i.decode()));
+// chaque photo couvre l'écran 1080x1920 (taille de base = "cover")
+im.forEach(i=>{const k=Math.max(1080/i.naturalWidth,1920/i.naturalHeight);i.style.width=i.naturalWidth*k+'px';i.style.height=i.naturalHeight*k+'px';gsap.set(i,{xPercent:-50,yPercent:-50})});
+const tl=gsap.timeline({paused:true}), X=.45;
+// [début, fin, de, vers]  (s = zoom, x/y = déplacement en px)
+const P=[[0,2.75,{s:1.18,x:0,y:120},{s:1.0,x:0,y:0}],                 // le rayon : on recule pour découvrir
+         [2.3,5.25,{s:1.0,x:0,y:-60},{s:1.22,x:30,y:-140}],            // Ralph : on avance vers l'étiquette
+         [4.8,7.75,{s:1.25,x:0,y:260},{s:1.12,x:0,y:-120}],            // Ginger Tiger : panoramique de haut en bas
+         [7.3,10,{s:1.06,x:300,y:0},{s:1.06,x:-300,y:0}]];             // Panda Cola : travelling d'un panda à l'autre
+P.forEach(([a,b,f,t],k)=>{
+ tl.fromTo(im[k],{scale:f.s,x:f.x,y:f.y},{scale:t.s,x:t.x,y:t.y,duration:b-a,ease:'sine.inOut',immediateRender:true},a);
+ tl.fromTo(sh[k],{opacity:k?0:1},{opacity:1,duration:k?X:.01,ease:'power1.inOut',immediateRender:true},a);
+ if(k){tl.fromTo('#flash',{opacity:.18},{opacity:0,duration:.35,immediateRender:false},a+.05)}
+});
+tl.to({},{duration:.01},9.99);
+window.DURATION=10; window.SFX=null;
+window.seek=t=>{tl.seek(t,false)};
+window.seek(0);
+if(!new URLSearchParams(location.search).has('render'))tl.play(0);
+window.READY=true;
+})();
+</script></body></html>
