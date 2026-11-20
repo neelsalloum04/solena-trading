@@ -25,8 +25,10 @@ html,body{margin:0;background:#111}
 #save i{display:block;width:34px;height:44px;background:#2e8b32;clip-path:polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)}
 #chrono{position:absolute;right:40px;top:46px;z-index:55;background:#2e7d32;color:#fff;font-weight:800;font-size:40px;padding:6px 26px;border-radius:30px;box-shadow:0 8px 18px rgba(0,0,0,.3)}
 #end{position:absolute;inset:0;z-index:60;background:radial-gradient(circle at 50% 42%,#ffffff 0%,#f4f8ec 45%,#d6ebc9 100%);clip-path:circle(0px at 540px 1000px)}
-#end img{position:absolute;left:150px;top:520px;width:780px}
-#endTxt{position:absolute;left:80px;width:920px;top:1110px;text-align:center;font-weight:700;font-size:66px;line-height:1.12;color:#2b5e2d}
+#end img{position:absolute;left:150px;top:440px;width:780px}
+#endTxt{position:absolute;left:80px;width:920px;top:1030px;text-align:center;font-weight:700;font-size:66px;line-height:1.12;color:#2b5e2d}
+#loc{display:inline-flex;align-items:center;gap:16px;margin-top:22px;background:#2e8b32;color:#fff;font-weight:800;font-size:64px;padding:6px 40px 6px 30px;border-radius:50px;box-shadow:0 10px 22px rgba(20,60,20,.25)}
+#loc i{width:34px;height:34px;background:#fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:inset 0 0 0 10px #fff,inset 0 0 0 30px #2e8b32}
 #endTxt b{display:block;font-family:'Pacifico';font-weight:400;font-size:104px;color:#2e8b32;margin-top:18px}
 .leaf{position:absolute;z-index:61}
 .stk{position:absolute;left:50%;top:-230px;width:200px;height:200px;margin-left:-100px;filter:drop-shadow(0 12px 14px rgba(0,0,0,.35))}
@@ -43,7 +45,7 @@ html,body{margin:0;background:#111}
  <div id="save"><i></i>Enregistre la recette</div>
  <div id="chrono">0 s</div>
  <div id="logoS"><img src="../leauvive-chili/assets/logo.png" alt=""></div>
- <div id="end"><img src="../leauvive-chili/assets/logo@3x.png" alt=""><div id="endTxt">Tous les ingrédients de cette recette sont chez<b>L'Eau Vive</b></div></div>
+ <div id="end"><img src="../leauvive-chili/assets/logo@3x.png" alt=""><div id="endTxt">Tous les ingrédients de cette recette sont chez<b>L'Eau Vive</b><span id="loc"><i></i>Andelnans</span></div></div>
 </div>
 <script src="out/segments.js"></script>
 <script src="../leauvive-chili/assets/gsap.min.js"></script>
@@ -52,7 +54,7 @@ html,body{margin:0;background:#111}
 await document.fonts.ready;
 const $=s=>document.querySelector(s), img=$('#v'), C=window.CUTS, VL=window.VLEN, NF=window.NF;
 const tl=gsap.timeline({paused:true}); const SFX=[]; const cue=(t,type,o={})=>SFX.push(Object.assign({t:+t.toFixed(3),type},o));
-const END=VL+.05, DUR=END+3.6;
+const END=VL+.05, DUR=END+4.2;
 
 /* groupes de segments (même tag consécutif) */
 const S=window.SEGS, RUNS=[]; S.forEach(g=>{const r=RUNS[RUNS.length-1];if(r&&r.tag===g.tag){r.t1=g.t+g.d;r.segs.push(g)}else RUNS.push({tag:g.tag,t0:g.t,t1:g.t+g.d,segs:[g]})});
@@ -100,9 +102,6 @@ caption(rr('corn').t0,run('stir',2).t1,'ÉTAPE 4',"*Maïs & coulis de *tomates",
 caption(rr('beans').t0,rr('beans').t1,'ÉTAPE 5',"*Haricots rouges",{stk:'bean'});
 caption(rr('mix').t0,rr('mix').t1,'ÉTAPE 6',"On mélange & on *couvre",{stk:'spoon'});
 caption(rr('steam').t0,rr('rice').t1,'ÉTAPE 7',"Pendant ce temps, le *riz",{stk:'rice'});
-caption(rr('serve').t0,rr('serve').t1,'',"On *sert !");
-caption(rr('herb').t0,rr('herb').t1,'',"+ coriandre *fraîche",{stk:'herb'});
-caption(rr('final').t0,rr('final').t1,'',"Bon *appétit !",{cls:'pac',style:'font-size:150px;line-height:1.3;-webkit-text-stroke:22px #2e7d32'});
 
 /* sticker "enregistre" */
 gsap.set('#save',{opacity:0});const sv=rr('beans').t0+.4;tl.set('#save',{opacity:1},sv);
@@ -129,6 +128,7 @@ tl.to(end,{clipPath:'circle(1500px at 540px 1000px)',duration:.7,ease:'power2.in
 tl.from('#end img',{scale:.4,opacity:0,y:60,duration:.9,ease:'elastic.out(1,.6)'},END+.3); 
 tl.from('#endTxt',{y:60,opacity:0,duration:.55,ease:'back.out(1.8)'},END+.75);
 tl.from('#endTxt b',{scale:.3,opacity:0,duration:.6,ease:'back.out(2.5)'},END+1.1);
+tl.from('#loc',{scale:0,opacity:0,duration:.6,ease:'back.out(2)'},END+1.6);
 tl.to('#end img',{scale:1.04,duration:2,ease:'sine.inOut'},END+1.2);
 const LEAF=`<svg width="70" height="70" viewBox="0 0 64 64"><path d="M32 60 C12 52 4 32 12 18 C16 24 22 24 24 15 C28 7 36 5 40 13 C42 21 48 23 52 17 C60 32 52 52 32 60Z" fill="#45a83f"/><path d="M32 60 L32 22 M32 44 L20 32 M32 40 L44 28" stroke="#2c7a2c" stroke-width="2.4" fill="none"/></svg>`;
 [[140,380,-30],[930,420,40],[120,1500,20],[950,1560,-50],[540,330,10],[300,1720,60],[800,1760,-20]].forEach(([x,y,r],i)=>{const l=document.createElement('div');l.className='leaf';l.innerHTML=LEAF;end.appendChild(l);
